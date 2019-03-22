@@ -1,0 +1,24 @@
+# TIMING -> Secs Mins Hrs DayOmonth Month DayOweek   https://godoc.org/github.com/robfig/cron
+
+# [[ cronjob ]]
+#   timing = "* * * * * *"  See link above
+#   action = "wall-e function to execute"
+#       current available actions are:
+#           * pts - syncronize story points to screenful
+#           * pr - scan PR(Uat) list for stale cards
+#           * archive - archive old cards in Done and Backlog
+#           * troll - fish through board for standard alerts (owners, points, stales)
+#           * sprint - execute a new sprint
+#           * holidays - check if its a holiday
+#           * count-cards - count cards by theme in upcoming & ready for pts columns
+#           * record-pts - record pts in current sprint by column into sql db
+#           * epic-links - check and alert on feature cards not linked to epics
+#   config = "name of toml file (minus extension) to run against"
+  
+### SAAS-E CRONS
+[[cronjob]]
+
+    timing = "0 15 17 * * MON-FRI"
+    action = "pr"
+    config = "saase"
+
