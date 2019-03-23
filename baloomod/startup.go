@@ -40,7 +40,7 @@ func Startup(balooOpts *BalooConf) (*BalooConf, bool) {
 	}
 
 	if balooOpts.Config.Tkey == "" || balooOpts.Config.Ttoken == "" || balooOpts.Config.SlackHook == "" || balooOpts.Config.SlackToken == "" || balooOpts.Config.DBUser == "" || balooOpts.Config.DBPassword == "" || balooOpts.Config.GitToken == "" {
-		fmt.Println("\nWarning CLI parameters: -tkey, -ttoken, slacktoken, -slackhook, -git, -dbuser and -dbpassword are required!")
+		fmt.Println("\nWarning CLI parameters: -tkey, -ttoken, -slacktoken, -slackhook, -git, -dbuser and -dbpassword are required!")
 		os.Exit(0)
 	}
 

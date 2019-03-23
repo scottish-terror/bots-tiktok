@@ -1,7 +1,7 @@
 
 [baloo]
 
-	LogChannel			= "CH6FKP9K9"		   			# Channel to spew all trello changes into, for logging and potential rollback. Must have value even if LogToSlack is false
+	LogChannel			= "#baloo-logs"		   			# Channel to spew all trello changes into, for logging and potential rollback. Must have value even if LogToSlack is false
 	LogToSlack			= true							# Log bot data to slack (recommended)
 	SlackEmoji          = ":baloo:" 					# "bot" slack Emoji name (Include pre and post colons  :myemoji: )
 	DEBUG				= false							# Output Debug info to CLI
