@@ -1,5 +1,5 @@
 create database baloo;
-use database baloo;
+use baloo;
 grant all on baloo.* to 'baloo'@'localhost' identified by 'goof.balls';
 create table baloo_theme_count (id int not null primary key auto_increment, countdate datetime, team varchar(100), sprintname varchar(100), trellocolumn varchar(100), labelname varchar(100), qty int);
 create table baloo_holidays (holidayid int not null primary key auto_increment, name varchar(255), holiday date, message varchar(200));
