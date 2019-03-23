@@ -1159,7 +1159,7 @@ func BotActions(lowerString string, baloo *BalooConf, ev *slack.MessageEvent, rt
 
 		userData := Between(ev.Msg.Text, "[", "]")
 		if userData == "" {
-			rtm.SendMessage(rtm.NewOutgoingMessage("I can help you register here's how:\n```add me [email,trello id,github id]```\n`Do not use quotes anywhere.`\nExample: ```@"+baloo.Config.BotName+" add me [some. one@mydomain.com,someone12,someone-ea]```", ev.Msg.Channel))
+			rtm.SendMessage(rtm.NewOutgoingMessage("I can help you register here's how:\n```add me [email,trello id,github id]```\n`Do not use quotes anywhere.`\nExample: ```@"+baloo.Config.BotName+" add me [some.one@mydomain.com,someone12,someone-ea]```", ev.Msg.Channel))
 		} else {
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
