@@ -26,7 +26,8 @@ func main() {
 	}
 
 	// Set version number
-	baloo.Config.Version = "4.0"
+	// Major.Features.Bugs-Tweaks & tomls
+	baloo.Config.Version = "4.0.0-3"
 
 	// Grab CLI parameters at launch
 	wOpts, nocron := baloomod.Startup(baloo)
