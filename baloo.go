@@ -87,7 +87,7 @@ func main() {
 			//   Ignore things that I post so i don't loop myself
 			if strings.Contains(ev.Msg.Text, "@"+baloo.Config.BotID) || string(ev.Msg.Channel[0]) == "D" {
 				if ev.Msg.User != baloo.Config.BotID {
-					// some WallE responses are case sensitive due to Trello being case sensitive, so removing the lower case function
+					// some bot responses are case sensitive due to Trello being case sensitive, so removing the lower case function
 					//   until i think of a better way to handle
 					// lowerString := strings.ToLower(ev.Msg.Text)
 					lowerString := ev.Msg.Text

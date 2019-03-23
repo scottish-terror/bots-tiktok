@@ -35,7 +35,7 @@ func Startup(balooOpts *BalooConf) (*BalooConf, bool) {
 	nocrontab := *nocron
 
 	if *version {
-		fmt.Println("I'm Wall-E Version " + balooOpts.Config.Version)
+		fmt.Println("I'm Baloo Version " + balooOpts.Config.Version)
 		os.Exit(0)
 	}
 
