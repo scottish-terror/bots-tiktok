@@ -1,4 +1,4 @@
-package wallemod
+package baloomod
 
 // handles slack API interface for sending webhooks back with responses
 

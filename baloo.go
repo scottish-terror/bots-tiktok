@@ -6,20 +6,20 @@ import (
 	"strings"
 
 	"github.com/robfig/cron"
-	"github.com/srv1054/bots-wall-e/wallemod"
+	"github.com/srv1054/bots-baloo/baloomod"
 
 	"github.com/nlopes/slack"
 )
 
 func main() {
 
-	var attachments wallemod.Attachment
+	var attachments baloomod.Attachment
 	var c *cron.Cron
-	var cronjobs *wallemod.Cronjobs
+	var cronjobs *baloomod.Cronjobs
 	var CronState string
 
 	// Load WallE Config
-	wOpts, err := wallemod.LoadWalle()
+	wOpts, err := baloomod.LoadWalle()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)
@@ -29,7 +29,7 @@ func main() {
 	wOpts.Walle.Version = "4.0"
 
 	// Grab CLI parameters at launch
-	wOpts, nocron := wallemod.Startup(wOpts)
+	wOpts, nocron := baloomod.Startup(wOpts)
 
 	// Load Cron
 	if nocron {
@@ -38,14 +38,14 @@ func main() {
 			fmt.Println("Not loading CRONs per CLI parameter -nocron")
 		}
 		if wOpts.Walle.LogToSlack {
-			wallemod.LogToSlack("Not Loading CRON based on CLI parameter -nocron", wOpts, attachments)
+			baloomod.LogToSlack("Not Loading CRON based on CLI parameter -nocron", wOpts, attachments)
 		}
 		CronState = "Not Loaded"
 		c = cron.New()
 
 	} else {
 
-		cronjobs, c, err = wallemod.CronLoad(wOpts)
+		cronjobs, c, err = baloomod.CronLoad(wOpts)
 		if err != nil {
 			if wOpts.Walle.DEBUG {
 				fmt.Println("CRON Jobs failed to load due to file error.")
@@ -93,15 +93,15 @@ func main() {
 					lowerString := ev.Msg.Text
 
 					// BOT Responses
-					wallemod.Responder(lowerString, wOpts, ev, rtm)
+					baloomod.Responder(lowerString, wOpts, ev, rtm)
 
 					// BOT Actions
-					c, cronjobs, CronState = wallemod.BotActions(lowerString, wOpts, ev, rtm, api, c, cronjobs, CronState)
+					c, cronjobs, CronState = baloomod.BotActions(lowerString, wOpts, ev, rtm, api, c, cronjobs, CronState)
 
 					// HELP INFO
 					if strings.Contains(lowerString, "help") || strings.Contains(lowerString, "what do you do") || strings.Contains(lowerString, "what can you do") || strings.Contains(lowerString, "who are you") {
 						rtm.SendMessage(rtm.NewOutgoingMessage("I have DM'd you some help information!", ev.Msg.Channel))
-						wallemod.Help(wOpts, ev.Msg.User, api)
+						baloomod.Help(wOpts, ev.Msg.User, api)
 					}
 				}
 			}

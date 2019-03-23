@@ -1,4 +1,4 @@
-package wallemod
+package baloomod
 
 import "github.com/nlopes/slack"
 

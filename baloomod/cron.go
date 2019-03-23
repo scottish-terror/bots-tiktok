@@ -1,4 +1,4 @@
-package wallemod
+package baloomod
 
 // Manages CRON job calls to functions
 
