@@ -8,8 +8,8 @@ import (
 )
 
 // gitmyhub - creates connection with github to prepare API request
-func gitmyhub(wOpts *WallConf) (ctx context.Context, client *github.Client) {
-	gitKey := wOpts.Walle.GitToken
+func gitmyhub(baloo *BalooConf) (ctx context.Context, client *github.Client) {
+	gitKey := baloo.Config.GitToken
 	ctx = context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: gitKey},
@@ -22,9 +22,9 @@ func gitmyhub(wOpts *WallConf) (ctx context.Context, client *github.Client) {
 }
 
 // RetrieveRepo - retrieve list of repositories
-func RetrieveRepo(wOpts *WallConf) (repos []*github.Repository) {
+func RetrieveRepo(baloo *BalooConf) (repos []*github.Repository) {
 
-	ctx, client := gitmyhub(wOpts)
+	ctx, client := gitmyhub(baloo)
 
 	opt := &github.RepositoryListOptions{
 		Sort:        "updated",
@@ -34,7 +34,7 @@ func RetrieveRepo(wOpts *WallConf) (repos []*github.Repository) {
 	}
 	repos, _, err := client.Repositories.List(ctx, "", opt)
 	if err != nil {
-		errTrap(wOpts, "Error in `retrieveRepo` function in `git.go`", err)
+		errTrap(baloo, "Error in `retrieveRepo` function in `git.go`", err)
 		return
 	}
 
@@ -43,9 +43,9 @@ func RetrieveRepo(wOpts *WallConf) (repos []*github.Repository) {
 }
 
 // RetrieveUsers - retrieve list of Users
-func RetrieveUsers(wOpts *WallConf) (users []*github.User) {
+func RetrieveUsers(baloo *BalooConf) (users []*github.User) {
 
-	ctx, client := gitmyhub(wOpts)
+	ctx, client := gitmyhub(baloo)
 
 	opt := &github.ListMembersOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
@@ -53,7 +53,7 @@ func RetrieveUsers(wOpts *WallConf) (users []*github.User) {
 
 	users, _, err := client.Organizations.ListMembers(ctx, "ForgeCloud", opt)
 	if err != nil {
-		errTrap(wOpts, "Error in `RetrieveUsers` function in `git.go`", err)
+		errTrap(baloo, "Error in `RetrieveUsers` function in `git.go`", err)
 		return
 	}
 
@@ -62,9 +62,9 @@ func RetrieveUsers(wOpts *WallConf) (users []*github.User) {
 }
 
 // GitPRList - retrieve all PRs in a repo
-func GitPRList(wOpts *WallConf, repoName string) (pulls []*github.PullRequest, err error) {
+func GitPRList(baloo *BalooConf, repoName string) (pulls []*github.PullRequest, err error) {
 
-	ctx, client := gitmyhub(wOpts)
+	ctx, client := gitmyhub(baloo)
 
 	opt := &github.PullRequestListOptions{
 		Sort:      "updated",
@@ -73,7 +73,7 @@ func GitPRList(wOpts *WallConf, repoName string) (pulls []*github.PullRequest, e
 
 	pulls, _, err = client.PullRequests.List(ctx, "ForgeCloud", repoName, opt)
 	if err != nil {
-		errTrap(wOpts, "Error in `GitPRList` function in `git.go`", err)
+		errTrap(baloo, "Error in `GitPRList` function in `git.go`", err)
 		return pulls, err
 	}
 
@@ -81,13 +81,13 @@ func GitPRList(wOpts *WallConf, repoName string) (pulls []*github.PullRequest, e
 }
 
 // GitPR - retrieve a single PR in a repo
-func GitPR(wOpts *WallConf, repoName string, PRID int) (pull *github.PullRequest, err error) {
+func GitPR(baloo *BalooConf, repoName string, PRID int) (pull *github.PullRequest, err error) {
 
-	ctx, client := gitmyhub(wOpts)
+	ctx, client := gitmyhub(baloo)
 
 	pull, _, err = client.PullRequests.Get(ctx, "ForgeCloud", repoName, PRID)
 	if err != nil {
-		errTrap(wOpts, "Error in `GitPR` function in `git.go`", err)
+		errTrap(baloo, "Error in `GitPR` function in `git.go`", err)
 		return pull, err
 	}
 

@@ -181,11 +181,11 @@ func redirectPolicyFunc(req gorequest.Request, via []gorequest.Request) error {
 }
 
 // PostSnippet - Post a snippet of any type to slack channel
-func PostSnippet(wOpts *WallConf, fileType string, fileContent string, channel string, title string) error {
+func PostSnippet(baloo *BalooConf, fileType string, fileContent string, channel string, title string) error {
 
 	form := url.Values{}
 
-	form.Set("token", wOpts.Walle.SlackToken)
+	form.Set("token", baloo.Config.SlackToken)
 	form.Set("channels", channel)
 	form.Set("content", fileContent)
 	form.Set("filetype", fileType)
@@ -196,19 +196,19 @@ func PostSnippet(wOpts *WallConf, fileType string, fileContent string, channel s
 	req, err := http.NewRequest("POST", fileUploadURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+wOpts.Walle.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(wOpts, "Slack PostSnippet - http.Do() error: ", err)
+		errTrap(baloo, "Slack PostSnippet - http.Do() error: ", err)
 		return err
 	}
 	defer resp.Body.Close()
 
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errTrap(wOpts, "Slack PostSnippet - ioutil.ReadAll() error: ", err)
+		errTrap(baloo, "Slack PostSnippet - ioutil.ReadAll() error: ", err)
 		return err
 	}
 
@@ -235,31 +235,31 @@ func Send(webhookURL string, proxy string, payload Payload) []error {
 }
 
 // WranglerDM - Send chat.Post API DM messages "as the bot"
-func WranglerDM(wOpts *WallConf, payload BotDMPayload) error {
+func WranglerDM(baloo *BalooConf, payload BotDMPayload) error {
 	url := "https://slack.com/api/chat.postMessage"
 
-	payload.Token = wOpts.Walle.SlackToken
+	payload.Token = baloo.Config.SlackToken
 	payload.AsUser = true
 
 	jsonStr, err := json.Marshal(&payload)
 	if err != nil {
-		errTrap(wOpts, "Error attempting to marshal struct to json for slack BotDMPayload", err)
+		errTrap(baloo, "Error attempting to marshal struct to json for slack BotDMPayload", err)
 		return err
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(wOpts, "Error in http.NewRequest in `CreateList` in `trello.go`", err)
+		errTrap(baloo, "Error in http.NewRequest in `CreateList` in `trello.go`", err)
 		return err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer "+wOpts.Walle.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(wOpts, "Error in client.Do in `CreateList` in `trello.go`", err)
+		errTrap(baloo, "Error in client.Do in `CreateList` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -272,7 +272,7 @@ func Wrangler(webhookURL string, message string, myChannel string, emojiName str
 
 	payload := Payload{
 		Text:        message,
-		Username:    "WALL-E",
+		Username:    "BalooConf",
 		Channel:     myChannel,
 		IconEmoji:   emojiName,
 		Attachments: []Attachment{attachments},
@@ -284,18 +284,18 @@ func Wrangler(webhookURL string, message string, myChannel string, emojiName str
 }
 
 //LogToSlack - Dump Logs to a Slack Channel
-func LogToSlack(message string, wOpts *WallConf, attachments Attachment) {
+func LogToSlack(message string, baloo *BalooConf, attachments Attachment) {
 	now := time.Now().Local()
-	if wOpts.Walle.LoggingPrefix != "" {
-		message = "`" + wOpts.Walle.LoggingPrefix + "` - *" + now.Format("01/02/2006 15:04:05") + " :* " + message
+	if baloo.Config.LoggingPrefix != "" {
+		message = "`" + baloo.Config.LoggingPrefix + "` - *" + now.Format("01/02/2006 15:04:05") + " :* " + message
 	} else {
 		message = "*" + now.Format("01/02/2006 15:04:05") + " :* " + message
 	}
-	Wrangler(wOpts.Walle.SlackHook, message, wOpts.Walle.LogChannel, wOpts.Walle.SlackEmoji, attachments)
+	Wrangler(baloo.Config.SlackHook, message, baloo.Config.LogChannel, baloo.Config.SlackEmoji, attachments)
 }
 
 // CreateChannel - create a slack channel and return the payload
-func CreateChannel(wOpts *WallConf, channelName string, errValidate bool) (slackPayload ChannelRespPayload, success bool, err error) {
+func CreateChannel(baloo *BalooConf, channelName string, errValidate bool) (slackPayload ChannelRespPayload, success bool, err error) {
 	var validate string
 
 	form := url.Values{}
@@ -305,7 +305,7 @@ func CreateChannel(wOpts *WallConf, channelName string, errValidate bool) (slack
 	} else {
 		validate = "false"
 	}
-	form.Set("token", wOpts.Walle.SlackOAuth)
+	form.Set("token", baloo.Config.SlackOAuth)
 	form.Set("name", channelName)
 	form.Set("validate", validate)
 
@@ -314,12 +314,12 @@ func CreateChannel(wOpts *WallConf, channelName string, errValidate bool) (slack
 	req, err := http.NewRequest("POST", channelCreateURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+wOpts.Walle.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(wOpts, "Slack CreateChannel - http.Do() error: ", err)
+		errTrap(baloo, "Slack CreateChannel - http.Do() error: ", err)
 		return slackPayload, false, err
 	}
 	defer resp.Body.Close()
@@ -334,11 +334,11 @@ func CreateChannel(wOpts *WallConf, channelName string, errValidate bool) (slack
 }
 
 // ArchiveChannel - archive a slack channel created by bot and return payload. must send channel slackID, not channel name
-func ArchiveChannel(wOpts *WallConf, channelID string) (slackPayload ChannelRespPayload, success bool, err error) {
+func ArchiveChannel(baloo *BalooConf, channelID string) (slackPayload ChannelRespPayload, success bool, err error) {
 
 	form := url.Values{}
 
-	form.Set("token", wOpts.Walle.SlackOAuth)
+	form.Set("token", baloo.Config.SlackOAuth)
 	form.Set("channel", channelID)
 
 	s := form.Encode()
@@ -346,12 +346,12 @@ func ArchiveChannel(wOpts *WallConf, channelID string) (slackPayload ChannelResp
 	req, err := http.NewRequest("POST", channelArchiveURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+wOpts.Walle.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(wOpts, "Slack ArchiveChannel - http.Do() error: ", err)
+		errTrap(baloo, "Slack ArchiveChannel - http.Do() error: ", err)
 		return slackPayload, false, err
 	}
 	defer resp.Body.Close()
@@ -366,11 +366,11 @@ func ArchiveChannel(wOpts *WallConf, channelID string) (slackPayload ChannelResp
 }
 
 // UnArchiveChannel - un-archive a slack channel and return payload. must send channel slackID, not channel name
-func UnArchiveChannel(wOpts *WallConf, channelID string) (slackPayload BasicSlackPayload, err error) {
+func UnArchiveChannel(baloo *BalooConf, channelID string) (slackPayload BasicSlackPayload, err error) {
 
 	form := url.Values{}
 
-	form.Set("token", wOpts.Walle.SlackOAuth)
+	form.Set("token", baloo.Config.SlackOAuth)
 	form.Set("channel", channelID)
 
 	s := form.Encode()
@@ -378,12 +378,12 @@ func UnArchiveChannel(wOpts *WallConf, channelID string) (slackPayload BasicSlac
 	req, err := http.NewRequest("POST", channelUnArchiveURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+wOpts.Walle.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(wOpts, "Slack UnArchiveChannel - http.Do() error: ", err)
+		errTrap(baloo, "Slack UnArchiveChannel - http.Do() error: ", err)
 		return slackPayload, err
 	}
 	defer resp.Body.Close()
@@ -398,7 +398,7 @@ func UnArchiveChannel(wOpts *WallConf, channelID string) (slackPayload BasicSlac
 }
 
 // ChannelList - Return slice of slack channels
-func ChannelList(wOpts *WallConf, noArchived bool) (slackPayload ChannelListPayload, success bool, err error) {
+func ChannelList(baloo *BalooConf, noArchived bool) (slackPayload ChannelListPayload, success bool, err error) {
 	var ignoreArchive string
 
 	form := url.Values{}
@@ -409,7 +409,7 @@ func ChannelList(wOpts *WallConf, noArchived bool) (slackPayload ChannelListPayl
 		ignoreArchive = "false"
 	}
 
-	form.Set("token", wOpts.Walle.SlackToken)
+	form.Set("token", baloo.Config.SlackToken)
 	form.Set("exclude_archived", ignoreArchive)
 	form.Set("limit", "1000")
 	form.Set("types", "public_channel")
@@ -419,12 +419,12 @@ func ChannelList(wOpts *WallConf, noArchived bool) (slackPayload ChannelListPayl
 	req, err := http.NewRequest("POST", channelListURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+wOpts.Walle.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(wOpts, "Slack ChannelList - http.Do() error: ", err)
+		errTrap(baloo, "Slack ChannelList - http.Do() error: ", err)
 		return slackPayload, false, err
 	}
 	defer resp.Body.Close()
@@ -439,11 +439,11 @@ func ChannelList(wOpts *WallConf, noArchived bool) (slackPayload ChannelListPayl
 }
 
 // ChannelInvite - Invite a user to a specific channel. Expects slack channel ID and user ID not slack names
-func ChannelInvite(wOpts *WallConf, channelID string, userID string) (slackPayload BasicSlackPayload, err error) {
+func ChannelInvite(baloo *BalooConf, channelID string, userID string) (slackPayload BasicSlackPayload, err error) {
 
 	form := url.Values{}
 
-	form.Set("token", wOpts.Walle.SlackOAuth)
+	form.Set("token", baloo.Config.SlackOAuth)
 	form.Set("channel", channelID)
 	form.Set("user", userID)
 
@@ -452,12 +452,12 @@ func ChannelInvite(wOpts *WallConf, channelID string, userID string) (slackPaylo
 	req, err := http.NewRequest("POST", channelInviteURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+wOpts.Walle.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(wOpts, "Slack ChannelInvite - http.Do() error: ", err)
+		errTrap(baloo, "Slack ChannelInvite - http.Do() error: ", err)
 		return slackPayload, err
 	}
 	defer resp.Body.Close()
@@ -472,11 +472,11 @@ func ChannelInvite(wOpts *WallConf, channelID string, userID string) (slackPaylo
 }
 
 // ChannelTopicSet - Set topic in a channel. Expects slack channel ID not name. Bot MUST be in channel to work
-func ChannelTopicSet(wOpts *WallConf, channelID string, topic string) (slackPayload BasicSlackPayload, err error) {
+func ChannelTopicSet(baloo *BalooConf, channelID string, topic string) (slackPayload BasicSlackPayload, err error) {
 
 	form := url.Values{}
 
-	form.Set("token", wOpts.Walle.SlackToken)
+	form.Set("token", baloo.Config.SlackToken)
 	form.Set("channel", channelID)
 	form.Set("topic", topic)
 
@@ -485,12 +485,12 @@ func ChannelTopicSet(wOpts *WallConf, channelID string, topic string) (slackPayl
 	req, err := http.NewRequest("POST", channelTopicSetURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+wOpts.Walle.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(wOpts, "Slack ChannelTopicSet - http.Do() error: ", err)
+		errTrap(baloo, "Slack ChannelTopicSet - http.Do() error: ", err)
 		return slackPayload, err
 	}
 	defer resp.Body.Close()

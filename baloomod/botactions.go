@@ -13,8 +13,8 @@ import (
 	"github.com/robfig/cron"
 )
 
-// BotActions - Wall-E Actions based on commands
-func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm *slack.RTM, api *slack.Client, c *cron.Cron, cronjobs *Cronjobs, CronState string) (*cron.Cron, *Cronjobs, string) {
+// BotActions - BalooConf Actions based on commands
+func BotActions(lowerString string, baloo *BalooConf, ev *slack.MessageEvent, rtm *slack.RTM, api *slack.Client, c *cron.Cron, cronjobs *Cronjobs, CronState string) (*cron.Cron, *Cronjobs, string) {
 
 	var attachments Attachment
 	var smessage string
@@ -26,38 +26,38 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 	if strings.Contains(lowerString, "run builtin test") || strings.Contains(lowerString, "run built-in test") {
 		//rtm.SendMessage(rtm.NewOutgoingMessage("Running Built-In test that you built! :unicornfart:", ev.Msg.Channel))
 		rtm.SendMessage(rtm.NewOutgoingMessage("Currently no built-in tests!", ev.Msg.Channel))
-		//opts, _ := LoadConf(wOpts, "mcboard")
+		//opts, _ := LoadConf(baloo, "mcboard")
 
-		//SendAlert(wOpts, opts, "demo")
+		//SendAlert(baloo, opts, "demo")
 	}
 
-	// Request that Wall-E checks and alerts on non-active retro action item cards (this can also be CRON'd)
+	// Request that BalooConf checks and alerts on non-active retro action item cards (this can also be CRON'd)
 	if strings.Contains(lowerString, "check retro action activity") {
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		} else {
 			attachments.Color = ""
 			attachments.Text = ""
-			Wrangler(wOpts.Walle.SlackHook, "Checking Sprint Retro boards for action items with no activity!", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Checking Sprint Retro boards for action items with no activity!", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
-			LogToSlack(userInfo.Name+" asked me to check sprint retro boards for action items with no activity on `"+teamID+"` trello board.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to check sprint retro boards for action items with no activity on `"+teamID+"` trello board.", baloo, attachments)
 
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 				return c, cronjobs, CronState
 			}
 
-			CheckActionCards(wOpts, opts, teamID)
+			CheckActionCards(baloo, opts, teamID)
 
-			Wrangler(wOpts.Walle.SlackHook, "Check process complete.", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Check process complete.", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 		}
 	}
@@ -67,11 +67,11 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		} else {
 
 			var columnID string
@@ -80,20 +80,20 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 			attachments.Color = ""
 			attachments.Text = ""
-			Wrangler(wOpts.Walle.SlackHook, "One sec, let me add that up!", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "One sec, let me add that up!", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 				return c, cronjobs, CronState
 			}
 
 			columnID, colName = GetColumn(opts, lowerString)
 
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
-			LogToSlack(userInfo.Name+" asked me to add up chapter points on `"+teamID+"` trello board in column `"+colName+"`.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to add up chapter points on `"+teamID+"` trello board in column `"+colName+"`.", baloo, attachments)
 
-			allChapters, noChapter, err := ChapterPoint(wOpts, opts, columnID)
+			allChapters, noChapter, err := ChapterPoint(baloo, opts, columnID)
 			if err != nil {
 				return c, cronjobs, CronState
 			}
@@ -104,7 +104,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 			message = message + "Points not assigned to a chapter: " + strconv.Itoa(noChapter) + "\n"
 			attachments.Color = "#00ff00"
 			attachments.Text = message
-			Wrangler(wOpts.Walle.SlackHook, "Chapter point counts", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Chapter point counts", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 			return c, cronjobs, CronState
 		}
@@ -117,28 +117,28 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		if teamID == "" {
 			teamID = "mcboard"
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
-			LogToSlack(userInfo.Name+" asked me to check for Critical Bugs and didn't specify a team, so defaulting to `mcboard` trello board.", wOpts, attachments)
-			Wrangler(wOpts.Walle.SlackHook, "You didn't specify a team/trello board so I'm assuming you mean `mcboard`.", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			LogToSlack(userInfo.Name+" asked me to check for Critical Bugs and didn't specify a team, so defaulting to `mcboard` trello board.", baloo, attachments)
+			Wrangler(baloo.Config.SlackHook, "You didn't specify a team/trello board so I'm assuming you mean `mcboard`.", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 		}
-		LogToSlack(userInfo.Name+" asked me to check for Critical Bugs on the "+teamID+" trello board.", wOpts, attachments)
+		LogToSlack(userInfo.Name+" asked me to check for Critical Bugs on the "+teamID+" trello board.", baloo, attachments)
 
-		opts, err := LoadConf(wOpts, teamID)
+		opts, err := LoadConf(baloo, teamID)
 		if err != nil {
-			errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+			errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 			return c, cronjobs, CronState
 		}
 
 		attachments.Color = ""
 		attachments.Text = ""
-		Wrangler(wOpts.Walle.SlackHook, "One sec, I will check and then alert the "+opts.General.ComplaintChannel+" channel if I find any.", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+		Wrangler(baloo.Config.SlackHook, "One sec, I will check and then alert the "+opts.General.ComplaintChannel+" channel if I find any.", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
-		numBug := CheckBugs(opts, wOpts)
+		numBug := CheckBugs(opts, baloo)
 
 		if numBug == 0 {
-			Wrangler(wOpts.Walle.SlackHook, "I didn't find any critical bugs, Sweet!", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "I didn't find any critical bugs, Sweet!", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		} else {
-			Wrangler(wOpts.Walle.SlackHook, "I found a critical bug quantity of "+strconv.Itoa(numBug)+"!", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "I found a critical bug quantity of "+strconv.Itoa(numBug)+"!", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		}
 		return c, cronjobs, CronState
 	}
@@ -148,38 +148,38 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		} else {
 
 			var colName string
 
 			attachments.Color = ""
 			attachments.Text = ""
-			Wrangler(wOpts.Walle.SlackHook, "One sec, let me add that up and record it to the database!", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "One sec, let me add that up and record it to the database!", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 				return c, cronjobs, CronState
 			}
 
 			_, colName = GetColumn(opts, lowerString)
 
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
-			LogToSlack(userInfo.Name+" asked me to record in the DB the card count on chapter cards on `"+teamID+"` trello board in column `"+colName+"`.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to record in the DB the card count on chapter cards on `"+teamID+"` trello board in column `"+colName+"`.", baloo, attachments)
 
-			err = RecordChapters(wOpts, teamID, colName)
+			err = RecordChapters(baloo, teamID, colName)
 
 			if err != nil {
-				Wrangler(wOpts.Walle.SlackHook, "Something went wrong, please check the logs in the log channel #"+wOpts.Walle.LogChannel, ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+				Wrangler(baloo.Config.SlackHook, "Something went wrong, please check the logs in the log channel #"+baloo.Config.LogChannel, ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 				return c, cronjobs, CronState
 			}
 
-			Wrangler(wOpts.Walle.SlackHook, "Data recorded!", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Data recorded!", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 			return c, cronjobs, CronState
 		}
 	}
@@ -189,11 +189,11 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		} else {
 
 			var columnID string
@@ -202,20 +202,20 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 			attachments.Color = ""
 			attachments.Text = ""
-			Wrangler(wOpts.Walle.SlackHook, "One sec, let me add that up!", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "One sec, let me add that up!", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 				return c, cronjobs, CronState
 			}
 
 			columnID, colName = GetColumn(opts, lowerString)
 
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
-			LogToSlack(userInfo.Name+" asked me to add report on chapter cards on `"+teamID+"` trello board in column `"+colName+"`.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to add report on chapter cards on `"+teamID+"` trello board in column `"+colName+"`.", baloo, attachments)
 
-			allChapters, totalCards, err := ChapterCount(wOpts, opts, columnID)
+			allChapters, totalCards, err := ChapterCount(baloo, opts, columnID)
 			if err != nil {
 				return c, cronjobs, CronState
 			}
@@ -226,7 +226,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 			attachments.Color = "#00ff00"
 			attachments.Text = message
-			Wrangler(wOpts.Walle.SlackHook, "Chapter card counts", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Chapter card counts", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 			return c, cronjobs, CronState
 		}
@@ -237,16 +237,16 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		} else {
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
-			LogToSlack(userInfo.Name+" asked me to get all the card timing data on `"+teamID+"` trello board", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to get all the card timing data on `"+teamID+"` trello board", baloo, attachments)
 
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
 				rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+teamID+".toml) you asked for!.", ev.Msg.Channel))
 				return c, cronjobs, CronState
@@ -255,11 +255,11 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 			rtm.SendMessage(rtm.NewOutgoingMessage("Attempting to pull card timing data.\n*Warning* This can take several minutes, please wait patiently. :knuckles_waiting:", ev.Msg.Channel))
 
 			if strings.Contains(lowerString, "DB ONLY") {
-				CardPlay(wOpts, opts, ev.Msg.Channel, teamID, false)
+				CardPlay(baloo, opts, ev.Msg.Channel, teamID, false)
 			} else {
-				CardPlay(wOpts, opts, ev.Msg.Channel, teamID, true)
+				CardPlay(baloo, opts, ev.Msg.Channel, teamID, true)
 			}
-			LogToSlack("Completed retrieving card timing on `"+teamID+"` trello board for "+userInfo.Name, wOpts, attachments)
+			LogToSlack("Completed retrieving card timing on `"+teamID+"` trello board for "+userInfo.Name, baloo, attachments)
 		}
 	}
 
@@ -271,32 +271,32 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		} else {
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
-			LogToSlack(userInfo.Name+" asked me to verify Theme labels on `"+teamID+"` trello board", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to verify Theme labels on `"+teamID+"` trello board", baloo, attachments)
 
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
 				rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+teamID+".toml) you asked for!.", ev.Msg.Channel))
 				return c, cronjobs, CronState
 			}
 
-			temp, _ = CheckThemes(wOpts, opts, opts.General.Upcoming)
+			temp, _ = CheckThemes(baloo, opts, opts.General.Upcoming)
 			amessage = amessage + temp
-			temp, _ = CheckThemes(wOpts, opts, opts.General.Scoped)
+			temp, _ = CheckThemes(baloo, opts, opts.General.Scoped)
 			amessage = amessage + temp
-			temp, _ = CheckThemes(wOpts, opts, opts.General.ReadyForWork)
+			temp, _ = CheckThemes(baloo, opts, opts.General.ReadyForWork)
 			amessage = amessage + temp
 
 			if amessage != "" {
 				attachments.Color = "#ff0000"
 				attachments.Text = amessage
-				Wrangler(wOpts.Walle.SlackHook, "*WARNING*! The following cards do *not* have appropriate Theme Labels on them: ", opts.General.ComplaintChannel, wOpts.Walle.SlackEmoji, attachments)
+				Wrangler(baloo.Config.SlackHook, "*WARNING*! The following cards do *not* have appropriate Theme Labels on them: ", opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
 			} else {
 				rtm.SendMessage(rtm.NewOutgoingMessage("Hurray all cards have theme labels!", ev.Msg.Channel))
 			}
@@ -310,7 +310,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 		amessage := ""
 
-		if strings.Contains(strings.ToLower(lowerString), "@"+strings.ToLower(wOpts.Walle.BotID)) {
+		if strings.Contains(strings.ToLower(lowerString), "@"+strings.ToLower(baloo.Config.BotID)) {
 
 			msgBreak = strings.SplitAfterN(lowerString, " ", 4)
 			if len(msgBreak) != 4 {
@@ -333,9 +333,9 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 			cardID = msgBreak[2]
 		}
 
-		descHistory, err := GetDescHistory(wOpts, cardID)
+		descHistory, err := GetDescHistory(baloo, cardID)
 		if err != nil {
-			errTrap(wOpts, "Error in retrieve card description history for card "+cardID+" function GetDescHistory in trello.go", err)
+			errTrap(baloo, "Error in retrieve card description history for card "+cardID+" function GetDescHistory in trello.go", err)
 			return c, cronjobs, CronState
 		}
 
@@ -358,9 +358,9 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		attachments.Text = amessage
 		testPayload.Attachments = append(testPayload.Attachments, attachments)
 
-		err = WranglerDM(wOpts, testPayload)
+		err = WranglerDM(baloo, testPayload)
 		if err != nil {
-			errTrap(wOpts, "Issue sending Direct Slack message to "+userInfo.Name+" when card history was requested.", err)
+			errTrap(baloo, "Issue sending Direct Slack message to "+userInfo.Name+" when card history was requested.", err)
 			rtm.SendMessage(rtm.NewOutgoingMessage("Issue sending Direct Slack message to "+userInfo.Name+" when card history was requested for `"+cardTitle+"`!", ev.Msg.Channel))
 
 			return c, cronjobs, CronState
@@ -377,12 +377,12 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		t := time.Now()
 		year := t.Format("2006")
 
-		holiday, err := GetHoliday(wOpts, year)
+		holiday, err := GetHoliday(baloo, year)
 
 		if err != nil {
 			rtm.SendMessage(rtm.NewOutgoingMessage("Sorry this data was unavailable, please check my logs.", ev.Msg.Channel))
-			if wOpts.Walle.LogToSlack {
-				LogToSlack("Error retrieving Holiday dates from DB. "+err.Error(), wOpts, attachments)
+			if baloo.Config.LogToSlack {
+				LogToSlack("Error retrieving Holiday dates from DB. "+err.Error(), baloo, attachments)
 			}
 			return c, cronjobs, CronState
 		}
@@ -394,7 +394,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 		attachments.Color = "#0000ff"
 		attachments.Text = holidaymsg
-		Wrangler(wOpts.Walle.SlackHook, "Known Holidays for "+year+":", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+		Wrangler(baloo.Config.SlackHook, "Known Holidays for "+year+":", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 	}
 
@@ -403,25 +403,25 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 
 			attachments.Color = "#0000CC"
 			attachments.Text = message
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 		} else {
 
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
-			if Permissions(wOpts, ev.Msg.User, "scrum", api, wOpts.Walle.ScrumControlChannel) {
+			if Permissions(baloo, ev.Msg.User, "scrum", api, baloo.Config.ScrumControlChannel) {
 
-				LogToSlack(userInfo.Name+" asked me to record all board points for "+teamID+".", wOpts, attachments)
+				LogToSlack(userInfo.Name+" asked me to record all board points for "+teamID+".", baloo, attachments)
 
 				rtm.SendMessage(rtm.NewOutgoingMessage("Permissions accepted. Checking points for ["+teamID+"] this may take a moment.", ev.Msg.Channel))
 
-				opts, _ := LoadConf(wOpts, teamID)
-				sOpts, _ := GetDBSprint(wOpts, teamID)
-				message, valid := GetAllPoints(wOpts, opts, sOpts)
+				opts, _ := LoadConf(baloo, teamID)
+				sOpts, _ := GetDBSprint(baloo, teamID)
+				message, valid := GetAllPoints(baloo, opts, sOpts)
 
 				if valid {
 					hmessage := "Recording today's sprint points for *" + opts.General.TeamName + "*\n"
@@ -432,7 +432,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 				smessage = "You are not the boss of me! Permission denied."
 				rtm.SendMessage(rtm.NewOutgoingMessage(smessage, ev.Msg.Channel))
-				LogToSlack(userInfo.Name+" asked me to record todays points for "+teamID+"  but did not have permissions so I ignored them.", wOpts, attachments)
+				LogToSlack(userInfo.Name+" asked me to record todays points for "+teamID+"  but did not have permissions so I ignored them.", baloo, attachments)
 
 			}
 		}
@@ -443,18 +443,18 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 		} else {
 
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
-			LogToSlack(userInfo.Name+" asked me to count up the Theme cards on `"+teamID+"` trello board.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to count up the Theme cards on `"+teamID+"` trello board.", baloo, attachments)
 
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
 				rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+teamID+".toml) you asked for!.", ev.Msg.Channel))
 				return c, cronjobs, CronState
@@ -462,9 +462,9 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 			attachments.Color = ""
 			attachments.Text = ""
-			Wrangler(wOpts.Walle.SlackHook, "Hold please while I count some cards!", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Hold please while I count some cards!", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
-			allThemes, err := CountCards(opts, wOpts, teamID)
+			allThemes, err := CountCards(opts, baloo, teamID)
 			if err != nil {
 				rtm.SendMessage(rtm.NewOutgoingMessage("Hrm, something went a foul, please check the logs.", ev.Msg.Channel))
 				return c, cronjobs, CronState
@@ -482,7 +482,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 			attachments.Color = "#0000ff"
 			attachments.Text = amessage
-			Wrangler(wOpts.Walle.SlackHook, "Number of cards per theme (label) in `Un-Scoped` and `Ready for Points` on "+opts.General.TeamName+" board:", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Number of cards per theme (label) in `Un-Scoped` and `Ready for Points` on "+opts.General.TeamName+" board:", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 		}
 	}
@@ -492,11 +492,11 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		} else {
 
 			var columnID string
@@ -506,9 +506,9 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 			attachments.Color = ""
 			attachments.Text = ""
-			Wrangler(wOpts.Walle.SlackHook, "One sec, let me add that up!", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "One sec, let me add that up!", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
 				rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+teamID+".toml) you asked for!.", ev.Msg.Channel))
 				return c, cronjobs, CronState
@@ -536,17 +536,17 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 			if tP != "" {
 				myInt, err = strconv.Atoi(tP)
 				if err != nil {
-					errTrap(wOpts, "Integer Conversion Error", err)
+					errTrap(baloo, "Integer Conversion Error", err)
 					rtm.SendMessage(rtm.NewOutgoingMessage("There's an issue with what you specified in { } as total points.  This must be an integer! You specified: "+tP, ev.Msg.Channel))
 					return c, cronjobs, CronState
 				}
 			}
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
-			LogToSlack(userInfo.Name+" asked me to add up the Theme points on `"+teamID+"` trello board in column `"+colName+"`.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to add up the Theme points on `"+teamID+"` trello board in column `"+colName+"`.", baloo, attachments)
 
-			allThemes, err := ThemePoints(opts, wOpts, columnID)
+			allThemes, err := ThemePoints(opts, baloo, columnID)
 			if err != nil {
-				errTrap(wOpts, "Trello Error", err)
+				errTrap(baloo, "Trello Error", err)
 				rtm.SendMessage(rtm.NewOutgoingMessage("There seems to be an issue with this RetroID in Trello, I can't retrieve this information. ("+err.Error()+")", ev.Msg.Channel))
 				return c, cronjobs, CronState
 			}
@@ -557,7 +557,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 			})
 
 			// Grab ignore labels
-			ignoreLabels, err := GetIgnoreLabels(wOpts, opts.General.BoardID)
+			ignoreLabels, err := GetIgnoreLabels(baloo, opts.General.BoardID)
 			if err != nil {
 				rtm.SendMessage(rtm.NewOutgoingMessage("Gack there was an error! ("+err.Error()+")", ev.Msg.Channel))
 				return c, cronjobs, CronState
@@ -566,8 +566,8 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 			// Build Output
 			amessage := ""
 			for _, s := range allThemes {
-				if SliceExists(wOpts, ignoreLabels, s.ID) {
-					if wOpts.Walle.DEBUG {
+				if SliceExists(baloo, ignoreLabels, s.ID) {
+					if baloo.Config.DEBUG {
 						fmt.Println("Skipping " + s.Name)
 					}
 				} else {
@@ -582,24 +582,24 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 			}
 			attachments.Color = "#0000ff"
 			attachments.Text = amessage
-			Wrangler(wOpts.Walle.SlackHook, "Points per label (Theme)  in `"+colName+"` on "+opts.General.TeamName+" board:", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Points per label (Theme)  in `"+colName+"` on "+opts.General.TeamName+" board:", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		}
 
 	}
 
 	// Check sprint points for previous sprint (squads and totals)
-	// @wall-e previous sprint points [mcboard] mcboard-07-25-2018
+	// @baloo previous sprint points [mcboard] mcboard-07-25-2018
 	if strings.Contains(lowerString, "previous sprint points") {
 
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team inside the [ ]\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team inside the [ ]\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 		} else {
 
@@ -609,7 +609,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 			var myTotal int
 
 			//break down message
-			if strings.Contains(strings.ToLower(lowerString), "@"+strings.ToLower(wOpts.Walle.BotID)) {
+			if strings.Contains(strings.ToLower(lowerString), "@"+strings.ToLower(baloo.Config.BotID)) {
 
 				msgBreak = strings.SplitAfterN(lowerString, " ", 6)
 				if len(msgBreak) != 6 {
@@ -633,22 +633,22 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 			}
 
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID in `previous sprint points` command "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID in `previous sprint points` command "+teamID, err)
 				return c, cronjobs, CronState
 			}
 
 			sprintLow := strings.ToLower(msgBreak[locale])
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
-			LogToSlack(userInfo.Name+" asked me to retrieve the squad points for previous sprint `"+sprintLow+"` on `"+teamID+"` trello board", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to retrieve the squad points for previous sprint `"+sprintLow+"` on `"+teamID+"` trello board", baloo, attachments)
 
 			attachments.Color = ""
 			attachments.Text = ""
-			Wrangler(wOpts.Walle.SlackHook, "Let me grab the point data for `"+sprintLow+"`!", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Let me grab the point data for `"+sprintLow+"`!", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 			myTotal = 0
-			SprintPoints, err := GetPreviousSprintPoints(wOpts, sprintLow)
+			SprintPoints, err := GetPreviousSprintPoints(baloo, sprintLow)
 			if err != nil {
 				rtm.SendMessage(rtm.NewOutgoingMessage("Something went totally wrong, please check the logs.", ev.Msg.Channel))
 			} else {
@@ -660,7 +660,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 				amessage = amessage + "Total Sprint Points:" + strconv.Itoa(myTotal)
 				attachments.Color = "#0000ff"
 				attachments.Text = amessage
-				Wrangler(wOpts.Walle.SlackHook, "Points per squad for sprint `"+sprintLow+"` on "+opts.General.TeamName+" board:", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+				Wrangler(baloo.Config.SlackHook, "Points per squad for sprint `"+sprintLow+"` on "+opts.General.TeamName+" board:", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 			}
 		}
 
@@ -671,11 +671,11 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		} else {
 
 			var columnID string
@@ -683,11 +683,11 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 			attachments.Color = ""
 			attachments.Text = ""
-			Wrangler(wOpts.Walle.SlackHook, "One sec, let me add that up!", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "One sec, let me add that up!", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 				return c, cronjobs, CronState
 			}
 
@@ -712,9 +712,9 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 			}
 
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
-			LogToSlack(userInfo.Name+" asked me to add up the squad points on `"+teamID+"` trello board in column `"+colName+"`.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to add up the squad points on `"+teamID+"` trello board in column `"+colName+"`.", baloo, attachments)
 
-			allSquads, nonPoints, err := SquadPoints(columnID, opts, wOpts)
+			allSquads, nonPoints, err := SquadPoints(columnID, opts, baloo)
 
 			amessage := ""
 			for _, s := range allSquads {
@@ -725,7 +725,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 			amessage = amessage + "Total Points not assigned to a squad: " + strconv.Itoa(nonPoints) + "\n"
 			attachments.Color = "#0000ff"
 			attachments.Text = amessage
-			Wrangler(wOpts.Walle.SlackHook, "Points per squad in `"+colName+"` on "+opts.General.TeamName+" board:", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Points per squad in `"+colName+"` on "+opts.General.TeamName+" board:", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 		}
 	}
@@ -735,23 +735,23 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 		} else {
-			sOpts, err := GetDBSprint(wOpts, teamID)
+			sOpts, err := GetDBSprint(baloo, teamID)
 			if err != nil {
 				rtm.SendMessage(rtm.NewOutgoingMessage("Sorry I couldn't find what you were asking for! - ", ev.Msg.Channel))
 				return c, cronjobs, CronState
 			}
 
-			allTheThings, err := RetrieveAll(wOpts, sOpts.RetroID, "none")
+			allTheThings, err := RetrieveAll(baloo, sOpts.RetroID, "none")
 			if err != nil {
-				errTrap(wOpts, "Error from `RetrieveAll` getting board info in `botactions.go` retro board command ", err)
+				errTrap(baloo, "Error from `RetrieveAll` getting board info in `botactions.go` retro board command ", err)
 				rtm.SendMessage(rtm.NewOutgoingMessage("There seems to be an issue with this RetroID in Trello, I can't retrieve this information. Please see logs.", ev.Msg.Channel))
 				return c, cronjobs, CronState
 			}
@@ -768,19 +768,19 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		if teamID == "" {
 			rtm.SendMessage(rtm.NewOutgoingMessage("I did not understand which board you want, sorry.", ev.Msg.Channel))
 		} else {
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 			} else {
 				userInfo, err := api.GetUserInfo(ev.Msg.User)
 				if err != nil {
-					errTrap(wOpts, "api.GetUserInfo function error returned in `botactions.go`", err)
+					errTrap(baloo, "api.GetUserInfo function error returned in `botactions.go`", err)
 				}
-				LogToSlack(userInfo.Name+" asked me to list the PR's on `"+teamID+"` trello board.", wOpts, attachments)
+				LogToSlack(userInfo.Name+" asked me to list the PR's on `"+teamID+"` trello board.", baloo, attachments)
 
-				output, err := PRSummary(opts, wOpts)
+				output, err := PRSummary(opts, baloo)
 				if err != nil {
-					errTrap(wOpts, "PRSummary function error returned in `botactions.go`", err)
+					errTrap(baloo, "PRSummary function error returned in `botactions.go`", err)
 					return c, cronjobs, CronState
 				}
 
@@ -801,18 +801,18 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		if teamID == "" {
 			rtm.SendMessage(rtm.NewOutgoingMessage("I did not understand which board you want, sorry.", ev.Msg.Channel))
 		} else {
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 			} else {
 				rtm.SendMessage(rtm.NewOutgoingMessage("Hold please, attempting to dupe it up.", ev.Msg.Channel))
 
 				userInfo, _ := api.GetUserInfo(ev.Msg.User)
-				LogToSlack(userInfo.Name+" asked me to make a dupe of the `"+teamID+"` trello board, so I'm doing that.", wOpts, attachments)
+				LogToSlack(userInfo.Name+" asked me to make a dupe of the `"+teamID+"` trello board, so I'm doing that.", baloo, attachments)
 
-				allTheThings, err := RetrieveAll(wOpts, opts.General.BoardID, "none")
+				allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "none")
 				if err != nil {
-					errTrap(wOpts, "Error from `RetrieveAll` getting board info in `botactions.go` dupe trello board command ", err)
+					errTrap(baloo, "Error from `RetrieveAll` getting board info in `botactions.go` dupe trello board command ", err)
 					rtm.SendMessage(rtm.NewOutgoingMessage("There seems to be an issue with this request in Trello, I can't retrieve this information. Please see logs.", ev.Msg.Channel))
 					return c, cronjobs, CronState
 				}
@@ -820,13 +820,13 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 				rightnow := time.Now().Local()
 				nameDate := rightnow.Format("01-02-06")
 				dupeName := "DUPE-" + nameDate + ": " + allTheThings.Name
-				output, _ := DupeTrelloBoard(allTheThings.ID, dupeName, opts.General.TrelloOrg, wOpts)
+				output, _ := DupeTrelloBoard(allTheThings.ID, dupeName, opts.General.TrelloOrg, baloo)
 
-				if wOpts.Walle.DEBUG {
+				if baloo.Config.DEBUG {
 					fmt.Println(output)
 				}
-				if wOpts.Walle.LogToSlack {
-					LogToSlack(output, wOpts, attachments)
+				if baloo.Config.LogToSlack {
+					LogToSlack(output, baloo, attachments)
 				}
 
 				rtm.SendMessage(rtm.NewOutgoingMessage(output, ev.Msg.Channel))
@@ -838,18 +838,18 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 	// Reload Cron Jobs from file
 	if strings.Contains(lowerString, "reload cron") || strings.Contains(lowerString, "re-load cron") || strings.Contains(lowerString, "reload all cron") {
 		userInfo, err := api.GetUserInfo(ev.Msg.User)
-		LogToSlack(userInfo.Name+" asked me to re-load all the CRONJobs, so I'm attempting that.", wOpts, attachments)
+		LogToSlack(userInfo.Name+" asked me to re-load all the CRONJobs, so I'm attempting that.", baloo, attachments)
 
 		c.Stop()
 		CronState = "Halted"
 
-		cronjobs, c, err = CronLoad(wOpts)
+		cronjobs, c, err = CronLoad(baloo)
 
 		if err != nil {
-			errTrap(wOpts, "CRON Jobs failed to load due to file error.", err)
+			errTrap(baloo, "CRON Jobs failed to load due to file error.", err)
 			rtm.SendMessage(rtm.NewOutgoingMessage("CRON Jobs failed to load due to file error.", ev.Msg.Channel))
 		} else {
-			if wOpts.Walle.DEBUG {
+			if baloo.Config.DEBUG {
 				fmt.Println("CRON Jobs were re-loaded from file!")
 			}
 			rtm.SendMessage(rtm.NewOutgoingMessage("CRON Jobs were re-loaded!", ev.Msg.Channel))
@@ -871,9 +871,9 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		message = "Existing Cron State is: `" + CronState + "`\n"
 		message = message + "```"
 		for _, cr := range cronjobs.Cronjob {
-			opts, err := LoadConf(wOpts, cr.Config)
+			opts, err := LoadConf(baloo, cr.Config)
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 			}
 			message = message + cr.Timing + " - " + opts.General.TeamName + " - " + cr.Action + "\n"
 		}
@@ -885,7 +885,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		attachments.Text = message
 		testPayload.Attachments = append(testPayload.Attachments, attachments)
 
-		err := WranglerDM(wOpts, testPayload)
+		err := WranglerDM(baloo, testPayload)
 		if err != nil {
 			return c, cronjobs, CronState
 		}
@@ -906,12 +906,12 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		} else {
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
-			LogToSlack(userInfo.Name+" asked me to run a new sprint for the "+boardID+" configuration.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to run a new sprint for the "+boardID+" configuration.", baloo, attachments)
 
-			if Permissions(wOpts, ev.Msg.User, "admin", api, wOpts.Walle.ScrumControlChannel) {
-				opts, err := LoadConf(wOpts, boardID)
+			if Permissions(baloo, ev.Msg.User, "admin", api, baloo.Config.ScrumControlChannel) {
+				opts, err := LoadConf(baloo, boardID)
 				if err != nil {
-					errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+					errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 					rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+boardID+".toml) you asked for!.", ev.Msg.Channel))
 				} else {
 					if strings.Contains(lowerString, "suppress retro") {
@@ -922,14 +922,14 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 					}
 					smessage = smessage + "Permissions accepted, attempting to Sprint it up!"
 					rtm.SendMessage(rtm.NewOutgoingMessage(smessage, ev.Msg.Channel))
-					returnMsg, _ := Sprint(opts, wOpts, rboard)
+					returnMsg, _ := Sprint(opts, baloo, rboard)
 					rtm.SendMessage(rtm.NewOutgoingMessage(returnMsg, ev.Msg.Channel))
 				}
 			} else {
 				smessage = "You are not the boss of me! Permission denied."
 				rtm.SendMessage(rtm.NewOutgoingMessage(smessage, ev.Msg.Channel))
-				if wOpts.Walle.LogToSlack {
-					LogToSlack(userInfo.Name+" does not have the appropriate permissions and was told to `get bent`.", wOpts, attachments)
+				if baloo.Config.LogToSlack {
+					LogToSlack(userInfo.Name+" does not have the appropriate permissions and was told to `get bent`.", baloo, attachments)
 				}
 			}
 		}
@@ -939,16 +939,16 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 	if strings.Contains(lowerString, "stop all cron") || strings.Contains(lowerString, "shutdown all cron") || strings.Contains(lowerString, "halt all cron") {
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
-		if Permissions(wOpts, ev.Msg.User, "scrum", api, wOpts.Walle.ScrumControlChannel) {
+		if Permissions(baloo, ev.Msg.User, "scrum", api, baloo.Config.ScrumControlChannel) {
 			smessage = "Permissions accepted. Halting all Cron Jobs!"
 			rtm.SendMessage(rtm.NewOutgoingMessage(smessage, ev.Msg.Channel))
-			LogToSlack(userInfo.Name+" asked me to halt all Cron Jobs so I did.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to halt all Cron Jobs so I did.", baloo, attachments)
 			CronState = "Halted"
 			c.Stop()
 		} else {
 			smessage = "You are not the boss of me! Permission denied."
 			rtm.SendMessage(rtm.NewOutgoingMessage(smessage, ev.Msg.Channel))
-			LogToSlack(userInfo.Name+" asked me to halt all Cron Jobs but did not have permissions so I ignored them.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to halt all Cron Jobs but did not have permissions so I ignored them.", baloo, attachments)
 		}
 
 	}
@@ -957,17 +957,17 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 	if strings.Contains(lowerString, "shutdown please") {
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
-		if Permissions(wOpts, ev.Msg.User, "admin", api, wOpts.Walle.AdminSlackChannel) {
+		if Permissions(baloo, ev.Msg.User, "admin", api, baloo.Config.AdminSlackChannel) {
 			smessage = "Permissions accepted. Okay logging off bye!"
 			rtm.SendMessage(rtm.NewOutgoingMessage(smessage, ev.Msg.Channel))
-			LogToSlack(userInfo.Name+" asked me to shutdown, so I am.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to shutdown, so I am.", baloo, attachments)
 			duration := time.Duration(4) * time.Second
 			time.Sleep(duration)
 			os.Exit(0)
 		} else {
 			smessage = "You are not the boss of me! Permission denied."
 			rtm.SendMessage(rtm.NewOutgoingMessage(smessage, ev.Msg.Channel))
-			LogToSlack(userInfo.Name+" asked me to shut down, but did not have permissions so I ignored them.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to shut down, but did not have permissions so I ignored them.", baloo, attachments)
 
 		}
 
@@ -976,7 +976,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 	// Build a config file
 	if strings.Contains(lowerString, "build a configuration file") {
 		boardID := Between(ev.Msg.Text, "[", "]")
-		BuildConfig(boardID, wOpts, ev.Msg.User, api)
+		BuildConfig(boardID, baloo, ev.Msg.User, api)
 		rtm.SendMessage(rtm.NewOutgoingMessage("Okay, I Direct Messaged your config to you.", ev.Msg.Channel))
 	}
 
@@ -990,17 +990,17 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		if teamID == "" {
 			rtm.SendMessage(rtm.NewOutgoingMessage("I did not understand which team you want, sorry.", ev.Msg.Channel))
 		} else {
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 				rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+teamID+".toml) you asked for!.", ev.Msg.Channel))
 			} else {
-				LogToSlack(userInfo.Name+" asked me to Troll the "+teamID+" configuration.", wOpts, attachments)
+				LogToSlack(userInfo.Name+" asked me to Troll the "+teamID+" configuration.", baloo, attachments)
 				rtm.SendMessage(rtm.NewOutgoingMessage("Okay, running alerting on board for team "+teamID+".", ev.Msg.Channel))
 
-				_, _ = AlertRunner(opts, wOpts)
+				_, _ = AlertRunner(opts, baloo)
 			}
 		}
 	}
@@ -1015,19 +1015,19 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		if teamID == "" {
 			rtm.SendMessage(rtm.NewOutgoingMessage("I did not understand which team you want, sorry.", ev.Msg.Channel))
 		} else {
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 				rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+teamID+".toml) you asked for!.", ev.Msg.Channel))
 			} else {
-				LogToSlack(userInfo.Name+" asked me to clean the BackLog on the "+teamID+" configuration.", wOpts, attachments)
+				LogToSlack(userInfo.Name+" asked me to clean the BackLog on the "+teamID+" configuration.", baloo, attachments)
 				rtm.SendMessage(rtm.NewOutgoingMessage("Okay, cleaning the backlog for team "+teamID+".", ev.Msg.Channel))
 
-				err = CleanBackLog(opts, wOpts)
+				err = CleanBackLog(opts, baloo)
 				if err != nil {
-					errTrap(wOpts, "Error in `CleanBackLog` process run by slack command request.", err)
+					errTrap(baloo, "Error in `CleanBackLog` process run by slack command request.", err)
 				}
 			}
 		}
@@ -1043,19 +1043,19 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		if teamID == "" {
 			rtm.SendMessage(rtm.NewOutgoingMessage("I did not understand which team you want, sorry.", ev.Msg.Channel))
 		} else {
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 				rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+teamID+".toml) you asked for!.", ev.Msg.Channel))
 			} else {
-				LogToSlack(userInfo.Name+" asked me to archive old cards in the `BackLog` on the "+teamID+" configuration.", wOpts, attachments)
+				LogToSlack(userInfo.Name+" asked me to archive old cards in the `BackLog` on the "+teamID+" configuration.", baloo, attachments)
 				rtm.SendMessage(rtm.NewOutgoingMessage("Okay, archiving cards older then "+strconv.Itoa(opts.General.BackLogDays)+" days in the `BackLog` for team "+teamID+".", ev.Msg.Channel))
 
-				err = ArchiveBacklog(wOpts, opts)
+				err = ArchiveBacklog(baloo, opts)
 				if err != nil {
-					errTrap(wOpts, "Error in `ArchiveBacklog` process run by slack command request.", err)
+					errTrap(baloo, "Error in `ArchiveBacklog` process run by slack command request.", err)
 				}
 			}
 		}
@@ -1071,17 +1071,17 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		if teamID == "" {
 			rtm.SendMessage(rtm.NewOutgoingMessage("I did not understand which team you want, sorry.", ev.Msg.Channel))
 		} else {
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 				rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+teamID+".toml) you asked for!.", ev.Msg.Channel))
 			} else {
-				LogToSlack(userInfo.Name+" asked me to run archiving on the "+teamID+" configuration.", wOpts, attachments)
+				LogToSlack(userInfo.Name+" asked me to run archiving on the "+teamID+" configuration.", baloo, attachments)
 				rtm.SendMessage(rtm.NewOutgoingMessage("Okay, running archiving on board for team "+teamID+".", ev.Msg.Channel))
 
-				_, _ = CleanDone(opts, wOpts)
+				_, _ = CleanDone(opts, baloo)
 			}
 		}
 	}
@@ -1096,17 +1096,17 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		if teamID == "" {
 			rtm.SendMessage(rtm.NewOutgoingMessage("I did not understand which team you want, sorry.", ev.Msg.Channel))
 		} else {
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 				rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+teamID+".toml) you asked for!.", ev.Msg.Channel))
 			} else {
-				LogToSlack(userInfo.Name+" asked me to scan for stale PR's on the "+teamID+" configuration.", wOpts, attachments)
+				LogToSlack(userInfo.Name+" asked me to scan for stale PR's on the "+teamID+" configuration.", baloo, attachments)
 				rtm.SendMessage(rtm.NewOutgoingMessage("Okay, scanning for stale PR's on board for team "+teamID+".", ev.Msg.Channel))
 
-				returnMsg, _ := StalePRcards(opts, wOpts)
+				returnMsg, _ := StalePRcards(opts, baloo)
 				rtm.SendMessage(rtm.NewOutgoingMessage(returnMsg, ev.Msg.Channel))
 			}
 		}
@@ -1122,17 +1122,17 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		if teamID == "" {
 			rtm.SendMessage(rtm.NewOutgoingMessage("I did not understand which team you want, sorry.", ev.Msg.Channel))
 		} else {
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
 			if err != nil {
-				errTrap(wOpts, "Load Conf Error for TeamID "+teamID, err)
+				errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
 				rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+teamID+".toml) you asked for!.", ev.Msg.Channel))
 			} else {
-				LogToSlack(userInfo.Name+" asked me to syncronize points on the "+teamID+" configuration.", wOpts, attachments)
+				LogToSlack(userInfo.Name+" asked me to syncronize points on the "+teamID+" configuration.", baloo, attachments)
 				rtm.SendMessage(rtm.NewOutgoingMessage("Okay, syncronizing points on board for team "+teamID+".", ev.Msg.Channel))
 
-				_ = PointCleanup(opts, wOpts, teamID)
+				_ = PointCleanup(opts, baloo, teamID)
 			}
 		}
 	}
@@ -1143,12 +1143,12 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		var attachments Attachment
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
-		message := ListAllTOML(wOpts)
+		message := ListAllTOML(baloo)
 
 		attachments.Color = "#0000CC"
 		attachments.Text = message
 
-		Wrangler(wOpts.Walle.SlackHook, "Hey "+userInfo.Name+", I manage the following boards: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+		Wrangler(baloo.Config.SlackHook, "Hey "+userInfo.Name+", I manage the following boards: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 	}
 
@@ -1159,11 +1159,11 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 		userData := Between(ev.Msg.Text, "[", "]")
 		if userData == "" {
-			rtm.SendMessage(rtm.NewOutgoingMessage("I can help you register here's how:\n```add me [email,trello id,github id]```\n`Do not use quotes anywhere.`\nExample: ```@wall-e add me [wall.earth@mydomain.com,wallearthclass12,walle-ea]```", ev.Msg.Channel))
+			rtm.SendMessage(rtm.NewOutgoingMessage("I can help you register here's how:\n```add me [email,trello id,github id]```\n`Do not use quotes anywhere.`\nExample: ```@"+baloo.Config.BotName+" add me [some. one@mydomain.com,someone12,someone-ea]```", ev.Msg.Channel))
 		} else {
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
-			LogToSlack(userInfo.Name+" asked me to to register them in the user DB.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to to register them in the user DB.", baloo, attachments)
 
 			brokeOut := strings.Split(userData, ",")
 			if len(brokeOut) == 3 {
@@ -1174,13 +1174,13 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 				newUserData.Github = strings.ToLower(brokeOut[2])
 
 				// check if already registered
-				db, status, err := ConnectDB(wOpts, "walle")
+				db, status, err := ConnectDB(baloo, "walle")
 				if err != nil {
-					if wOpts.Walle.DEBUG {
+					if baloo.Config.DEBUG {
 						fmt.Println(err.Error())
 					}
-					if wOpts.Walle.LogToSlack {
-						LogToSlack("db.QueryRow error: "+err.Error(), wOpts, attachments)
+					if baloo.Config.LogToSlack {
+						LogToSlack("db.QueryRow error: "+err.Error(), baloo, attachments)
 					}
 					return c, cronjobs, CronState
 				}
@@ -1194,25 +1194,25 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 						if newUserData.Name == "" || newUserData.Email == "" || newUserData.SlackID == "" || newUserData.Trello == "" || newUserData.Github == "" {
 							rtm.SendMessage(rtm.NewOutgoingMessage("Your data is Bungle in the Jungle, sorry I can't do this.", ev.Msg.Channel))
 						} else {
-							if AddDBUser(wOpts, newUserData) {
+							if AddDBUser(baloo, newUserData) {
 								rtm.SendMessage(rtm.NewOutgoingMessage("Awesome, I've registered your info!", ev.Msg.Channel))
 								umessage := "Name: " + newUserData.Name + "\nE-Mail: " + newUserData.Email + "\nSlack: " + newUserData.SlackID + "\nTrello: " + newUserData.Trello + "\nGithub: " + newUserData.Github + "\n"
 								attachments.Color = "#00FF55"
 								attachments.Text = umessage
-								if wOpts.Walle.LogToSlack {
-									LogToSlack("A new user was registered per their request.", wOpts, attachments)
+								if baloo.Config.LogToSlack {
+									LogToSlack("A new user was registered per their request.", baloo, attachments)
 								}
-								Wrangler(wOpts.Walle.SlackHook, "I've registered you as follows:", "@"+userInfo.Name, wOpts.Walle.SlackEmoji, attachments)
+								Wrangler(baloo.Config.SlackHook, "I've registered you as follows:", "@"+userInfo.Name, baloo.Config.SlackEmoji, attachments)
 							} else {
 								rtm.SendMessage(rtm.NewOutgoingMessage("Something went horribly wrong I could not add your new user info!", ev.Msg.Channel))
 							}
 						}
 					case err != nil:
-						if wOpts.Walle.DEBUG {
+						if baloo.Config.DEBUG {
 							fmt.Println(err.Error())
 						}
-						if wOpts.Walle.LogToSlack {
-							LogToSlack("db.QueryRow error: "+err.Error(), wOpts, attachments)
+						if baloo.Config.LogToSlack {
+							LogToSlack("db.QueryRow error: "+err.Error(), baloo, attachments)
 						}
 
 						return c, cronjobs, CronState
@@ -1220,8 +1220,8 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 					default:
 						p := strings.Replace(userInfo.Name, ".", " ", -1)
 						rtm.SendMessage(rtm.NewOutgoingMessage("Hey "+p+" I already have you registered. :cheers:", ev.Msg.Channel))
-						if wOpts.Walle.LogToSlack {
-							LogToSlack(userInfo.Name+" is already registered!.", wOpts, attachments)
+						if baloo.Config.LogToSlack {
+							LogToSlack(userInfo.Name+" is already registered!.", baloo, attachments)
 						}
 					}
 				}
@@ -1244,9 +1244,9 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		} else {
 			userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
-			LogToSlack(userInfo.Name+" asked me to to add data to the user DB.", wOpts, attachments)
+			LogToSlack(userInfo.Name+" asked me to to add data to the user DB.", baloo, attachments)
 
-			if Permissions(wOpts, ev.Msg.User, "scrum", api, wOpts.Walle.ScrumControlChannel) {
+			if Permissions(baloo, ev.Msg.User, "scrum", api, baloo.Config.ScrumControlChannel) {
 				brokeOut := strings.Split(userData, ",")
 				if len(brokeOut) == 5 {
 					newUserData.Name = strings.ToLower(brokeOut[0])
@@ -1258,13 +1258,13 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 					if newUserData.Name == "" || newUserData.Email == "" || newUserData.SlackID == "" || newUserData.Trello == "" || newUserData.Github == "" {
 						rtm.SendMessage(rtm.NewOutgoingMessage("Your data is Bungle in the Jungle, sorry I can't do this.", ev.Msg.Channel))
 					} else {
-						if AddDBUser(wOpts, newUserData) {
+						if AddDBUser(baloo, newUserData) {
 							rtm.SendMessage(rtm.NewOutgoingMessage("Awesome, i've added your new user info!", ev.Msg.Channel))
-							if wOpts.Walle.LogToSlack {
+							if baloo.Config.LogToSlack {
 								umessage := "Name: " + newUserData.Name + "\nE-Mail: " + newUserData.Email + "\nSlack: " + newUserData.SlackID + "\nTrello: " + newUserData.Trello + "\nGithub: " + newUserData.Github + "\n"
 								attachments.Color = "#00FF55"
 								attachments.Text = umessage
-								LogToSlack("Added new user info to json", wOpts, attachments)
+								LogToSlack("Added new user info to json", baloo, attachments)
 							}
 						} else {
 							rtm.SendMessage(rtm.NewOutgoingMessage("Something went horribly wrong I could not add your new user info!", ev.Msg.Channel))
@@ -1291,19 +1291,19 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e {well|wrong} retro card [mcboard] my card title`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" {well|wrong} retro card [mcboard] my card title`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 		} else {
 			var msgBreak []string
 			var locale int
 
 			//break down message
-			if strings.Contains(strings.ToLower(lowerString), "@"+strings.ToLower(wOpts.Walle.BotID)) {
+			if strings.Contains(strings.ToLower(lowerString), "@"+strings.ToLower(baloo.Config.BotID)) {
 
 				msgBreak = strings.SplitAfterN(lowerString, " ", 6)
 				if len(msgBreak) != 6 {
@@ -1337,22 +1337,22 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 					listName = "What Needs Improvement"
 				}
 
-				sOpts, err := GetDBSprint(wOpts, teamID)
+				sOpts, err := GetDBSprint(baloo, teamID)
 				if err != nil {
 					rtm.SendMessage(rtm.NewOutgoingMessage("Sorry I couldn't find what you were asking for! - ", ev.Msg.Channel))
 					return c, cronjobs, CronState
 				}
 
-				allTheThings, err := RetrieveAll(wOpts, sOpts.RetroID, "none")
+				allTheThings, err := RetrieveAll(baloo, sOpts.RetroID, "none")
 				if err != nil {
-					errTrap(wOpts, "Attempting to add card to retro board and received RetrieveAll trello error: ", err)
+					errTrap(baloo, "Attempting to add card to retro board and received RetrieveAll trello error: ", err)
 					rtm.SendMessage(rtm.NewOutgoingMessage("Sorry somethings wrong with that trello board I can't do it!", ev.Msg.Channel))
 					return c, cronjobs, CronState
 				}
 
-				allLists, err := GetLists(wOpts, allTheThings.ID)
+				allLists, err := GetLists(baloo, allTheThings.ID)
 				if err != nil {
-					errTrap(wOpts, "Attempting to add card to retro board and received GetLists trello error: ", err)
+					errTrap(baloo, "Attempting to add card to retro board and received GetLists trello error: ", err)
 					return c, cronjobs, CronState
 				}
 
@@ -1363,20 +1363,20 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 				}
 
 				if listID == "" {
-					if wOpts.Walle.LogToSlack {
-						LogToSlack("Retro Board <"+allTheThings.ShortURL+"|"+allTheThings.Name+"> ("+allTheThings.ID+") is missing a column for `"+listName+"`", wOpts, attachments)
+					if baloo.Config.LogToSlack {
+						LogToSlack("Retro Board <"+allTheThings.ShortURL+"|"+allTheThings.Name+"> ("+allTheThings.ID+") is missing a column for `"+listName+"`", baloo, attachments)
 					}
 					rtm.SendMessage(rtm.NewOutgoingMessage("Sorry somethings wrong with that trello board I can't find the `"+listName+"` column!", ev.Msg.Channel))
 					return c, cronjobs, CronState
 				}
 
 				locale = locale + 4
-				err = CreateCard(msgBreak[locale], listID, wOpts)
+				err = CreateCard(msgBreak[locale], listID, baloo)
 
 				rtm.SendMessage(rtm.NewOutgoingMessage("I created your card `"+msgBreak[locale]+"` on list `"+listName+"` in <"+allTheThings.ShortURL+"|"+allTheThings.Name+">", ev.Msg.Channel))
 
 			} else {
-				rtm.SendMessage(rtm.NewOutgoingMessage("Please specify card type first: What Went Well = `well` or What Went Wrong = `wrong`\n```@wall-e well retro card [<team>] my card title```", ev.Msg.Channel))
+				rtm.SendMessage(rtm.NewOutgoingMessage("Please specify card type first: What Went Well = `well` or What Went Wrong = `wrong`\n```@"+baloo.Config.BotName+" well retro card [<team>] my card title```", ev.Msg.Channel))
 			}
 
 		}
@@ -1388,10 +1388,10 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e ignore label {myLabel} [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" ignore label {myLabel} [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 		} else {
 
@@ -1399,19 +1399,19 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 			if labelName == "" {
 				attachments.Color = ""
 				attachments.Text = ""
-				Wrangler(wOpts.Walle.SlackHook, "Please specify the label you want me to ignore inside curly braces {myLabel}", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+				Wrangler(baloo.Config.SlackHook, "Please specify the label you want me to ignore inside curly braces {myLabel}", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 			} else {
 				// we have a label and a team
-				opts, err := LoadConf(wOpts, teamID)
+				opts, err := LoadConf(baloo, teamID)
 				if err != nil {
-					errTrap(wOpts, "Can not find team "+teamID+" in `botactions.go` for `ignore label` action", err)
+					errTrap(baloo, "Can not find team "+teamID+" in `botactions.go` for `ignore label` action", err)
 					rtm.SendMessage(rtm.NewOutgoingMessage("I can not find the team called `"+teamID+"` that you requested.", ev.Msg.Channel))
 					return c, cronjobs, CronState
 				}
 
-				labelData, err := GetLabel(wOpts, opts.General.BoardID)
+				labelData, err := GetLabel(baloo, opts.General.BoardID)
 				if err != nil {
-					errTrap(wOpts, "Error retrieving label data for board "+opts.General.BoardID+" in `trello.go` GetLabelData function", err)
+					errTrap(baloo, "Error retrieving label data for board "+opts.General.BoardID+" in `trello.go` GetLabelData function", err)
 					return c, cronjobs, CronState
 				}
 
@@ -1422,13 +1422,13 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 				}
 
 				if labelID != "" {
-					err = LabelIgnore(opts, wOpts, labelID)
-					if wOpts.Walle.LogToSlack {
+					err = LabelIgnore(opts, baloo, labelID)
+					if baloo.Config.LogToSlack {
 						userInfo, _ := api.GetUserInfo(ev.Msg.User)
 
 						attachments.Color = ""
 						attachments.Text = ""
-						LogToSlack(userInfo.Name+" asked me to add the label "+labelName+" on board "+opts.General.TeamName+" to the ignore list", wOpts, attachments)
+						LogToSlack(userInfo.Name+" asked me to add the label "+labelName+" on board "+opts.General.TeamName+" to the ignore list", baloo, attachments)
 					}
 
 					rtm.SendMessage(rtm.NewOutgoingMessage("I've added the label `"+labelName+"` on the *"+opts.General.TeamName+"* board to the Theme ignore list.", ev.Msg.Channel))
@@ -1447,20 +1447,20 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
-			message := ListAllTOML(wOpts)
+			message := ListAllTOML(baloo)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
 
-			Wrangler(wOpts.Walle.SlackHook, "Please specify team in [ ] - Like `@wall-e retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "Please specify team in [ ] - Like `@"+baloo.Config.BotName+" retro [mcboard]`\nHere's a list: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 		} else {
-			opts, err := LoadConf(wOpts, teamID)
+			opts, err := LoadConf(baloo, teamID)
 			if err != nil {
-				errTrap(wOpts, "Can not find team "+teamID+" in `botactions.go` for `check epic links` action.", err)
+				errTrap(baloo, "Can not find team "+teamID+" in `botactions.go` for `check epic links` action.", err)
 				rtm.SendMessage(rtm.NewOutgoingMessage("I can not find the team called `"+teamID+"` that you requested.", ev.Msg.Channel))
 				return c, cronjobs, CronState
 			}
 
-			EpicLink(wOpts, opts)
+			EpicLink(baloo, opts)
 		}
 	}
 
@@ -1477,11 +1477,11 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		var thisMessage string
 
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
-		LogToSlack(userInfo.Name+" asked me to for a list of all registered users in my Database.", wOpts, attachments)
+		LogToSlack(userInfo.Name+" asked me to for a list of all registered users in my Database.", baloo, attachments)
 
-		allUsers, err := GetDBUsers(wOpts)
+		allUsers, err := GetDBUsers(baloo)
 		if err != nil {
-			errTrap(wOpts, "Error returning from `GetDBUsers` in `botactions.go` when asked to `list registered users`", err)
+			errTrap(baloo, "Error returning from `GetDBUsers` in `botactions.go` when asked to `list registered users`", err)
 			return c, cronjobs, CronState
 		}
 
@@ -1491,7 +1491,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 		attachments.Color = "#12ffcc"
 		attachments.Text = thisMessage
-		Wrangler(wOpts.Walle.SlackHook, "List of users registered with me currently: ", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+		Wrangler(baloo.Config.SlackHook, "List of users registered with me currently: ", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 
 	}
 
@@ -1503,9 +1503,9 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 		rtm.SendMessage(rtm.NewOutgoingMessage("Let me grab the Github Repo List, I will Direct Message you the list.", ev.Msg.Channel))
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
-		LogToSlack(userInfo.Name+" asked me to list all the GitHub REPOs ForgeCloud", wOpts, attachments)
+		LogToSlack(userInfo.Name+" asked me to list all the GitHub REPOs ForgeCloud", baloo, attachments)
 
-		repoList := RetrieveRepo(wOpts)
+		repoList := RetrieveRepo(baloo)
 
 		for _, r := range repoList {
 			message = message + "• " + *r.Name + " - " + *r.HTMLURL + "\n"
@@ -1517,7 +1517,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		attachments.Color = "#6600ff"
 		attachments.Text = message
 		testPayload.Attachments = append(testPayload.Attachments, attachments)
-		_ = WranglerDM(wOpts, testPayload)
+		_ = WranglerDM(baloo, testPayload)
 
 	}
 
@@ -1529,9 +1529,9 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 		rtm.SendMessage(rtm.NewOutgoingMessage("Let me grab all the Trello users for you, one sec...I will Direct Message you the list.", ev.Msg.Channel))
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
-		LogToSlack(userInfo.Name+" asked me to list all the GitHub users in ForgeCloud", wOpts, attachments)
+		LogToSlack(userInfo.Name+" asked me to list all the GitHub users in ForgeCloud", baloo, attachments)
 
-		userList := RetrieveUsers(wOpts)
+		userList := RetrieveUsers(baloo)
 
 		for _, u := range userList {
 			if u.HTMLURL != nil {
@@ -1547,7 +1547,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		attachments.Color = "#00ff00"
 		attachments.Text = message
 		testPayload.Attachments = append(testPayload.Attachments, attachments)
-		_ = WranglerDM(wOpts, testPayload)
+		_ = WranglerDM(baloo, testPayload)
 	}
 
 	// List Open PRs on a Repo
@@ -1559,7 +1559,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 		var msgBreak []string
 
 		//break down message
-		if strings.Contains(strings.ToLower(lowerString), "@"+strings.ToLower(wOpts.Walle.BotID)) {
+		if strings.Contains(strings.ToLower(lowerString), "@"+strings.ToLower(baloo.Config.BotID)) {
 
 			msgBreak = strings.SplitAfterN(lowerString, " ", 5)
 			if len(msgBreak) != 5 {
@@ -1587,16 +1587,16 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 		rtm.SendMessage(rtm.NewOutgoingMessage("Grabbing open PR list for repo `"+repoName+"`", ev.Msg.Channel))
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
-		LogToSlack(userInfo.Name+" asked me to list all the open PRs in repo `"+repoName+"` in ForgeCloud", wOpts, attachments)
+		LogToSlack(userInfo.Name+" asked me to list all the open PRs in repo `"+repoName+"` in ForgeCloud", baloo, attachments)
 
-		pullList, err := GitPRList(wOpts, repoName)
+		pullList, err := GitPRList(baloo, repoName)
 		if err != nil {
 			rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the Repo you wanted called `"+repoName+"`", ev.Msg.Channel))
 			return c, cronjobs, CronState
 		}
 
 		if len(pullList) == 0 {
-			Wrangler(wOpts.Walle.SlackHook, "The repo requested `"+repoName+"` currently has no open Pull Requests", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+			Wrangler(baloo.Config.SlackHook, "The repo requested `"+repoName+"` currently has no open Pull Requests", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 			return c, cronjobs, CronState
 		}
 
@@ -1611,7 +1611,7 @@ func BotActions(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm
 
 		attachments.Text = prMessage
 		attachments.Color = "#0000cc"
-		Wrangler(wOpts.Walle.SlackHook, "List of all *Open PRs* on Repo `"+repoName+"` in ForgeCloud Github: \n", ev.Msg.Channel, wOpts.Walle.SlackEmoji, attachments)
+		Wrangler(baloo.Config.SlackHook, "List of all *Open PRs* on Repo `"+repoName+"` in ForgeCloud Github: \n", ev.Msg.Channel, baloo.Config.SlackEmoji, attachments)
 	}
 
 	return c, cronjobs, CronState

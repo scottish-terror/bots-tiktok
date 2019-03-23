@@ -9,8 +9,8 @@ import (
 )
 
 /*
-This module is called from Wall-E command Build Config
-It builds a config module for a trello board for Wall-E to manage
+This module is called from the command Build Config
+It builds a config module for a trello board for the bot to manage
 SEE README.md for more Details about how to use this
 */
 
@@ -56,8 +56,8 @@ var AllowMembersLabel = "DEMO"
 // TrainingLabel - Default label name for training cards
 var TrainingLabel = "Training"
 
-// SilenceCardLabel - Default label name for label that will disable 98% of wall-e monitoring/alerting
-var SilenceCardLabel = "Wall-E Hush"
+// SilenceCardLabel - Default label name for label that will disable 98% of baloo monitoring/alerting
+var SilenceCardLabel = "BalooConf Hush"
 
 // ConfigMe struct for passing config data around
 type ConfigMe struct {
@@ -106,18 +106,18 @@ type Labels struct {
 }
 
 // GetBoardCustoms - grab all custom fields on a board
-func GetBoardCustoms(boardID string, wOpts *WallConf) (customList CustomCollection, err error) {
-	url := "https://api.trello.com/1/boards/" + boardID + "/customFields?key=" + wOpts.Walle.Tkey + "&token=" + wOpts.Walle.Ttoken
+func GetBoardCustoms(boardID string, baloo *BalooConf) (customList CustomCollection, err error) {
+	url := "https://api.trello.com/1/boards/" + boardID + "/customFields?key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(wOpts, "Error http Request to trello in `configme.go` func `GetBoardCustoms`", err)
+		errTrap(baloo, "Error http Request to trello in `configme.go` func `GetBoardCustoms`", err)
 		return customList, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(wOpts, "Error http.Client request to trello in `configme.go` func `GetBoardCustoms`", err)
+		errTrap(baloo, "Error http.Client request to trello in `configme.go` func `GetBoardCustoms`", err)
 		return customList, err
 	}
 	defer resp.Body.Close()
@@ -127,18 +127,18 @@ func GetBoardCustoms(boardID string, wOpts *WallConf) (customList CustomCollecti
 }
 
 // GetBoardLabels - grab all labels on a board.  not part of Adilo/trello
-func GetBoardLabels(boardID string, wOpts *WallConf) (labelList LabelCollection, err error) {
-	url := "https://api.trello.com/1/boards/" + boardID + "/labels?key=" + wOpts.Walle.Tkey + "&token=" + wOpts.Walle.Ttoken
+func GetBoardLabels(boardID string, baloo *BalooConf) (labelList LabelCollection, err error) {
+	url := "https://api.trello.com/1/boards/" + boardID + "/labels?key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(wOpts, "Error http Request to trello in `configme.go` func `GetBoardLabels`", err)
+		errTrap(baloo, "Error http Request to trello in `configme.go` func `GetBoardLabels`", err)
 		return labelList, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(wOpts, "Error http.Client request to trello in `configme.go` func `GetBoardLabels`", err)
+		errTrap(baloo, "Error http.Client request to trello in `configme.go` func `GetBoardLabels`", err)
 		return labelList, err
 	}
 	defer resp.Body.Close()
@@ -148,7 +148,7 @@ func GetBoardLabels(boardID string, wOpts *WallConf) (labelList LabelCollection,
 }
 
 // BuildConfig - grab UID's out of trello to help setup config files
-func BuildConfig(boardID string, wOpts *WallConf, user string, api *slack.Client) {
+func BuildConfig(boardID string, baloo *BalooConf, user string, api *slack.Client) {
 
 	var config ConfigMe
 	var attachments Attachment
@@ -162,9 +162,9 @@ func BuildConfig(boardID string, wOpts *WallConf, user string, api *slack.Client
 	userInfo, _ := api.GetUserInfo(user)
 
 	// handle columns
-	listData, err := GetLists(wOpts, boardID)
+	listData, err := GetLists(baloo, boardID)
 	if err != nil {
-		errTrap(wOpts, "Trying to run Config Builder for "+userInfo.Name+" but had request for all lists on board `"+boardID+"` returned error.", err)
+		errTrap(baloo, "Trying to run Config Builder for "+userInfo.Name+" but had request for all lists on board `"+boardID+"` returned error.", err)
 		return
 	}
 
@@ -224,10 +224,10 @@ func BuildConfig(boardID string, wOpts *WallConf, user string, api *slack.Client
 
 	myPayload.Text = message
 	myPayload.Channel = userInfo.ID
-	_ = WranglerDM(wOpts, myPayload)
+	_ = WranglerDM(baloo, myPayload)
 
 	// handle labels
-	labelSet, _ := GetBoardLabels(boardID, wOpts)
+	labelSet, _ := GetBoardLabels(boardID, baloo)
 
 	for _, l := range labelSet {
 		if l.Name == LabelRO {
@@ -265,10 +265,10 @@ func BuildConfig(boardID string, wOpts *WallConf, user string, api *slack.Client
 	}
 
 	myPayload.Text = message
-	_ = WranglerDM(wOpts, myPayload)
+	_ = WranglerDM(baloo, myPayload)
 
 	// handle custom fields
-	customSet, _ := GetBoardCustoms(boardID, wOpts)
+	customSet, _ := GetBoardCustoms(boardID, baloo)
 
 	for _, c := range customSet {
 		if c.Name == SprintName {
@@ -288,7 +288,7 @@ func BuildConfig(boardID string, wOpts *WallConf, user string, api *slack.Client
 	}
 
 	myPayload.Text = message
-	_ = WranglerDM(wOpts, myPayload)
+	_ = WranglerDM(baloo, myPayload)
 
 	message = "*Hey, here's the config data you need to make your TOML file!*\n"
 
@@ -312,5 +312,5 @@ func BuildConfig(boardID string, wOpts *WallConf, user string, api *slack.Client
 	message = message + "```"
 
 	myPayload.Text = message
-	_ = WranglerDM(wOpts, myPayload)
+	_ = WranglerDM(baloo, myPayload)
 }

@@ -3,7 +3,7 @@ package baloomod
 import "github.com/nlopes/slack"
 
 //Help - Help return message
-func Help(wOpts *WallConf, user string, api *slack.Client) {
+func Help(baloo *BalooConf, user string, api *slack.Client) {
 
 	var attachments Attachment
 	var hmessage string
@@ -15,7 +15,7 @@ func Help(wOpts *WallConf, user string, api *slack.Client) {
 
 	message = message + "*Hi, I heard you need some help!*\n"
 	message = message + "I can do many things based on specific keywords and permissions.\n\n"
-	message = message + "For *more detailed easier to read* help go here <https://github.com/ForgeCloud/bots-wall-e/wiki/Wall*E-Help|to my Wiki Page>\n\n"
+	message = message + "For *more detailed easier to read* help go here <https://github.com/srv1054/bots-baloo/wiki/BalooConf-Help|to my Wiki Page>\n\n"
 	message = message + "Here's some more common commands I know though:\n\n"
 
 	hmessage = hmessage + "* what's your 411 (or version)\n"
@@ -35,12 +35,12 @@ func Help(wOpts *WallConf, user string, api *slack.Client) {
 	hmessage = hmessage + "* previous sprint points [<board>] `SprintName` - will return points by squad for previous sprint named `SprintName`\n"
 	hmessage = hmessage + "* list github <users|repos> - Will DM user all github `users` or `repos` depending on which you asked for.\n"
 
-	emessage = emessage + "If you are DM'ing me you do not need to say @wall-e first\n\n"
-	emessage = emessage + "@wall-e whats your 411\n"
-	emessage = emessage + "@wall-e dupe trello board [mcboard]\n"
-	emessage = emessage + "@wall-e well retro card [mcboard] this sprint went awesome!\n"
-	emessage = emessage + "@wall-e description history pBxxmKI6\n"
-	emessage = emessage + "@wall-e previous sprint points [mcboard] mcboard-08-25-2018\n"
+	emessage = emessage + "If you are DM'ing me you do not need to say @" + baloo.Config.BotName + " first\n\n"
+	emessage = emessage + "@" + baloo.Config.BotName + " whats your 411\n"
+	emessage = emessage + "@" + baloo.Config.BotName + " dupe trello board [mcboard]\n"
+	emessage = emessage + "@" + baloo.Config.BotName + " well retro card [mcboard] this sprint went awesome!\n"
+	emessage = emessage + "@" + baloo.Config.BotName + " description history pBxxmKI6\n"
+	emessage = emessage + "@" + baloo.Config.BotName + " previous sprint points [mcboard] mcboard-08-25-2018\n"
 
 	testPayload.Text = message
 	testPayload.Channel = userInfo.ID
@@ -51,7 +51,7 @@ func Help(wOpts *WallConf, user string, api *slack.Client) {
 	attachments.Text = emessage
 	testPayload.Attachments = append(testPayload.Attachments, attachments)
 
-	_ = WranglerDM(wOpts, testPayload)
+	_ = WranglerDM(baloo, testPayload)
 
 	return
 }

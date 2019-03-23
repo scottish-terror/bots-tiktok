@@ -7,10 +7,10 @@ import (
 )
 
 // Responder - check for chatty messages that need responses not actions
-func Responder(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm *slack.RTM) {
+func Responder(lowerString string, baloo *BalooConf, ev *slack.MessageEvent, rtm *slack.RTM) {
 	// -- ALL BUSINESS
 	if strings.Contains(lowerString, "your 411") || strings.Contains(lowerString, "version") {
-		rtm.SendMessage(rtm.NewOutgoingMessage("Hi! My name is "+wOpts.Walle.BotName+" and I'm version "+wOpts.Walle.Version+". My slack ID is "+wOpts.Walle.BotID+" and I'm part of the "+wOpts.Walle.TeamName+" team (ID: "+wOpts.Walle.TeamID+").  This channels ID is "+ev.Msg.Channel+". Your Slack UID is "+ev.Msg.User+". I currently write my logs to "+wOpts.Walle.LogChannel, ev.Msg.Channel))
+		rtm.SendMessage(rtm.NewOutgoingMessage("Hi! My name is "+baloo.Config.BotName+" and I'm version "+baloo.Config.Version+". My slack ID is "+baloo.Config.BotID+" and I'm part of the "+baloo.Config.TeamName+" team (ID: "+baloo.Config.TeamID+").  This channels ID is "+ev.Msg.Channel+". Your Slack UID is "+ev.Msg.User+". I currently write my logs to "+baloo.Config.LogChannel, ev.Msg.Channel))
 	}
 
 	// -- FUN STUFF
@@ -42,10 +42,6 @@ func Responder(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm 
 		rtm.SendMessage(rtm.NewOutgoingMessage("Yes..Yes I do.  Thanks!", ev.Msg.Channel))
 	}
 
-	if strings.Contains(lowerString, " eva") || strings.Contains(lowerString, " eve!") {
-		rtm.SendMessage(rtm.NewOutgoingMessage("EEEEEEEEVAAAAAAAA!", ev.Msg.Channel))
-	}
-
 	if strings.Contains(lowerString, "bro do you even") || strings.Contains(lowerString, "do you even") {
 		rtm.SendMessage(rtm.NewOutgoingMessage("Like a Boss!!", ev.Msg.Channel))
 	}
@@ -68,10 +64,6 @@ func Responder(lowerString string, wOpts *WallConf, ev *slack.MessageEvent, rtm 
 
 	if strings.Contains(lowerString, "more ponies") {
 		rtm.SendMessage(rtm.NewOutgoingMessage("Coming up!\n:pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: :pony_trotting: ", ev.Msg.Channel))
-	}
-
-	if strings.Contains(lowerString, "where is mo") || strings.Contains(lowerString, "where's mo") {
-		rtm.SendMessage(rtm.NewOutgoingMessage("MO! He's busy cleaning your code.  :mo:", ev.Msg.Channel))
 	}
 
 	if strings.Contains(lowerString, "eat it") {

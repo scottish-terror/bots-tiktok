@@ -21,8 +21,8 @@ type Cronjobs struct {
 	}
 }
 
-// WallE primary configuration struct
-type WallE struct {
+// BalooStruct primary configuration struct
+type BalooStruct struct {
 	SlackHook               string
 	SlackToken              string
 	SlackOAuth              string
@@ -109,13 +109,13 @@ type Config struct {
 	General GeneralOptions
 }
 
-// WallConf - Struct of walle conf file section
-type WallConf struct {
-	Walle WallE
+// BalooConf - Struct of baloo conf file section
+type BalooConf struct {
+	Config BalooStruct
 }
 
 var conf Config
-var wallE WallConf
+var baloo BalooConf
 var jobList Cronjobs
 
 // LoadCronFile - CRON Tabs
@@ -134,20 +134,20 @@ func LoadCronFile() (*Cronjobs, error) {
 	return &jobList, nil
 }
 
-// LoadWalle Main Config
-func LoadWalle() (*WallConf, error) {
-	configFile := "cfg/wall-e.toml"
+// LoadBalooConf Main Config
+func LoadBalooConf() (*BalooConf, error) {
+	configFile := "cfg/baloo.toml"
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		return nil, errors.New("config file does not exist - wall-e.toml must exist in run directory")
+		return nil, errors.New("config file does not exist - baloo.toml must exist in run directory")
 	} else if err != nil {
 		return nil, err
 	}
 
-	if _, err := toml.DecodeFile(configFile, &wallE); err != nil {
+	if _, err := toml.DecodeFile(configFile, &baloo); err != nil {
 		return nil, err
 	}
 
-	return &wallE, nil
+	return &baloo, nil
 }
 
 // LoadConfig - load toml config file
@@ -208,7 +208,7 @@ func SanityCheck(ConfigLocation string, ms GeneralOptions) (sane bool, output st
 }
 
 // LoadConf - load a teams conf file to do something
-func LoadConf(wOpts *WallConf, team string) (opts Config, err error) {
+func LoadConf(baloo *BalooConf, team string) (opts Config, err error) {
 
 	var attachments Attachment
 
@@ -217,7 +217,7 @@ func LoadConf(wOpts *WallConf, team string) (opts Config, err error) {
 	// Load the config file
 	slopts, err := LoadConfig(configLocation)
 	if err != nil {
-		errTrap(wOpts, "Failure Loading requested team file `"+configLocation+"`.", err)
+		errTrap(baloo, "Failure Loading requested team file `"+configLocation+"`.", err)
 		return opts, err
 	}
 
@@ -226,11 +226,11 @@ func LoadConf(wOpts *WallConf, team string) (opts Config, err error) {
 	// Run sanity check on the config file
 	sane, output := SanityCheck(configLocation, opts.General)
 	if !sane {
-		if wOpts.Walle.DEBUG {
+		if baloo.Config.DEBUG {
 			fmt.Println(output)
 		}
-		if wOpts.Walle.LogToSlack {
-			LogToSlack("Config file failed Sanity check for team file `"+configLocation+"`. ```"+output+"```", wOpts, attachments)
+		if baloo.Config.LogToSlack {
+			LogToSlack("Config file failed Sanity check for team file `"+configLocation+"`. ```"+output+"```", baloo, attachments)
 		}
 		return opts, err
 	}
@@ -239,12 +239,12 @@ func LoadConf(wOpts *WallConf, team string) (opts Config, err error) {
 }
 
 // FindToml - Get list of TOML files
-func FindToml(wOpts *WallConf) (tomls []os.FileInfo, err error) {
+func FindToml(baloo *BalooConf) (tomls []os.FileInfo, err error) {
 
 	tomls, err = ioutil.ReadDir("cfg/")
 
 	if err != nil {
-		errTrap(wOpts, "Error attempting to read directory listing for `./*.toml`", err)
+		errTrap(baloo, "Error attempting to read directory listing for `./*.toml`", err)
 		return nil, err
 	}
 
@@ -252,17 +252,17 @@ func FindToml(wOpts *WallConf) (tomls []os.FileInfo, err error) {
 }
 
 // ListAllTOML - list all the available TOML files in a string
-func ListAllTOML(wOpts *WallConf) (message string) {
+func ListAllTOML(baloo *BalooConf) (message string) {
 
-	tomls, _ := FindToml(wOpts)
+	tomls, _ := FindToml(baloo)
 
 	for _, f := range tomls {
 
-		if f.Name() != "example.toml" && f.Name() != "crons.toml" && f.Name() != "wall-e.toml" {
+		if f.Name() != "example.toml" && f.Name() != "crons.toml" && f.Name() != "baloo.toml" {
 			s := strings.Split(f.Name(), ".")
 
 			if s[len(s)-1] == "toml" {
-				opts, _ := LoadConf(wOpts, s[0])
+				opts, _ := LoadConf(baloo, s[0])
 				message = message + "<https://trello.com/b/" + opts.General.BoardID + "|" + opts.General.TeamName + " trello board>.  Refer to ID: [" + s[0] + "]\n"
 			}
 

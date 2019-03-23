@@ -18,26 +18,26 @@ func main() {
 	var cronjobs *baloomod.Cronjobs
 	var CronState string
 
-	// Load WallE Config
-	wOpts, err := baloomod.LoadWalle()
+	// Load BalooConf Config
+	baloo, err := baloomod.LoadBalooConf()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)
 	}
 
 	// Set version number
-	wOpts.Walle.Version = "4.0"
+	baloo.Config.Version = "4.0"
 
 	// Grab CLI parameters at launch
-	wOpts, nocron := baloomod.Startup(wOpts)
+	wOpts, nocron := baloomod.Startup(baloo)
 
 	// Load Cron
 	if nocron {
 
-		if wOpts.Walle.DEBUG {
+		if baloo.Config.DEBUG {
 			fmt.Println("Not loading CRONs per CLI parameter -nocron")
 		}
-		if wOpts.Walle.LogToSlack {
+		if baloo.Config.LogToSlack {
 			baloomod.LogToSlack("Not Loading CRON based on CLI parameter -nocron", wOpts, attachments)
 		}
 		CronState = "Not Loaded"
@@ -47,11 +47,11 @@ func main() {
 
 		cronjobs, c, err = baloomod.CronLoad(wOpts)
 		if err != nil {
-			if wOpts.Walle.DEBUG {
+			if baloo.Config.DEBUG {
 				fmt.Println("CRON Jobs failed to load due to file error.")
 			}
 		} else {
-			if wOpts.Walle.DEBUG {
+			if baloo.Config.DEBUG {
 				fmt.Println("CRON Jobs Loaded!")
 			}
 		}
@@ -60,7 +60,7 @@ func main() {
 	}
 
 	// initate Slack RTM and get started
-	api := slack.New(wOpts.Walle.SlackToken)
+	api := slack.New(baloo.Config.SlackToken)
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
 
@@ -70,23 +70,23 @@ func main() {
 		case *slack.HelloEvent:
 
 		case *slack.ConnectedEvent:
-			wOpts.Walle.BotID = ev.Info.User.ID
-			wOpts.Walle.BotName = strings.ToUpper(ev.Info.User.Name)
-			wOpts.Walle.TeamID = ev.Info.Team.ID
-			wOpts.Walle.TeamName = ev.Info.Team.Name
+			baloo.Config.BotID = ev.Info.User.ID
+			baloo.Config.BotName = strings.ToUpper(ev.Info.User.Name)
+			baloo.Config.TeamID = ev.Info.Team.ID
+			baloo.Config.TeamName = ev.Info.Team.Name
 
 			//update this "C7XVAJVRS " to a channel ID that matches what he joined (how do i grab that from the connect)
 			rtm.SendMessage(rtm.NewOutgoingMessage("Hello! I rebooted, if you care.  :unicorn_face:", "C7XVAJVRS"))
 
 		case *slack.MessageEvent:
-			if wOpts.Walle.DEBUG {
+			if baloo.Config.DEBUG {
 				fmt.Printf("Message: %v\n", ev)
 			}
 
 			// Check stream if someone says my name or is DM'ing me
 			//   Ignore things that I post so i don't loop myself
-			if strings.Contains(ev.Msg.Text, "@"+wOpts.Walle.BotID) || string(ev.Msg.Channel[0]) == "D" {
-				if ev.Msg.User != wOpts.Walle.BotID {
+			if strings.Contains(ev.Msg.Text, "@"+baloo.Config.BotID) || string(ev.Msg.Channel[0]) == "D" {
+				if ev.Msg.User != baloo.Config.BotID {
 					// some WallE responses are case sensitive due to Trello being case sensitive, so removing the lower case function
 					//   until i think of a better way to handle
 					// lowerString := strings.ToLower(ev.Msg.Text)
@@ -107,17 +107,17 @@ func main() {
 			}
 
 		case *slack.LatencyReport:
-			if wOpts.Walle.DEBUG {
+			if baloo.Config.DEBUG {
 				fmt.Printf("Current latency: %v\n", ev.Value)
 			}
 
 		case *slack.RTMError:
-			if wOpts.Walle.DEBUG {
+			if baloo.Config.DEBUG {
 				fmt.Printf("Error: %s\n", ev.Error())
 			}
 
 		case *slack.InvalidAuthEvent:
-			if wOpts.Walle.DEBUG {
+			if baloo.Config.DEBUG {
 				fmt.Printf("Invalid credentials")
 			}
 			return
