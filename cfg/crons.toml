@@ -2,7 +2,7 @@
 
 # [[ cronjob ]]
 #   timing = "* * * * * *"  See link above
-#   action = "wall-e function to execute"
+#   action = "bot function to execute"
 #       current available actions are:
 #           * pts - syncronize story points to screenful
 #           * pr - scan PR(Uat) list for stale cards

@@ -1,28 +1,28 @@
 
-[walle]
+[baloo]
 
 	LogChannel			= "CH6FKP9K9"		   			# Channel to spew all trello changes into, for logging and potential rollback. Must have value even if LogToSlack is false
-	LogToSlack			= true							# Log walle data to slack (recommended)
-	SlackEmoji          = ":wall-e:"					# Wall-E slack Emoji name (Include pre and post colons  :myemoji: )
+	LogToSlack			= true							# Log bot data to slack (recommended)
+	SlackEmoji          = ":baloo:" 					# "bot" slack Emoji name (Include pre and post colons  :myemoji: )
 	DEBUG				= false							# Output Debug info to CLI
 	DupeCollectionID 	= ""							# TrelloID of Collection to stash duplicated boards in.  Blank is None
 	LoggingPrefix 		= ""		 					# pre-fix to all slack logging messages (optional)
 	PointsPowerUpID     = "59d4ef8cfea15a55b0086614"	# UID Assigned to the Points Power-Up we use in trello (ORG wide /all boards)
 	BotTrelloID         = "mcboard"		                # Trello UserID for the Bot running the board
-	TrelloOrgID         = ""						    # Trello UID for organization Wall-E is working out of
+	TrelloOrgID         = ""						    # Trello UID for organization "bot" is working out of
 
-	## Wall-E MySQL Database
-	UseGCP 					= false				# Should Wall-E connect to a Google Cloud DB 
+	## "bot" MySQL Database
+	UseGCP 					= false				# Should "bot" connect to a Google Cloud DB 
 	SQLHost					= "172.30.1.205"   	# Hostname of MySQL DB or GCP connection instance
 	SQLPort					= "3306"			# Port of MySQL DB (NOT required for GCP Connection instances)
-	SQLDBName				= "walle"			# Name of Wall-E SQL Database
+	SQLDBName				= "baloo"			# Name of "bot" SQL Database
 	AllowNativePasswords  	= true 				# False - Disallows the usage of MySQL native password method.
 	AllowCleartextPasswords = true 				# True - Allows using the cleartext client side plugin if required by an account, such as one defined with the PAM authentication plugin
 	AllowAllFiles 			= true 				# True - Disables the file Whitelist for LOAD DATA LOCAL INFILE and allows all files.
 	ParseTime 				= true 				# True - ask the driver to scan DATE and DATETIME automatically to time.Time  (Must be true for GCP Connections)
 
 	## NOTE: In the case of private channels being used for permissions, Wall*E must be a member of that channel.
-	##   To get a channels UID, have Wall*E join and then ask wall*e for his 411 (or version).  ``@wall-e whats your 411``
+	##   To get a channels UID, have bot join and then ask bot for his 411 (or version).  ``@botname whats your 411``
 
-	AdminSlackChannel = "GH6FQ7YDV"		# Channel user must be a member of to gain "Admin" control over Wall-E Admin functionality
-	ScrumControlChannel = "GH6FQ7YDV"	# Channel user must be a member of to do scrum functions with wall-e.  Start new Sprints etc... 
+	AdminSlackChannel = "GH6FQ7YDV"		# Channel user must be a member of to gain "Admin" control over bot Admin functionality
+	ScrumControlChannel = "GH6FQ7YDV"	# Channel user must be a member of to do scrum functions with bot.  Start new Sprints etc... 

@@ -1,19 +1,19 @@
-# TOML file EXAMPLE.  All fields required.  Ask wall-e for help on finding trello UIDs
+# TOML file EXAMPLE.  All fields required.  Ask the bot for help on finding trello UIDs
 
 [general]
 
 # General Info
-        TeamName        = ""   # Name of your team WallE should refer to when talking in slack (instead of your board ID)
+        TeamName        = ""   # Name of your team the bot should refer to when talking in slack (instead of your board ID)
         Sprintname      = ""   # The Prefix for Sprint Names (current date is appeneded automagically) / toml filename needs to match this in lowercase
         TrelloOrg       = ""   # Short Team name for Trello Organization
         StaleTime       = 24   # Must be an integer in hours!!
         MaxPoints       = 8    # Points GREATER than this number are flagged as too large and will alert and fail automated card moves
 	ArchiveDoneDays = 28   # Number of Days old a card should be in the Done column to be auto-archived
-        BackLogDays     = 180  # Number of days before Wall*E archives a card in the backlog
+        BackLogDays     = 180  # Number of days before the bot archives a card in the backlog
         SprintDuration  = 14   # Duration of each sprint including weekends and holidays (IE 2 weeks == 14 days)    
-        RetroActionDays = 9    # Number of days before Wall*E continues to complain to card owners about incomplete retro action items    
+        RetroActionDays = 9    # Number of days before the bot continues to complain to card owners about incomplete retro action items    
         IgnoreWeekends  = true # Ignore weekends when doing time based calculations for alerts
-        HolidaySupport  = true # Ignore Holidays in the SQL DB walle_holidays table when alerting
+        HolidaySupport  = true # Ignore Holidays in the SQL DB dbname_holidays table when alerting 
 
 # Trelloness - Requires Trello UID's Not "Names"
         BacklogID           = "" # Trello UID for your Backlog Column 
@@ -32,7 +32,7 @@
         retroCollectionID   = "" # The ID of the Collection you want to put your Retro Boards in. (Default for FRSaaS Team)
         AllowMembersLabel   = "" # The UID of the label that should cause alerting for "members on cards" to be supressed
         TrainingLabel       = "" # The UID of the label that should be used for training cards, this will suppress many normal process alerts
-        SilenceCardLabel    = "" # The UID of the label that will silence 100% of wall-e in relation to that card and all alerts and actions
+        SilenceCardLabel    = "" # The UID of the label that will silence 100% of the bot in relation to that card and all alerts and actions
         DemoBoardID         = "" # The UID of the board that manages Demo cards.  This can be identical across TOML files
 
 # Slackness
