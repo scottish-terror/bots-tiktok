@@ -11,6 +11,6 @@ create table tiktok_chapter_cards (id int not null primary key auto_increment, t
 create table tiktok_sprint_squad_points (sprintname varchar(100), squadname varchar(255), squadpoints int, workingdays int);
 create table tiktok_cardtracker (cardid varchar(100), cardtitle varchar(255), points int, cardurl varchar(255), list varchar(100), startedinworking datetime, startedinpr datetime, entereddone datetime, owners varchar(255));
 create table tiktok_users (id int not null primary key auto_increment, name varchar(255), slackid varchar(100), trello varchar(100), github varchar(100), email varchar(255));
-create table tiktok_v2 (v2id int not null primary key auto_increment, teamid varchar(50), sprintstart date, duration int, retroid varchar(100), sprintname varchar(100));
+create table tiktok_main (v2id int not null primary key auto_increment, teamid varchar(50), sprintstart date, duration int, retroid varchar(100), sprintname varchar(100));
 create table tiktok_burndown (id int not null primary key auto_increment, pointdate datetime, team varchar(100), totalpoints int, rfwpts int, wkgpts int, uatpts int, dnepts int, numcards int);
 

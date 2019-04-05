@@ -98,18 +98,18 @@ func GetAllPoints(baloo *BalooConf, opts Config, sOpts SprintData) (message stri
 		totalPoints := rfwpts + wkgpts + rfrpts + dnepts
 
 		if totalPoints > 0 {
-			db, status, _ := ConnectDB(baloo, "walle")
+			db, status, _ := ConnectDB(baloo, "tiktok")
 			if status {
 
 				today := time.Now().Local()
 				today.Format("2006-01-02 15:04:05")
 
-				stmt, _ := db.Prepare("INSERT walle_burndown SET pointdate=?,team=?,totalpoints=?,rfwpts=?,wkgpts=?,uatpts=?,dnepts=?,numcards=?")
+				stmt, _ := db.Prepare("INSERT tiktok_burndown SET pointdate=?,team=?,totalpoints=?,rfwpts=?,wkgpts=?,uatpts=?,dnepts=?,numcards=?")
 
 				_, err := stmt.Exec(today, sOpts.TeamID, totalPoints, rfwpts, wkgpts, rfrpts, dnepts, numCards)
 
 				if err != nil {
-					errTrap(baloo, "SQL Error in walle_burndown table insert:", err)
+					errTrap(baloo, "SQL Error in tiktok_burndown table insert:", err)
 				}
 
 			}

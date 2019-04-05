@@ -943,7 +943,7 @@ func CardPlay(baloo *BalooConf, opts Config, channelResponse string, teamID stri
 
 	if !csv {
 		if baloo.Config.LogToSlack {
-			LogToSlack("Truncating walle_cardtracker to prepare for new data", baloo, attachments)
+			LogToSlack("Truncating tiktok_cardtracker to prepare for new data", baloo, attachments)
 		}
 		err := zeroCardDataDB(baloo)
 		if err != nil {

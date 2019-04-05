@@ -52,13 +52,13 @@ func Sprint(opts Config, baloo *BalooConf, retroNo bool) (message string, err er
 
 	// Dupe old cardtracker table to new table name for historical data
 	tN := strings.Replace(spOpts.SprintName, "-", "_", -1)
-	tableName := "walle_" + tN
+	tableName := "tiktok_" + tN
 	if baloo.Config.LogToSlack {
-		LogToSlack("Duplicating walle_cardtracker to new table `"+tableName+"` for historical records...this may take a few...", baloo, attachments)
+		LogToSlack("Duplicating tiktok_cardtracker to new table `"+tableName+"` for historical records...this may take a few...", baloo, attachments)
 	}
-	err = DupeTable(baloo, tableName, "walle_cardtracker")
+	err = DupeTable(baloo, tableName, "tiktok_cardtracker")
 	if err != nil {
-		errTrap(baloo, "Error attempting to dupe table walle_cardtracker to "+tableName, err)
+		errTrap(baloo, "Error attempting to dupe table tiktok_cardtracker to "+tableName, err)
 	}
 
 	// create new sprint name

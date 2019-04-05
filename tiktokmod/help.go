@@ -29,7 +29,7 @@ func Help(baloo *BalooConf, user string, api *slack.Client) {
 	hmessage = hmessage + "* dupe trello board [<board>] - I will make a copy of this board and name it DUPE-M-D-Y<board name> and assign it to the `Board Copies` Collection\n"
 	hmessage = hmessage + "* retro board [<board>] - will return the URL to the current sprint retro board for that team\n"
 	hmessage = hmessage + "* <well|wrong|vent> retro card [<board>] <my card info> - will create a new card on the current sprint retro board for that team in the Well or Wrong list\n"
-	hmessage = hmessage + "* add me [email,trello id,github id] - register yourself with WallE so he knows your ID's. No quotes needed around items with spaces or special characters\n"
+	hmessage = hmessage + "* add me [email,trello id,github id] - register yourself with Tik-Tok so he knows your ID's. No quotes needed around items with spaces or special characters\n"
 	hmessage = hmessage + "* description history `cardID` - Well return the historical card description data for a given card ID.  Look in a card URL to get its ID #\n"
 	hmessage = hmessage + "* company holidays - I will return a list of company Holidays that I know about.\n"
 	hmessage = hmessage + "* previous sprint points [<board>] `SprintName` - will return points by squad for previous sprint named `SprintName`\n"

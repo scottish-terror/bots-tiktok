@@ -336,7 +336,7 @@ func SkippedPR(baloo *BalooConf, opts Config) {
 
 				checkThisCard = true
 
-				// check if card has already been commented on by WallE and skip it if so
+				// check if card has already been commented on by TikTok and skip it if so
 				cardComments, err := GetCardComments(aTt.ID, baloo)
 				if err != nil {
 					errTrap(baloo, "Error on return from `GetCardComments` in `SkippedPR` in `Trello.go`", err)

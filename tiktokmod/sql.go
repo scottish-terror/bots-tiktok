@@ -150,7 +150,7 @@ func PutDBSprint(baloo *BalooConf, sOpts SprintData) error {
 	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
 	if status {
 
-		stmt, err := db.Prepare("INSERT walle_v2 SET teamid=?,sprintstart=?,duration=?,retroid=?,sprintname=?,workingdays=?")
+		stmt, err := db.Prepare("INSERT tiktok_main SET teamid=?,sprintstart=?,duration=?,retroid=?,sprintname=?,workingdays=?")
 		if err != nil {
 			errTrap(baloo, "SQL Error db.Prepare in `PutDBSprint` ", err)
 			return err
@@ -179,7 +179,7 @@ func GetDBSprint(baloo *BalooConf, teamID string) (sOpts SprintData, err error) 
 
 	if status {
 
-		err := db.QueryRow("SELECT * FROM walle_v2 where teamid=? order by sprintstart desc limit 1", teamID).Scan(
+		err := db.QueryRow("SELECT * FROM tiktok_main where teamid=? order by sprintstart desc limit 1", teamID).Scan(
 			&sOpts.V2ID,
 			&sOpts.TeamID,
 			&sOpts.SprintStart,
@@ -216,7 +216,7 @@ func GetRetroID(baloo *BalooConf, teamID string) (retroStruct []RetroStruct, err
 
 	if status {
 
-		rows, err := db.Query("select teamid,retroid from walle_v2 where teamid=?", teamID)
+		rows, err := db.Query("select teamid,retroid from tiktok_main where teamid=?", teamID)
 		if err != nil {
 			errTrap(baloo, "DB Query Error in `GetRetroID` in `sql.go`", err)
 			return retroStruct, err
@@ -256,7 +256,7 @@ func GetDBSquads(baloo *BalooConf, boardID string) (allSquads Squads, err error)
 
 	if status {
 
-		rows, err := db.Query("SELECT * FROM walle_squads where boardid=?", boardID)
+		rows, err := db.Query("SELECT * FROM tiktok_squads where boardid=?", boardID)
 		if err != nil {
 			errTrap(baloo, "DB Query Error", err)
 			return allSquads, err
@@ -300,7 +300,7 @@ func GetDBChapters(baloo *BalooConf, boardID string) (allChapters Chapters, err 
 
 	if status {
 
-		rows, err := db.Query("SELECT * FROM walle_chapters where boardid=?", boardID)
+		rows, err := db.Query("SELECT * FROM tiktok_chapters where boardid=?", boardID)
 		if err != nil {
 			errTrap(baloo, "DB Query Error in `GetDBChapters` in `sql.go`", err)
 			return allChapters, err
@@ -346,7 +346,7 @@ func GetIgnoreLabels(baloo *BalooConf, boardID string) (ignoreLabels []string, e
 
 	if status {
 
-		rows, err := db.Query("SELECT * FROM walle_label_ignore where boardid=?", boardID)
+		rows, err := db.Query("SELECT * FROM tiktok_label_ignore where boardid=?", boardID)
 		if err != nil {
 			errTrap(baloo, "DB query Error", err)
 			return ignoreLabels, err
@@ -385,7 +385,7 @@ func LabelIgnore(opts Config, baloo *BalooConf, labelID string) error {
 	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
 	if status {
 
-		stmt, err := db.Prepare("INSERT walle_label_ignore SET boardid=?,labelid=?")
+		stmt, err := db.Prepare("INSERT tiktok_label_ignore SET boardid=?,labelid=?")
 		if err != nil {
 			errTrap(baloo, "SQL Error in LabelIgnore", err)
 			return err
@@ -415,9 +415,9 @@ func GetUser(baloo *BalooConf, myField string, mySearch string) (user UserData, 
 
 	if status {
 
-		rows, err := db.Query("SELECT * FROM walle_users where " + myField + "='" + mySearch + "'")
+		rows, err := db.Query("SELECT * FROM tiktok_users where " + myField + "='" + mySearch + "'")
 		if err != nil {
-			errTrap(baloo, "DB Query Error `db.Query` on walle_users in `GetUser`", err)
+			errTrap(baloo, "DB Query Error `db.Query` on tiktok_users in `GetUser`", err)
 			return user, err
 		}
 
@@ -430,7 +430,7 @@ func GetUser(baloo *BalooConf, myField string, mySearch string) (user UserData, 
 				&user.Trello,
 				&user.Github,
 				&user.Email); err != nil {
-				errTrap(baloo, "DB Query Error `rows.Next` on walle_users in `GetUser`", err)
+				errTrap(baloo, "DB Query Error `rows.Next` on tiktok_users in `GetUser`", err)
 				return user, err
 			}
 		}
@@ -458,9 +458,9 @@ func GetDBUsers(baloo *BalooConf) (users []UserData, err error) {
 
 	if status {
 
-		rows, err := db.Query("SELECT * FROM walle_users")
+		rows, err := db.Query("SELECT * FROM tiktok_users")
 		if err != nil {
-			errTrap(baloo, "DB Query Error on walle_users in `GetUser`", err)
+			errTrap(baloo, "DB Query Error on tiktok_users in `GetUser`", err)
 			return users, err
 		}
 
@@ -505,7 +505,7 @@ func AddDBUser(baloo *BalooConf, users UserData) bool {
 
 	if status {
 
-		stmt, err := db.Prepare("INSERT walle_users SET name=?,slackid=?,trello=?,github=?,email=?")
+		stmt, err := db.Prepare("INSERT tiktok_users SET name=?,slackid=?,trello=?,github=?,email=?")
 		if err != nil {
 			errTrap(baloo, "SQL Error in AddDBUser", err)
 			return false
@@ -536,7 +536,7 @@ func zeroCardDataDB(baloo *BalooConf) error {
 	}
 
 	if status {
-		stmt, err := db.Prepare("TRUNCATE TABLE walle_cardtracker")
+		stmt, err := db.Prepare("TRUNCATE TABLE tiktok_cardtracker")
 		if err != nil {
 			errTrap(baloo, "SQL Error (db.Prepare) in zeroCardData on TRUNCATE", err)
 			return err
@@ -569,7 +569,7 @@ func PutCardData(baloo *BalooConf, allCardData CardReportData, teamID string) er
 	}
 
 	if status {
-		stmt, err := db.Prepare("INSERT walle_cardtracker SET cardid=?,cardtitle=?,points=?,cardurl=?,list=?,startedinworking=?,startedinpr=?,entereddone=?,owners=?,team=?")
+		stmt, err := db.Prepare("INSERT tiktok_cardtracker SET cardid=?,cardtitle=?,points=?,cardurl=?,list=?,startedinworking=?,startedinpr=?,entereddone=?,owners=?,team=?")
 		if err != nil {
 			errTrap(baloo, "SQL Error (db.Prepare) in `PutCardData`", err)
 			return err
@@ -607,7 +607,7 @@ func PutThemeCount(baloo *BalooConf, allTheme Themes, sOpts SprintData, teamID s
 		today.Format("2006-01-02 15:04:05")
 
 		for _, z := range allTheme {
-			stmt, err := db.Prepare("INSERT walle_theme_count SET countdate=?,team=?,sprintname=?,labelname=?,qty=?")
+			stmt, err := db.Prepare("INSERT tiktok_theme_count SET countdate=?,team=?,sprintname=?,labelname=?,qty=?")
 			if err != nil {
 				errTrap(baloo, "SQL error in `PutThemeCount`", err)
 				return err
@@ -638,7 +638,7 @@ func GetPreviousSprintPoints(baloo *BalooConf, sprintname string) (totalSprint T
 
 	if status {
 
-		rows, err := db.Query("SELECT * FROM walle_sprint_squad_points where LOWER(sprintname)=?", sprintname)
+		rows, err := db.Query("SELECT * FROM tiktok_sprint_squad_points where LOWER(sprintname)=?", sprintname)
 		if err != nil {
 			errTrap(baloo, "`GetPreviousSprintPoints` Function error: DB Query Error", err)
 			return totalSprint, err
@@ -681,7 +681,7 @@ func GetHoliday(baloo *BalooConf, year string) (theHolidays []Holiday, err error
 
 	if status {
 
-		rows, err := db.Query("SELECT * FROM walle_holidays where YEAR(holiday)=? ORDER BY holiday", year)
+		rows, err := db.Query("SELECT * FROM tiktok_holidays where YEAR(holiday)=? ORDER BY holiday", year)
 		if err != nil {
 			errTrap(baloo, "`GetHoliday` Function error: DB Query Error", err)
 			return theHolidays, err
@@ -732,7 +732,7 @@ func IsHoliday(baloo *BalooConf, checkDate time.Time) (isHoliday bool, holiday H
 
 	if status {
 
-		err := db.QueryRow("SELECT * FROM walle_holidays where holiday=? limit 1", today).Scan(
+		err := db.QueryRow("SELECT * FROM tiktok_holidays where holiday=? limit 1", today).Scan(
 			&holiday.ID,
 			&holiday.Name,
 			&holiday.Day,
@@ -772,7 +772,7 @@ func RecordSquadSprintData(baloo *BalooConf, totalPoints Squads, sprintName stri
 
 	if status {
 
-		stmt, err := db.Prepare("INSERT walle_sprint_squad_points SET sprintname=?,squadname=?,squadpoints=?")
+		stmt, err := db.Prepare("INSERT tiktok_sprint_squad_points SET sprintname=?,squadname=?,squadpoints=?")
 		if err != nil {
 			errTrap(baloo, "SQL Error in `db.Prepare` func `RecordSquadSprintData`", err)
 			return false
@@ -856,7 +856,7 @@ func RecordChapterCount(baloo *BalooConf, chapterName string, listName string, c
 		timeStamp := time.Now().Local()
 		timeStamp.Format("2006-01-02")
 
-		stmt, err := db.Prepare("INSERT walle_chapter_cards SET timestamp=?,chaptername=?,listname=?,cards=?,team=?")
+		stmt, err := db.Prepare("INSERT tiktok_chapter_cards SET timestamp=?,chaptername=?,listname=?,cards=?,team=?")
 		if err != nil {
 			errTrap(baloo, "SQL Error in `db.Prepare` func `RecordChapterCount`", err)
 			return false
@@ -886,7 +886,7 @@ func GetBugID(baloo *BalooConf, boardID string) (bugs []BugLabel, err error) {
 
 	if status {
 
-		rows, err := db.Query("SELECT * FROM walle_bug_label where boardid=?", boardID)
+		rows, err := db.Query("SELECT * FROM tiktok_bug_label where boardid=?", boardID)
 		if err != nil {
 			errTrap(baloo, "DB query Error in `GetBugID` function in `sql.go`", err)
 			return bugs, err
@@ -930,7 +930,7 @@ func GetSquadMembership(baloo *BalooConf, dbUserID int, sprintName string) (user
 
 	if status {
 
-		rows, err := db.Query("SELECT * FROM walle_squad_peeps where userID=? AND sprint=?", dbUserID, sprintName)
+		rows, err := db.Query("SELECT * FROM tiktok_squad_peeps where userID=? AND sprint=?", dbUserID, sprintName)
 		if err != nil {
 			errTrap(baloo, "DB query Error in `GetSquadMembership` function in `sql.go`", err)
 			return userList, err

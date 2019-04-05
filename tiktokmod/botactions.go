@@ -1174,7 +1174,7 @@ func BotActions(lowerString string, baloo *BalooConf, ev *slack.MessageEvent, rt
 				newUserData.Github = strings.ToLower(brokeOut[2])
 
 				// check if already registered
-				db, status, err := ConnectDB(baloo, "walle")
+				db, status, err := ConnectDB(baloo, "tiktok")
 				if err != nil {
 					if baloo.Config.DEBUG {
 						fmt.Println(err.Error())
@@ -1187,7 +1187,7 @@ func BotActions(lowerString string, baloo *BalooConf, ev *slack.MessageEvent, rt
 
 				if status {
 
-					err := db.QueryRow("SELECT slackid FROM walle_users where slackid=?", userInfo.ID).Scan(&tempSID)
+					err := db.QueryRow("SELECT slackid FROM tiktok_users where slackid=?", userInfo.ID).Scan(&tempSID)
 
 					switch {
 					case err == sql.ErrNoRows:
@@ -1464,7 +1464,7 @@ func BotActions(lowerString string, baloo *BalooConf, ev *slack.MessageEvent, rt
 		}
 	}
 
-	// What time is it according to WallE
+	// What time is it according to TikTok
 	if strings.Contains(lowerString, "what time is it") {
 		today := time.Now()
 		workingTime := today.Format("2006-01-02 15:04:05")

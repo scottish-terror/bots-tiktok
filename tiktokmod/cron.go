@@ -26,7 +26,7 @@ func localLoad(baloo *BalooConf, teamID string) (opts Config, err error) {
 	return opts, err
 }
 
-// HolidayTroll - WallE Holiday messaging Cron
+// HolidayTroll - TikTok Holiday messaging Cron
 func HolidayTroll(baloo *BalooConf, teamID string) {
 	var attachments Attachment
 
