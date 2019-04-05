@@ -108,35 +108,35 @@ type Squads []Squad
 type Chapters []Chapter
 
 // ConnectDB - establish gsql connection to db
-func ConnectDB(baloo *BalooConf, dbName string) (db *sql.DB, status bool, err error) {
+func ConnectDB(tiktok *TikTokConf, dbName string) (db *sql.DB, status bool, err error) {
 
-	if baloo.Config.UseGCP {
-		cfg := mysql.Cfg(baloo.Config.SQLHost, baloo.Config.DBUser, baloo.Config.DBPassword)
+	if tiktok.Config.UseGCP {
+		cfg := mysql.Cfg(tiktok.Config.SQLHost, tiktok.Config.DBUser, tiktok.Config.DBPassword)
 		cfg.DBName = dbName
-		cfg.AllowNativePasswords = baloo.Config.AllowNativePasswords
-		cfg.AllowCleartextPasswords = baloo.Config.AllowCleartextPasswords
-		cfg.AllowAllFiles = baloo.Config.AllowAllFiles
-		cfg.ParseTime = baloo.Config.ParseTime
+		cfg.AllowNativePasswords = tiktok.Config.AllowNativePasswords
+		cfg.AllowCleartextPasswords = tiktok.Config.AllowCleartextPasswords
+		cfg.AllowAllFiles = tiktok.Config.AllowAllFiles
+		cfg.ParseTime = tiktok.Config.ParseTime
 
 		db, err = mysql.DialCfg(cfg)
 		if err != nil {
-			errTrap(baloo, "DB Connection Error: ", err)
+			errTrap(tiktok, "DB Connection Error: ", err)
 			return db, false, err
 		}
 
 		return db, true, nil
 	}
 
-	myConn := baloo.Config.DBUser + ":" + baloo.Config.DBPassword + "@tcp(" + baloo.Config.SQLHost + ":" + baloo.Config.SQLPort + ")/" + dbName
-	myParams := "?allowAllFiles=" + strconv.FormatBool(baloo.Config.AllowAllFiles)
-	myParams = myParams + "&allowCleartextPasswords=" + strconv.FormatBool(baloo.Config.AllowCleartextPasswords)
-	myParams = myParams + "&allowNativePasswords=" + strconv.FormatBool(baloo.Config.AllowNativePasswords)
-	myParams = myParams + "&parseTime=" + strconv.FormatBool(baloo.Config.ParseTime)
+	myConn := tiktok.Config.DBUser + ":" + tiktok.Config.DBPassword + "@tcp(" + tiktok.Config.SQLHost + ":" + tiktok.Config.SQLPort + ")/" + dbName
+	myParams := "?allowAllFiles=" + strconv.FormatBool(tiktok.Config.AllowAllFiles)
+	myParams = myParams + "&allowCleartextPasswords=" + strconv.FormatBool(tiktok.Config.AllowCleartextPasswords)
+	myParams = myParams + "&allowNativePasswords=" + strconv.FormatBool(tiktok.Config.AllowNativePasswords)
+	myParams = myParams + "&parseTime=" + strconv.FormatBool(tiktok.Config.ParseTime)
 	connString := myConn + myParams
 
 	db, err = sql.Open("mysql", connString)
 	if err != nil {
-		errTrap(baloo, "DB Connection Error: ", err)
+		errTrap(tiktok, "DB Connection Error: ", err)
 		return db, false, err
 	}
 
@@ -145,26 +145,26 @@ func ConnectDB(baloo *BalooConf, dbName string) (db *sql.DB, status bool, err er
 }
 
 // PutDBSprint - Put sprint data into DB
-func PutDBSprint(baloo *BalooConf, sOpts SprintData) error {
+func PutDBSprint(tiktok *TikTokConf, sOpts SprintData) error {
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 	if status {
 
 		stmt, err := db.Prepare("INSERT tiktok_main SET teamid=?,sprintstart=?,duration=?,retroid=?,sprintname=?,workingdays=?")
 		if err != nil {
-			errTrap(baloo, "SQL Error db.Prepare in `PutDBSprint` ", err)
+			errTrap(tiktok, "SQL Error db.Prepare in `PutDBSprint` ", err)
 			return err
 		}
 
 		_, err = stmt.Exec(sOpts.TeamID, sOpts.SprintStart, sOpts.Duration, sOpts.RetroID, sOpts.SprintName, sOpts.WorkingDays)
 		if err != nil {
-			errTrap(baloo, "SQL Error stmt.Exec in `PutDBSprint`", err)
+			errTrap(tiktok, "SQL Error stmt.Exec in `PutDBSprint`", err)
 			return err
 		}
 
 		return nil
 	}
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println("Failed connection, bailing out...")
 	}
 	return err
@@ -172,10 +172,10 @@ func PutDBSprint(baloo *BalooConf, sOpts SprintData) error {
 }
 
 // GetDBSprint - Get sprint data out of DB
-func GetDBSprint(baloo *BalooConf, teamID string) (sOpts SprintData, err error) {
+func GetDBSprint(tiktok *TikTokConf, teamID string) (sOpts SprintData, err error) {
 	var attachments Attachment
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
@@ -189,36 +189,36 @@ func GetDBSprint(baloo *BalooConf, teamID string) (sOpts SprintData, err error) 
 			&sOpts.WorkingDays)
 		switch {
 		case err == sql.ErrNoRows:
-			errTrap(baloo, "No rows returned for db.QueryRow on "+teamID, err)
+			errTrap(tiktok, "No rows returned for db.QueryRow on "+teamID, err)
 		case err != nil:
-			errTrap(baloo, "db.QueryRow error: ", err)
+			errTrap(tiktok, "db.QueryRow error: ", err)
 		default:
 			return sOpts, nil
 		}
 		return sOpts, err
 	}
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println("Failed connection, bailing out...")
 	}
-	if baloo.Config.LogToSlack {
-		LogToSlack("Failed DB Connection, bailing out", baloo, attachments)
+	if tiktok.Config.LogToSlack {
+		LogToSlack("Failed DB Connection, bailing out", tiktok, attachments)
 	}
 	return sOpts, err
 
 }
 
 // GetRetroID - Get all retro board IDs into one slice
-func GetRetroID(baloo *BalooConf, teamID string) (retroStruct []RetroStruct, err error) {
+func GetRetroID(tiktok *TikTokConf, teamID string) (retroStruct []RetroStruct, err error) {
 	var attachments Attachment
 	var tretro RetroStruct
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
 		rows, err := db.Query("select teamid,retroid from tiktok_main where teamid=?", teamID)
 		if err != nil {
-			errTrap(baloo, "DB Query Error in `GetRetroID` in `sql.go`", err)
+			errTrap(tiktok, "DB Query Error in `GetRetroID` in `sql.go`", err)
 			return retroStruct, err
 		}
 
@@ -227,7 +227,7 @@ func GetRetroID(baloo *BalooConf, teamID string) (retroStruct []RetroStruct, err
 		for rows.Next() {
 			if err := rows.Scan(&tretro.TeamID,
 				&tretro.RetroID); err != nil {
-				errTrap(baloo, "DB rows.Scan Error in `GetRetroID` in `sql.go`", err)
+				errTrap(tiktok, "DB rows.Scan Error in `GetRetroID` in `sql.go`", err)
 				return retroStruct, err
 			}
 
@@ -235,11 +235,11 @@ func GetRetroID(baloo *BalooConf, teamID string) (retroStruct []RetroStruct, err
 
 		}
 	} else {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("Failed connection, bailing out...")
 		}
-		if baloo.Config.LogToSlack {
-			LogToSlack("Failed DB Connection in `GetRetroID` in `sql.go`, bailing out", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Failed DB Connection in `GetRetroID` in `sql.go`, bailing out", tiktok, attachments)
 		}
 		return retroStruct, err
 	}
@@ -248,17 +248,17 @@ func GetRetroID(baloo *BalooConf, teamID string) (retroStruct []RetroStruct, err
 }
 
 // GetDBSquads - get all squads and label IDs in db
-func GetDBSquads(baloo *BalooConf, boardID string) (allSquads Squads, err error) {
+func GetDBSquads(tiktok *TikTokConf, boardID string) (allSquads Squads, err error) {
 	var attachments Attachment
 	var tsquad Squad
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
 		rows, err := db.Query("SELECT * FROM tiktok_squads where boardid=?", boardID)
 		if err != nil {
-			errTrap(baloo, "DB Query Error", err)
+			errTrap(tiktok, "DB Query Error", err)
 			return allSquads, err
 		}
 
@@ -269,7 +269,7 @@ func GetDBSquads(baloo *BalooConf, boardID string) (allSquads Squads, err error)
 				&tsquad.BoardID,
 				&tsquad.Squadname,
 				&tsquad.LabelID); err != nil {
-				errTrap(baloo, "DB Query Error", err)
+				errTrap(tiktok, "DB Query Error", err)
 				return allSquads, err
 
 			}
@@ -279,11 +279,11 @@ func GetDBSquads(baloo *BalooConf, boardID string) (allSquads Squads, err error)
 
 		}
 	} else {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("Failed connection, bailing out...")
 		}
-		if baloo.Config.LogToSlack {
-			LogToSlack("Failed DB Connection, bailing out", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Failed DB Connection, bailing out", tiktok, attachments)
 		}
 		return allSquads, err
 	}
@@ -292,17 +292,17 @@ func GetDBSquads(baloo *BalooConf, boardID string) (allSquads Squads, err error)
 }
 
 // GetDBChapters - get all chapters and label IDs in db
-func GetDBChapters(baloo *BalooConf, boardID string) (allChapters Chapters, err error) {
+func GetDBChapters(tiktok *TikTokConf, boardID string) (allChapters Chapters, err error) {
 	var attachments Attachment
 	var tchapter Chapter
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
 		rows, err := db.Query("SELECT * FROM tiktok_chapters where boardid=?", boardID)
 		if err != nil {
-			errTrap(baloo, "DB Query Error in `GetDBChapters` in `sql.go`", err)
+			errTrap(tiktok, "DB Query Error in `GetDBChapters` in `sql.go`", err)
 			return allChapters, err
 		}
 
@@ -313,7 +313,7 @@ func GetDBChapters(baloo *BalooConf, boardID string) (allChapters Chapters, err 
 				&tchapter.BoardID,
 				&tchapter.ChapterName,
 				&tchapter.LabelID); err != nil {
-				errTrap(baloo, "rows.Scan DB error in `GetDbChapters` in `sql.go`", err)
+				errTrap(tiktok, "rows.Scan DB error in `GetDbChapters` in `sql.go`", err)
 				return allChapters, err
 
 			}
@@ -324,11 +324,11 @@ func GetDBChapters(baloo *BalooConf, boardID string) (allChapters Chapters, err 
 
 		}
 	} else {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("Failed DB connection in `GetDbChapters` in `sql.go`, bailing out...")
 		}
-		if baloo.Config.LogToSlack {
-			LogToSlack("Failed DB connection in `GetDbChapters` in `sql.go`, bailing out...", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Failed DB connection in `GetDbChapters` in `sql.go`, bailing out...", tiktok, attachments)
 		}
 		return allChapters, err
 	}
@@ -337,18 +337,18 @@ func GetDBChapters(baloo *BalooConf, boardID string) (allChapters Chapters, err 
 }
 
 // GetIgnoreLabels - get all label IDs that should be ignored for a board
-func GetIgnoreLabels(baloo *BalooConf, boardID string) (ignoreLabels []string, err error) {
+func GetIgnoreLabels(tiktok *TikTokConf, boardID string) (ignoreLabels []string, err error) {
 	var attachments Attachment
 	var uid int
 	var labelID string
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
 		rows, err := db.Query("SELECT * FROM tiktok_label_ignore where boardid=?", boardID)
 		if err != nil {
-			errTrap(baloo, "DB query Error", err)
+			errTrap(tiktok, "DB query Error", err)
 			return ignoreLabels, err
 		}
 
@@ -358,7 +358,7 @@ func GetIgnoreLabels(baloo *BalooConf, boardID string) (ignoreLabels []string, e
 			if err := rows.Scan(&uid,
 				&boardID,
 				&labelID); err != nil {
-				errTrap(baloo, "DB Query Error", err)
+				errTrap(tiktok, "DB Query Error", err)
 				return ignoreLabels, err
 
 			}
@@ -367,11 +367,11 @@ func GetIgnoreLabels(baloo *BalooConf, boardID string) (ignoreLabels []string, e
 
 		}
 	} else {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("Failed connection, bailing out...")
 		}
-		if baloo.Config.LogToSlack {
-			LogToSlack("Failed DB Connection, bailing out", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Failed DB Connection, bailing out", tiktok, attachments)
 		}
 		return ignoreLabels, err
 	}
@@ -380,26 +380,26 @@ func GetIgnoreLabels(baloo *BalooConf, boardID string) (ignoreLabels []string, e
 }
 
 // LabelIgnore - add a label to the ignore table
-func LabelIgnore(opts Config, baloo *BalooConf, labelID string) error {
+func LabelIgnore(opts Config, tiktok *TikTokConf, labelID string) error {
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 	if status {
 
 		stmt, err := db.Prepare("INSERT tiktok_label_ignore SET boardid=?,labelid=?")
 		if err != nil {
-			errTrap(baloo, "SQL Error in LabelIgnore", err)
+			errTrap(tiktok, "SQL Error in LabelIgnore", err)
 			return err
 		}
 
 		_, err = stmt.Exec(opts.General.BoardID, labelID)
 		if err != nil {
-			errTrap(baloo, "SQL Error in LabelIgnore", err)
+			errTrap(tiktok, "SQL Error in LabelIgnore", err)
 			return err
 		}
 
 		return nil
 	}
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println("Failed connection, bailing out...")
 	}
 	return err
@@ -407,17 +407,17 @@ func LabelIgnore(opts Config, baloo *BalooConf, labelID string) error {
 }
 
 // GetUser - get a user from DB
-func GetUser(baloo *BalooConf, myField string, mySearch string) (user UserData, err error) {
+func GetUser(tiktok *TikTokConf, myField string, mySearch string) (user UserData, err error) {
 
 	var attachments Attachment
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
 		rows, err := db.Query("SELECT * FROM tiktok_users where " + myField + "='" + mySearch + "'")
 		if err != nil {
-			errTrap(baloo, "DB Query Error `db.Query` on tiktok_users in `GetUser`", err)
+			errTrap(tiktok, "DB Query Error `db.Query` on tiktok_users in `GetUser`", err)
 			return user, err
 		}
 
@@ -430,17 +430,17 @@ func GetUser(baloo *BalooConf, myField string, mySearch string) (user UserData, 
 				&user.Trello,
 				&user.Github,
 				&user.Email); err != nil {
-				errTrap(baloo, "DB Query Error `rows.Next` on tiktok_users in `GetUser`", err)
+				errTrap(tiktok, "DB Query Error `rows.Next` on tiktok_users in `GetUser`", err)
 				return user, err
 			}
 		}
 
 	} else {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("Failed connection, bailing out...")
 		}
-		if baloo.Config.LogToSlack {
-			LogToSlack("Failed DB Connection, bailing out", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Failed DB Connection, bailing out", tiktok, attachments)
 		}
 		return user, err
 	}
@@ -450,17 +450,17 @@ func GetUser(baloo *BalooConf, myField string, mySearch string) (user UserData, 
 }
 
 // GetDBUsers - get all users
-func GetDBUsers(baloo *BalooConf) (users []UserData, err error) {
+func GetDBUsers(tiktok *TikTokConf) (users []UserData, err error) {
 	var attachments Attachment
 	var u UserData
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
 		rows, err := db.Query("SELECT * FROM tiktok_users")
 		if err != nil {
-			errTrap(baloo, "DB Query Error on tiktok_users in `GetUser`", err)
+			errTrap(tiktok, "DB Query Error on tiktok_users in `GetUser`", err)
 			return users, err
 		}
 
@@ -473,7 +473,7 @@ func GetDBUsers(baloo *BalooConf) (users []UserData, err error) {
 				&u.Trello,
 				&u.Github,
 				&u.Email); err != nil {
-				errTrap(baloo, "DB Query Error", err)
+				errTrap(tiktok, "DB Query Error", err)
 				return users, err
 
 			}
@@ -482,11 +482,11 @@ func GetDBUsers(baloo *BalooConf) (users []UserData, err error) {
 
 		}
 	} else {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("Failed connection, bailing out...")
 		}
-		if baloo.Config.LogToSlack {
-			LogToSlack("Failed DB Connection, bailing out", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Failed DB Connection, bailing out", tiktok, attachments)
 		}
 		return users, err
 	}
@@ -495,11 +495,11 @@ func GetDBUsers(baloo *BalooConf) (users []UserData, err error) {
 }
 
 // AddDBUser - Put user data into DB
-func AddDBUser(baloo *BalooConf, users UserData) bool {
+func AddDBUser(tiktok *TikTokConf, users UserData) bool {
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 	if err != nil {
-		errTrap(baloo, "SQL Error in AddDBUser", err)
+		errTrap(tiktok, "SQL Error in AddDBUser", err)
 		return false
 	}
 
@@ -507,19 +507,19 @@ func AddDBUser(baloo *BalooConf, users UserData) bool {
 
 		stmt, err := db.Prepare("INSERT tiktok_users SET name=?,slackid=?,trello=?,github=?,email=?")
 		if err != nil {
-			errTrap(baloo, "SQL Error in AddDBUser", err)
+			errTrap(tiktok, "SQL Error in AddDBUser", err)
 			return false
 		}
 
 		_, err = stmt.Exec(users.Name, users.SlackID, users.Trello, users.Github, users.Email)
 		if err != nil {
-			errTrap(baloo, "SQL Error in AddDBUser", err)
+			errTrap(tiktok, "SQL Error in AddDBUser", err)
 			return false
 		}
 
 		return true
 	}
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println("Failed connection, bailing out...")
 	}
 	return false
@@ -527,31 +527,31 @@ func AddDBUser(baloo *BalooConf, users UserData) bool {
 }
 
 // zeroCardDataDB - drop data in carddata table
-func zeroCardDataDB(baloo *BalooConf) error {
+func zeroCardDataDB(tiktok *TikTokConf) error {
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 	if err != nil {
-		errTrap(baloo, "SQL error in `PutCardData`", err)
+		errTrap(tiktok, "SQL error in `PutCardData`", err)
 		return err
 	}
 
 	if status {
 		stmt, err := db.Prepare("TRUNCATE TABLE tiktok_cardtracker")
 		if err != nil {
-			errTrap(baloo, "SQL Error (db.Prepare) in zeroCardData on TRUNCATE", err)
+			errTrap(tiktok, "SQL Error (db.Prepare) in zeroCardData on TRUNCATE", err)
 			return err
 		}
 
 		_, err = stmt.Exec()
 		if err != nil {
-			errTrap(baloo, "SQL Error (stmt.Exec) in zeroCardData on TRUNCATE", err)
+			errTrap(tiktok, "SQL Error (stmt.Exec) in zeroCardData on TRUNCATE", err)
 			return err
 		}
 
 		return nil
 	}
 
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println("Failed connection in `zeroCardData` in `sql.go`, bailing out...")
 	}
 
@@ -560,31 +560,31 @@ func zeroCardDataDB(baloo *BalooConf) error {
 }
 
 // PutCardData - put card data to DB instead of CSV
-func PutCardData(baloo *BalooConf, allCardData CardReportData, teamID string) error {
+func PutCardData(tiktok *TikTokConf, allCardData CardReportData, teamID string) error {
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 	if err != nil {
-		errTrap(baloo, "SQL error in `PutCardData`", err)
+		errTrap(tiktok, "SQL error in `PutCardData`", err)
 		return err
 	}
 
 	if status {
 		stmt, err := db.Prepare("INSERT tiktok_cardtracker SET cardid=?,cardtitle=?,points=?,cardurl=?,list=?,startedinworking=?,startedinpr=?,entereddone=?,owners=?,team=?")
 		if err != nil {
-			errTrap(baloo, "SQL Error (db.Prepare) in `PutCardData`", err)
+			errTrap(tiktok, "SQL Error (db.Prepare) in `PutCardData`", err)
 			return err
 		}
 
 		_, err = stmt.Exec(allCardData.CardID, allCardData.CardTitle, allCardData.Points, allCardData.CardURL, allCardData.List, allCardData.StartedInWorking, allCardData.StartedInPR, allCardData.EnteredDone, allCardData.Owners, teamID)
 		if err != nil {
-			errTrap(baloo, "SQL Error (stmt.Exec) in `PutCardData`", err)
+			errTrap(tiktok, "SQL Error (stmt.Exec) in `PutCardData`", err)
 			return err
 		}
 
 		return nil
 	}
 
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println("Failed connection in `PutCardData` in `sql.go`, bailing out...")
 	}
 
@@ -593,11 +593,11 @@ func PutCardData(baloo *BalooConf, allCardData CardReportData, teamID string) er
 }
 
 // PutThemeCount - Update board theme counts for reporting
-func PutThemeCount(baloo *BalooConf, allTheme Themes, sOpts SprintData, teamID string) error {
+func PutThemeCount(tiktok *TikTokConf, allTheme Themes, sOpts SprintData, teamID string) error {
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 	if err != nil {
-		errTrap(baloo, "SQL error in `PutThemeCount`", err)
+		errTrap(tiktok, "SQL error in `PutThemeCount`", err)
 		return err
 	}
 
@@ -609,19 +609,19 @@ func PutThemeCount(baloo *BalooConf, allTheme Themes, sOpts SprintData, teamID s
 		for _, z := range allTheme {
 			stmt, err := db.Prepare("INSERT tiktok_theme_count SET countdate=?,team=?,sprintname=?,labelname=?,qty=?")
 			if err != nil {
-				errTrap(baloo, "SQL error in `PutThemeCount`", err)
+				errTrap(tiktok, "SQL error in `PutThemeCount`", err)
 				return err
 			}
 
 			_, err = stmt.Exec(today, teamID, sOpts.SprintName, z.Name, z.Pts)
 			if err != nil {
-				errTrap(baloo, "SQL error in `PutThemeCount`", err)
+				errTrap(tiktok, "SQL error in `PutThemeCount`", err)
 				return err
 			}
 		}
 		return nil
 	}
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println("Failed connection, bailing out...")
 	}
 
@@ -629,18 +629,18 @@ func PutThemeCount(baloo *BalooConf, allTheme Themes, sOpts SprintData, teamID s
 }
 
 // GetPreviousSprintPoints - Retrieve Previous sprint data from CloudSQL
-func GetPreviousSprintPoints(baloo *BalooConf, sprintname string) (totalSprint TotalSprint, err error) {
+func GetPreviousSprintPoints(tiktok *TikTokConf, sprintname string) (totalSprint TotalSprint, err error) {
 
 	var tempPoints SprintPointsBySquad
 	var attachments Attachment
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
 		rows, err := db.Query("SELECT * FROM tiktok_sprint_squad_points where LOWER(sprintname)=?", sprintname)
 		if err != nil {
-			errTrap(baloo, "`GetPreviousSprintPoints` Function error: DB Query Error", err)
+			errTrap(tiktok, "`GetPreviousSprintPoints` Function error: DB Query Error", err)
 			return totalSprint, err
 		}
 
@@ -650,7 +650,7 @@ func GetPreviousSprintPoints(baloo *BalooConf, sprintname string) (totalSprint T
 			if err := rows.Scan(&tempPoints.SprintName,
 				&tempPoints.SquadName,
 				&tempPoints.SprintPoints); err != nil {
-				errTrap(baloo, "`GetPreviousSprintPoints` Function error: DB Query Error", err)
+				errTrap(tiktok, "`GetPreviousSprintPoints` Function error: DB Query Error", err)
 				return totalSprint, err
 
 			}
@@ -658,11 +658,11 @@ func GetPreviousSprintPoints(baloo *BalooConf, sprintname string) (totalSprint T
 			totalSprint = append(totalSprint, tempPoints)
 		}
 	} else {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("Failed connection, bailing out...")
 		}
-		if baloo.Config.LogToSlack {
-			LogToSlack("Failed DB Connection, bailing out", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Failed DB Connection, bailing out", tiktok, attachments)
 		}
 		return totalSprint, err
 	}
@@ -672,18 +672,18 @@ func GetPreviousSprintPoints(baloo *BalooConf, sprintname string) (totalSprint T
 }
 
 // GetHoliday - Get List of Holidays in SQL DB
-func GetHoliday(baloo *BalooConf, year string) (theHolidays []Holiday, err error) {
+func GetHoliday(tiktok *TikTokConf, year string) (theHolidays []Holiday, err error) {
 
 	var tempHoliday Holiday
 	var attachments Attachment
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
 		rows, err := db.Query("SELECT * FROM tiktok_holidays where YEAR(holiday)=? ORDER BY holiday", year)
 		if err != nil {
-			errTrap(baloo, "`GetHoliday` Function error: DB Query Error", err)
+			errTrap(tiktok, "`GetHoliday` Function error: DB Query Error", err)
 			return theHolidays, err
 		}
 
@@ -694,7 +694,7 @@ func GetHoliday(baloo *BalooConf, year string) (theHolidays []Holiday, err error
 				&tempHoliday.Name,
 				&tempHoliday.Day,
 				&tempHoliday.Message); err != nil {
-				errTrap(baloo, "`GetHoliday` Function error: DB Query Error", err)
+				errTrap(tiktok, "`GetHoliday` Function error: DB Query Error", err)
 				return theHolidays, err
 
 			}
@@ -702,11 +702,11 @@ func GetHoliday(baloo *BalooConf, year string) (theHolidays []Holiday, err error
 			theHolidays = append(theHolidays, tempHoliday)
 		}
 	} else {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("Failed connection, bailing out...")
 		}
-		if baloo.Config.LogToSlack {
-			LogToSlack("Failed DB Connection, bailing out", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Failed DB Connection, bailing out", tiktok, attachments)
 		}
 		return theHolidays, err
 	}
@@ -715,20 +715,20 @@ func GetHoliday(baloo *BalooConf, year string) (theHolidays []Holiday, err error
 }
 
 // IsHoliday - Check for Holidays in SQL DB
-func IsHoliday(baloo *BalooConf, checkDate time.Time) (isHoliday bool, holiday Holiday) {
+func IsHoliday(tiktok *TikTokConf, checkDate time.Time) (isHoliday bool, holiday Holiday) {
 	var attachments Attachment
 
 	// checks for holidays in PST
 	loc, err := time.LoadLocation("America/Tijuana")
 	if err != nil {
-		errTrap(baloo, "TZ Data Error", err)
+		errTrap(tiktok, "TZ Data Error", err)
 		return false, holiday
 	}
 
 	t := checkDate.In(loc)
 	today := t.Format("2006-01-02")
 
-	db, status, errdb := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, errdb := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
@@ -739,34 +739,34 @@ func IsHoliday(baloo *BalooConf, checkDate time.Time) (isHoliday bool, holiday H
 			&holiday.Message)
 		switch {
 		case err == sql.ErrNoRows:
-			if baloo.Config.DEBUG {
+			if tiktok.Config.DEBUG {
 				fmt.Println("No rows returned for db.QueryRow on Holiday Check in `sql.go`")
 			}
 			return false, holiday
 		case err != nil:
-			errTrap(baloo, "db.QueryRow error", err)
+			errTrap(tiktok, "db.QueryRow error", err)
 			return false, holiday
 		default:
 			return true, holiday
 		}
 	}
 
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println("Failed connection to db in sql.go for holiday check, bailing out - " + errdb.Error())
 	}
-	if baloo.Config.LogToSlack {
-		LogToSlack("Failed DB Connection in `sql.go` for IsHoliday Func, bailing out - "+errdb.Error(), baloo, attachments)
+	if tiktok.Config.LogToSlack {
+		LogToSlack("Failed DB Connection in `sql.go` for IsHoliday Func, bailing out - "+errdb.Error(), tiktok, attachments)
 	}
 
 	return false, holiday
 }
 
 // RecordSquadSprintData - Record points for sprint per squad
-func RecordSquadSprintData(baloo *BalooConf, totalPoints Squads, sprintName string, nonPoints int) bool {
+func RecordSquadSprintData(tiktok *TikTokConf, totalPoints Squads, sprintName string, nonPoints int) bool {
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 	if err != nil {
-		errTrap(baloo, "SQL Error in RecordSquadSprintData", err)
+		errTrap(tiktok, "SQL Error in RecordSquadSprintData", err)
 		return false
 	}
 
@@ -774,26 +774,26 @@ func RecordSquadSprintData(baloo *BalooConf, totalPoints Squads, sprintName stri
 
 		stmt, err := db.Prepare("INSERT tiktok_sprint_squad_points SET sprintname=?,squadname=?,squadpoints=?")
 		if err != nil {
-			errTrap(baloo, "SQL Error in `db.Prepare` func `RecordSquadSprintData`", err)
+			errTrap(tiktok, "SQL Error in `db.Prepare` func `RecordSquadSprintData`", err)
 			return false
 		}
 
 		for _, s := range totalPoints {
 			_, err = stmt.Exec(sprintName, s.Squadname, s.SquadPts)
 			if err != nil {
-				errTrap(baloo, "SQL Error in `stmt.Exec` func `RecordSquadSprintData`", err)
+				errTrap(tiktok, "SQL Error in `stmt.Exec` func `RecordSquadSprintData`", err)
 				return false
 			}
 		}
 		_, err = stmt.Exec(sprintName, "Non-Squad", nonPoints)
 		if err != nil {
-			errTrap(baloo, "SQL Error in `stmt.Exec` for non-squad in func `RecordSquadSprintData`", err)
+			errTrap(tiktok, "SQL Error in `stmt.Exec` for non-squad in func `RecordSquadSprintData`", err)
 			return false
 		}
 
 		return true
 	}
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println("Failed connection, bailing out...")
 	}
 	return false
@@ -801,53 +801,53 @@ func RecordSquadSprintData(baloo *BalooConf, totalPoints Squads, sprintName stri
 }
 
 //DupeTable - Duplicates table inside CloudSQL DB
-func DupeTable(baloo *BalooConf, newTableName string, existTableName string) error {
+func DupeTable(tiktok *TikTokConf, newTableName string, existTableName string) error {
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 	if err != nil {
-		errTrap(baloo, "SQL Error in RecordSquadSprintData", err)
+		errTrap(tiktok, "SQL Error in RecordSquadSprintData", err)
 		return err
 	}
 
 	if status {
 		stmt, err := db.Prepare("CREATE TABLE " + newTableName + " LIKE " + existTableName)
 		if err != nil {
-			errTrap(baloo, "SQL Error (db.Prepare) in DupeTable on CREATE TABLE", err)
+			errTrap(tiktok, "SQL Error (db.Prepare) in DupeTable on CREATE TABLE", err)
 			return err
 		}
 
 		_, err = stmt.Exec()
 		if err != nil {
-			errTrap(baloo, "SQL Error (stmt.Exec) in DupeTable on CREATE TABLE", err)
+			errTrap(tiktok, "SQL Error (stmt.Exec) in DupeTable on CREATE TABLE", err)
 			return err
 		}
 
 		stmt, err = db.Prepare("INSERT INTO " + newTableName + " SELECT * FROM " + existTableName)
 		if err != nil {
-			errTrap(baloo, "SQL Error (db.Prepare) in DupeTable on INSERT INTO", err)
+			errTrap(tiktok, "SQL Error (db.Prepare) in DupeTable on INSERT INTO", err)
 			return err
 		}
 
 		_, err = stmt.Exec()
 		if err != nil {
-			errTrap(baloo, "SQL Error (stmt.Exec) in DupeTable on INSERT INTO", err)
+			errTrap(tiktok, "SQL Error (stmt.Exec) in DupeTable on INSERT INTO", err)
 			return err
 		}
 
 		return nil
 	}
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println("Failed connection, bailing out...")
 	}
 	return err
 }
 
 // RecordChapterCount - Record points for sprint per squad
-func RecordChapterCount(baloo *BalooConf, chapterName string, listName string, cardCount int, teamName string) bool {
+func RecordChapterCount(tiktok *TikTokConf, chapterName string, listName string, cardCount int, teamName string) bool {
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 	if err != nil {
-		errTrap(baloo, "SQL Error in RecordChapterCount", err)
+		errTrap(tiktok, "SQL Error in RecordChapterCount", err)
 		return false
 	}
 
@@ -858,19 +858,19 @@ func RecordChapterCount(baloo *BalooConf, chapterName string, listName string, c
 
 		stmt, err := db.Prepare("INSERT tiktok_chapter_cards SET timestamp=?,chaptername=?,listname=?,cards=?,team=?")
 		if err != nil {
-			errTrap(baloo, "SQL Error in `db.Prepare` func `RecordChapterCount`", err)
+			errTrap(tiktok, "SQL Error in `db.Prepare` func `RecordChapterCount`", err)
 			return false
 		}
 
 		_, err = stmt.Exec(timeStamp, chapterName, listName, cardCount, teamName)
 		if err != nil {
-			errTrap(baloo, "SQL Error in `stmt.Exec` func `RecordChapterCount`", err)
+			errTrap(tiktok, "SQL Error in `stmt.Exec` func `RecordChapterCount`", err)
 			return false
 		}
 
 		return true
 	}
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println("Failed connection, bailing out...")
 	}
 	return false
@@ -878,17 +878,17 @@ func RecordChapterCount(baloo *BalooConf, chapterName string, listName string, c
 }
 
 // GetBugID - get all Bug label IDs for a given board
-func GetBugID(baloo *BalooConf, boardID string) (bugs []BugLabel, err error) {
+func GetBugID(tiktok *TikTokConf, boardID string) (bugs []BugLabel, err error) {
 	var attachments Attachment
 	var temp BugLabel
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
 		rows, err := db.Query("SELECT * FROM tiktok_bug_label where boardid=?", boardID)
 		if err != nil {
-			errTrap(baloo, "DB query Error in `GetBugID` function in `sql.go`", err)
+			errTrap(tiktok, "DB query Error in `GetBugID` function in `sql.go`", err)
 			return bugs, err
 		}
 
@@ -899,7 +899,7 @@ func GetBugID(baloo *BalooConf, boardID string) (bugs []BugLabel, err error) {
 				&temp.BoardID,
 				&temp.BugLevel,
 				&temp.LabelID); err != nil {
-				errTrap(baloo, "DB rows.Scan error in `GetBugID` function in `sql.go`", err)
+				errTrap(tiktok, "DB rows.Scan error in `GetBugID` function in `sql.go`", err)
 				return bugs, err
 
 			}
@@ -908,11 +908,11 @@ func GetBugID(baloo *BalooConf, boardID string) (bugs []BugLabel, err error) {
 
 		}
 	} else {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("Failed connection, bailing out...")
 		}
-		if baloo.Config.LogToSlack {
-			LogToSlack("Failed DB Connection, bailing out", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Failed DB Connection, bailing out", tiktok, attachments)
 		}
 		return bugs, err
 	}
@@ -921,9 +921,9 @@ func GetBugID(baloo *BalooConf, boardID string) (bugs []BugLabel, err error) {
 }
 
 // GetSquadMembership - Get list of squads a user is part of in a given sprint
-func GetSquadMembership(baloo *BalooConf, dbUserID int, sprintName string) (userList []string, err error) {
+func GetSquadMembership(tiktok *TikTokConf, dbUserID int, sprintName string) (userList []string, err error) {
 
-	db, status, err := ConnectDB(baloo, baloo.Config.SQLDBName)
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	var peeps peeps
 	var attachments Attachment
@@ -932,7 +932,7 @@ func GetSquadMembership(baloo *BalooConf, dbUserID int, sprintName string) (user
 
 		rows, err := db.Query("SELECT * FROM tiktok_squad_peeps where userID=? AND sprint=?", dbUserID, sprintName)
 		if err != nil {
-			errTrap(baloo, "DB query Error in `GetSquadMembership` function in `sql.go`", err)
+			errTrap(tiktok, "DB query Error in `GetSquadMembership` function in `sql.go`", err)
 			return userList, err
 		}
 
@@ -943,7 +943,7 @@ func GetSquadMembership(baloo *BalooConf, dbUserID int, sprintName string) (user
 				&peeps.Sprint,
 				&peeps.Squad,
 				&peeps.UserID); err != nil {
-				errTrap(baloo, "DB rows.Scan error in `GetSquadMembership` function in `sql.go`", err)
+				errTrap(tiktok, "DB rows.Scan error in `GetSquadMembership` function in `sql.go`", err)
 				return userList, err
 
 			}
@@ -952,11 +952,11 @@ func GetSquadMembership(baloo *BalooConf, dbUserID int, sprintName string) (user
 
 		}
 	} else {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("Failed connection, bailing out...")
 		}
-		if baloo.Config.LogToSlack {
-			LogToSlack("Failed DB Connection, bailing out", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Failed DB Connection, bailing out", tiktok, attachments)
 		}
 		return userList, err
 	}

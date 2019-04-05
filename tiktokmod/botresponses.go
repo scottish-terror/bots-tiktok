@@ -7,10 +7,10 @@ import (
 )
 
 // Responder - check for chatty messages that need responses not actions
-func Responder(lowerString string, baloo *BalooConf, ev *slack.MessageEvent, rtm *slack.RTM) {
+func Responder(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, rtm *slack.RTM) {
 	// -- ALL BUSINESS
 	if strings.Contains(lowerString, "your 411") || strings.Contains(lowerString, "version") {
-		rtm.SendMessage(rtm.NewOutgoingMessage("Hi! My name is "+baloo.Config.BotName+" and I'm version "+baloo.Config.Version+". My slack ID is "+baloo.Config.BotID+" and I'm part of the "+baloo.Config.TeamName+" team (ID: "+baloo.Config.TeamID+").  This channels ID is "+ev.Msg.Channel+". Your Slack UID is "+ev.Msg.User+". I currently write my logs to "+baloo.Config.LogChannel, ev.Msg.Channel))
+		rtm.SendMessage(rtm.NewOutgoingMessage("Hi! My name is "+tiktok.Config.BotName+" and I'm version "+tiktok.Config.Version+". My slack ID is "+tiktok.Config.BotID+" and I'm part of the "+tiktok.Config.TeamName+" team (ID: "+tiktok.Config.TeamID+").  This channels ID is "+ev.Msg.Channel+". Your Slack UID is "+ev.Msg.User+". I currently write my logs to "+tiktok.Config.LogChannel, ev.Msg.Channel))
 	}
 
 	// -- FUN STUFF

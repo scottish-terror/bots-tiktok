@@ -8,7 +8,7 @@ import (
 )
 
 //GetAllPoints - GetAll Points in a sprint
-func GetAllPoints(baloo *BalooConf, opts Config, sOpts SprintData) (message string, valid bool) {
+func GetAllPoints(tiktok *TikTokConf, opts Config, sOpts SprintData) (message string, valid bool) {
 
 	var attachments Attachment
 	var plugins PointsHistory
@@ -26,7 +26,7 @@ func GetAllPoints(baloo *BalooConf, opts Config, sOpts SprintData) (message stri
 	rfrpts := 0
 	dnepts := 0
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err == nil {
 		for _, aTt := range allTheThings.Cards {
 			if !aTt.Closed {
@@ -41,13 +41,13 @@ func GetAllPoints(baloo *BalooConf, opts Config, sOpts SprintData) (message stri
 						}
 					}
 
-					pluginCard, _ := GetPowerUpField(aTt.ID, baloo)
+					pluginCard, _ := GetPowerUpField(aTt.ID, tiktok)
 
 					for _, pl := range pluginCard {
 						// zero out this struct field, as sometimes its non-existent in the json payload
 						plugins.Points = 0
 
-						if pl.IDPlugin == baloo.Config.PointsPowerUpID {
+						if pl.IDPlugin == tiktok.Config.PointsPowerUpID {
 							pluginJSON := []byte(pl.Value)
 							json.Unmarshal(pluginJSON, &plugins)
 
@@ -65,25 +65,25 @@ func GetAllPoints(baloo *BalooConf, opts Config, sOpts SprintData) (message stri
 							case aTt.IDList == opts.General.Done:
 								if sprintName != "" {
 									if sOpts.SprintName == sprintName {
-										if baloo.Config.LogToSlack && baloo.Config.DEBUG {
-											LogToSlack("Done Card w/ SprintName `"+sprintName+"` found, adding "+strconv.Itoa(plugins.Points)+" points. Card: "+aTt.ShortURL, baloo, attachments)
+										if tiktok.Config.LogToSlack && tiktok.Config.DEBUG {
+											LogToSlack("Done Card w/ SprintName `"+sprintName+"` found, adding "+strconv.Itoa(plugins.Points)+" points. Card: "+aTt.ShortURL, tiktok, attachments)
 										}
 										dnepts = dnepts + plugins.Points
 										numCards = numCards + 1
 									}
 								} else {
-									if baloo.Config.LogToSlack {
-										LogToSlack("Done Card w/ missing Sprint Name (`"+aTt.Name+"`) found. Card: "+aTt.ShortURL, baloo, attachments)
+									if tiktok.Config.LogToSlack {
+										LogToSlack("Done Card w/ missing Sprint Name (`"+aTt.Name+"`) found. Card: "+aTt.ShortURL, tiktok, attachments)
 									}
-									value, cardListTime := GetTimePutList(opts.General.Done, aTt.ID, opts, baloo)
+									value, cardListTime := GetTimePutList(opts.General.Done, aTt.ID, opts, tiktok)
 									if value {
 										format := "2006-01-02 15:04:05"
 										fmtTime := cardListTime.Format("2006-01-02 15:04:05")
 										cardTime, _ := time.Parse(format, fmtTime)
 										if cardTime.After(sOpts.SprintStart) {
 											dnepts = dnepts + plugins.Points
-											if baloo.Config.LogToSlack && baloo.Config.DEBUG {
-												LogToSlack("Card (`"+aTt.Name+"`) also in current sprint time frame so adding "+strconv.Itoa(plugins.Points)+" points", baloo, attachments)
+											if tiktok.Config.LogToSlack && tiktok.Config.DEBUG {
+												LogToSlack("Card (`"+aTt.Name+"`) also in current sprint time frame so adding "+strconv.Itoa(plugins.Points)+" points", tiktok, attachments)
 											}
 										}
 									}
@@ -98,7 +98,7 @@ func GetAllPoints(baloo *BalooConf, opts Config, sOpts SprintData) (message stri
 		totalPoints := rfwpts + wkgpts + rfrpts + dnepts
 
 		if totalPoints > 0 {
-			db, status, _ := ConnectDB(baloo, "tiktok")
+			db, status, _ := ConnectDB(tiktok, "tiktok")
 			if status {
 
 				today := time.Now().Local()
@@ -109,19 +109,19 @@ func GetAllPoints(baloo *BalooConf, opts Config, sOpts SprintData) (message stri
 				_, err := stmt.Exec(today, sOpts.TeamID, totalPoints, rfwpts, wkgpts, rfrpts, dnepts, numCards)
 
 				if err != nil {
-					errTrap(baloo, "SQL Error in tiktok_burndown table insert:", err)
+					errTrap(tiktok, "SQL Error in tiktok_burndown table insert:", err)
 				}
 
 			}
-			if baloo.Config.DEBUG {
+			if tiktok.Config.DEBUG {
 				fmt.Println("Failed connection, bailing out...")
 			}
 		} else {
-			if baloo.Config.DEBUG {
+			if tiktok.Config.DEBUG {
 				fmt.Print("Trying to add points for " + opts.General.TeamName + " sprint and Zero Points were found, somethings awry!")
 			}
-			if baloo.Config.LogToSlack {
-				LogToSlack("Trying to add points for "+opts.General.TeamName+" sprint and Zero Points were found, somethings awry!", baloo, attachments)
+			if tiktok.Config.LogToSlack {
+				LogToSlack("Trying to add points for "+opts.General.TeamName+" sprint and Zero Points were found, somethings awry!", tiktok, attachments)
 			}
 
 			return "Invalid points.", false
@@ -137,14 +137,14 @@ func GetAllPoints(baloo *BalooConf, opts Config, sOpts SprintData) (message stri
 		message = message + "Total Cards in Sprint: " + strconv.Itoa(numCards) + "\n"
 		message = message + "Avg Points Per Card: " + strconv.FormatFloat(avgPtsCard, 'f', 2, 64)
 
-		if baloo.Config.LogToSlack {
+		if tiktok.Config.LogToSlack {
 			attachments.Color = "#0000ff"
 			attachments.Text = message
-			LogToSlack(hmessage, baloo, attachments)
+			LogToSlack(hmessage, tiktok, attachments)
 		}
 
 	} else {
-		errTrap(baloo, "Error attempting to get all trello cards (nested call) in burndown.go for board "+sOpts.TeamID, err)
+		errTrap(tiktok, "Error attempting to get all trello cards (nested call) in burndown.go for board "+sOpts.TeamID, err)
 		return "Failed get all cards", false
 	}
 
@@ -152,7 +152,7 @@ func GetAllPoints(baloo *BalooConf, opts Config, sOpts SprintData) (message stri
 }
 
 // SprintSquadPoints - Determine squad points used on a specific sprint by sprint name
-func SprintSquadPoints(baloo *BalooConf, opts Config, sprintName string) (totalpoints Squads, nonPoints int, err error) {
+func SprintSquadPoints(tiktok *TikTokConf, opts Config, sprintName string) (totalpoints Squads, nonPoints int, err error) {
 	var checker bool
 	var points int
 
@@ -166,15 +166,15 @@ func SprintSquadPoints(baloo *BalooConf, opts Config, sprintName string) (totalp
 	m["customFieldItems"] = "true"
 
 	// Load Squad Information
-	totalpoints, err = GetDBSquads(baloo, opts.General.BoardID)
+	totalpoints, err = GetDBSquads(tiktok, opts.General.BoardID)
 	if err != nil {
-		errTrap(baloo, "Failed DB Call to get squad information in `burndown.go` func `SprintSquadPoints`", err)
+		errTrap(tiktok, "Failed DB Call to get squad information in `burndown.go` func `SprintSquadPoints`", err)
 		return totalpoints, nonPoints, err
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in SprintSquadPoints `burndown.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in SprintSquadPoints `burndown.go` for `"+opts.General.TeamName+"` board", err)
 		return
 	}
 
@@ -185,10 +185,10 @@ func SprintSquadPoints(baloo *BalooConf, opts Config, sprintName string) (totalp
 					if cusval.Value.Text == sprintName {
 						points = 0
 
-						pluginCard, _ := GetPowerUpField(aTt.ID, baloo)
+						pluginCard, _ := GetPowerUpField(aTt.ID, tiktok)
 						for _, p := range pluginCard {
 
-							if p.IDPlugin == baloo.Config.PointsPowerUpID {
+							if p.IDPlugin == tiktok.Config.PointsPowerUpID {
 
 								var plugins PointsHistory
 
@@ -222,17 +222,17 @@ func SprintSquadPoints(baloo *BalooConf, opts Config, sprintName string) (totalp
 }
 
 //ChapterCount - Card count by chapter on given list
-func ChapterCount(baloo *BalooConf, opts Config, listID string) (allChapter Chapters, totalCards int, err error) {
+func ChapterCount(tiktok *TikTokConf, opts Config, listID string) (allChapter Chapters, totalCards int, err error) {
 
-	allChapter, err = GetDBChapters(baloo, opts.General.BoardID)
+	allChapter, err = GetDBChapters(tiktok, opts.General.BoardID)
 	if err != nil {
-		errTrap(baloo, "Failed DB Call to get chapter information in `burndown.go` func `ChapterCount`", err)
+		errTrap(tiktok, "Failed DB Call to get chapter information in `burndown.go` func `ChapterCount`", err)
 		return allChapter, 0, err
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in `ChapterCount` in `burndown.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in `ChapterCount` in `burndown.go` for `"+opts.General.TeamName+"` board", err)
 		return allChapter, 0, err
 	}
 
@@ -257,20 +257,20 @@ func ChapterCount(baloo *BalooConf, opts Config, listID string) (allChapter Chap
 }
 
 //ChapterPoint - Point count by chapter on given list
-func ChapterPoint(baloo *BalooConf, opts Config, listID string) (allChapter Chapters, noChapter int, err error) {
+func ChapterPoint(tiktok *TikTokConf, opts Config, listID string) (allChapter Chapters, noChapter int, err error) {
 
 	var points int
 	var checker bool
 
-	allChapter, err = GetDBChapters(baloo, opts.General.BoardID)
+	allChapter, err = GetDBChapters(tiktok, opts.General.BoardID)
 	if err != nil {
-		errTrap(baloo, "Failed DB Call to get chapter information in `burndown.go` func `ChapterCount`", err)
+		errTrap(tiktok, "Failed DB Call to get chapter information in `burndown.go` func `ChapterCount`", err)
 		return allChapter, 0, err
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in `ChapterCount` in `burndown.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in `ChapterCount` in `burndown.go` for `"+opts.General.TeamName+"` board", err)
 		return allChapter, 0, err
 	}
 
@@ -279,10 +279,10 @@ func ChapterPoint(baloo *BalooConf, opts Config, listID string) (allChapter Chap
 			if aTt.IDList == listID {
 				points = 0
 
-				pluginCard, _ := GetPowerUpField(aTt.ID, baloo)
+				pluginCard, _ := GetPowerUpField(aTt.ID, tiktok)
 				for _, p := range pluginCard {
 
-					if p.IDPlugin == baloo.Config.PointsPowerUpID {
+					if p.IDPlugin == tiktok.Config.PointsPowerUpID {
 
 						var plugins PointsHistory
 

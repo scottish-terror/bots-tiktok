@@ -8,8 +8,8 @@ import (
 )
 
 // gitmyhub - creates connection with github to prepare API request
-func gitmyhub(baloo *BalooConf) (ctx context.Context, client *github.Client) {
-	gitKey := baloo.Config.GitToken
+func gitmyhub(tiktok *TikTokConf) (ctx context.Context, client *github.Client) {
+	gitKey := tiktok.Config.GitToken
 	ctx = context.Background()
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: gitKey},
@@ -22,9 +22,9 @@ func gitmyhub(baloo *BalooConf) (ctx context.Context, client *github.Client) {
 }
 
 // RetrieveRepo - retrieve list of repositories
-func RetrieveRepo(baloo *BalooConf) (repos []*github.Repository) {
+func RetrieveRepo(tiktok *TikTokConf) (repos []*github.Repository) {
 
-	ctx, client := gitmyhub(baloo)
+	ctx, client := gitmyhub(tiktok)
 
 	opt := &github.RepositoryListOptions{
 		Sort:        "updated",
@@ -34,7 +34,7 @@ func RetrieveRepo(baloo *BalooConf) (repos []*github.Repository) {
 	}
 	repos, _, err := client.Repositories.List(ctx, "", opt)
 	if err != nil {
-		errTrap(baloo, "Error in `retrieveRepo` function in `git.go`", err)
+		errTrap(tiktok, "Error in `retrieveRepo` function in `git.go`", err)
 		return
 	}
 
@@ -43,9 +43,9 @@ func RetrieveRepo(baloo *BalooConf) (repos []*github.Repository) {
 }
 
 // RetrieveUsers - retrieve list of Users
-func RetrieveUsers(baloo *BalooConf) (users []*github.User) {
+func RetrieveUsers(tiktok *TikTokConf) (users []*github.User) {
 
-	ctx, client := gitmyhub(baloo)
+	ctx, client := gitmyhub(tiktok)
 
 	opt := &github.ListMembersOptions{
 		ListOptions: github.ListOptions{PerPage: 100},
@@ -53,7 +53,7 @@ func RetrieveUsers(baloo *BalooConf) (users []*github.User) {
 
 	users, _, err := client.Organizations.ListMembers(ctx, "ForgeCloud", opt)
 	if err != nil {
-		errTrap(baloo, "Error in `RetrieveUsers` function in `git.go`", err)
+		errTrap(tiktok, "Error in `RetrieveUsers` function in `git.go`", err)
 		return
 	}
 
@@ -62,9 +62,9 @@ func RetrieveUsers(baloo *BalooConf) (users []*github.User) {
 }
 
 // GitPRList - retrieve all PRs in a repo
-func GitPRList(baloo *BalooConf, repoName string) (pulls []*github.PullRequest, err error) {
+func GitPRList(tiktok *TikTokConf, repoName string) (pulls []*github.PullRequest, err error) {
 
-	ctx, client := gitmyhub(baloo)
+	ctx, client := gitmyhub(tiktok)
 
 	opt := &github.PullRequestListOptions{
 		Sort:      "updated",
@@ -73,7 +73,7 @@ func GitPRList(baloo *BalooConf, repoName string) (pulls []*github.PullRequest, 
 
 	pulls, _, err = client.PullRequests.List(ctx, "ForgeCloud", repoName, opt)
 	if err != nil {
-		errTrap(baloo, "Error in `GitPRList` function in `git.go`", err)
+		errTrap(tiktok, "Error in `GitPRList` function in `git.go`", err)
 		return pulls, err
 	}
 
@@ -81,13 +81,13 @@ func GitPRList(baloo *BalooConf, repoName string) (pulls []*github.PullRequest, 
 }
 
 // GitPR - retrieve a single PR in a repo
-func GitPR(baloo *BalooConf, repoName string, PRID int) (pull *github.PullRequest, err error) {
+func GitPR(tiktok *TikTokConf, repoName string, PRID int) (pull *github.PullRequest, err error) {
 
-	ctx, client := gitmyhub(baloo)
+	ctx, client := gitmyhub(tiktok)
 
 	pull, _, err = client.PullRequests.Get(ctx, "ForgeCloud", repoName, PRID)
 	if err != nil {
-		errTrap(baloo, "Error in `GitPR` function in `git.go`", err)
+		errTrap(tiktok, "Error in `GitPR` function in `git.go`", err)
 		return pull, err
 	}
 

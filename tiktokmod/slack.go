@@ -181,11 +181,11 @@ func redirectPolicyFunc(req gorequest.Request, via []gorequest.Request) error {
 }
 
 // PostSnippet - Post a snippet of any type to slack channel
-func PostSnippet(baloo *BalooConf, fileType string, fileContent string, channel string, title string) error {
+func PostSnippet(tiktok *TikTokConf, fileType string, fileContent string, channel string, title string) error {
 
 	form := url.Values{}
 
-	form.Set("token", baloo.Config.SlackToken)
+	form.Set("token", tiktok.Config.SlackToken)
 	form.Set("channels", channel)
 	form.Set("content", fileContent)
 	form.Set("filetype", fileType)
@@ -196,19 +196,19 @@ func PostSnippet(baloo *BalooConf, fileType string, fileContent string, channel 
 	req, err := http.NewRequest("POST", fileUploadURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+tiktok.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(baloo, "Slack PostSnippet - http.Do() error: ", err)
+		errTrap(tiktok, "Slack PostSnippet - http.Do() error: ", err)
 		return err
 	}
 	defer resp.Body.Close()
 
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		errTrap(baloo, "Slack PostSnippet - ioutil.ReadAll() error: ", err)
+		errTrap(tiktok, "Slack PostSnippet - ioutil.ReadAll() error: ", err)
 		return err
 	}
 
@@ -235,31 +235,31 @@ func Send(webhookURL string, proxy string, payload Payload) []error {
 }
 
 // WranglerDM - Send chat.Post API DM messages "as the bot"
-func WranglerDM(baloo *BalooConf, payload BotDMPayload) error {
+func WranglerDM(tiktok *TikTokConf, payload BotDMPayload) error {
 	url := "https://slack.com/api/chat.postMessage"
 
-	payload.Token = baloo.Config.SlackToken
+	payload.Token = tiktok.Config.SlackToken
 	payload.AsUser = true
 
 	jsonStr, err := json.Marshal(&payload)
 	if err != nil {
-		errTrap(baloo, "Error attempting to marshal struct to json for slack BotDMPayload", err)
+		errTrap(tiktok, "Error attempting to marshal struct to json for slack BotDMPayload", err)
 		return err
 	}
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `CreateList` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `CreateList` in `trello.go`", err)
 		return err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+tiktok.Config.SlackToken)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `CreateList` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `CreateList` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -272,7 +272,7 @@ func Wrangler(webhookURL string, message string, myChannel string, emojiName str
 
 	payload := Payload{
 		Text:        message,
-		Username:    "BalooConf",
+		Username:    "TikTokConf",
 		Channel:     myChannel,
 		IconEmoji:   emojiName,
 		Attachments: []Attachment{attachments},
@@ -284,18 +284,18 @@ func Wrangler(webhookURL string, message string, myChannel string, emojiName str
 }
 
 //LogToSlack - Dump Logs to a Slack Channel
-func LogToSlack(message string, baloo *BalooConf, attachments Attachment) {
+func LogToSlack(message string, tiktok *TikTokConf, attachments Attachment) {
 	now := time.Now().Local()
-	if baloo.Config.LoggingPrefix != "" {
-		message = "`" + baloo.Config.LoggingPrefix + "` - *" + now.Format("01/02/2006 15:04:05") + " :* " + message
+	if tiktok.Config.LoggingPrefix != "" {
+		message = "`" + tiktok.Config.LoggingPrefix + "` - *" + now.Format("01/02/2006 15:04:05") + " :* " + message
 	} else {
 		message = "*" + now.Format("01/02/2006 15:04:05") + " :* " + message
 	}
-	Wrangler(baloo.Config.SlackHook, message, baloo.Config.LogChannel, baloo.Config.SlackEmoji, attachments)
+	Wrangler(tiktok.Config.SlackHook, message, tiktok.Config.LogChannel, tiktok.Config.SlackEmoji, attachments)
 }
 
 // CreateChannel - create a slack channel and return the payload
-func CreateChannel(baloo *BalooConf, channelName string, errValidate bool) (slackPayload ChannelRespPayload, success bool, err error) {
+func CreateChannel(tiktok *TikTokConf, channelName string, errValidate bool) (slackPayload ChannelRespPayload, success bool, err error) {
 	var validate string
 
 	form := url.Values{}
@@ -305,7 +305,7 @@ func CreateChannel(baloo *BalooConf, channelName string, errValidate bool) (slac
 	} else {
 		validate = "false"
 	}
-	form.Set("token", baloo.Config.SlackOAuth)
+	form.Set("token", tiktok.Config.SlackOAuth)
 	form.Set("name", channelName)
 	form.Set("validate", validate)
 
@@ -314,12 +314,12 @@ func CreateChannel(baloo *BalooConf, channelName string, errValidate bool) (slac
 	req, err := http.NewRequest("POST", channelCreateURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+tiktok.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(baloo, "Slack CreateChannel - http.Do() error: ", err)
+		errTrap(tiktok, "Slack CreateChannel - http.Do() error: ", err)
 		return slackPayload, false, err
 	}
 	defer resp.Body.Close()
@@ -334,11 +334,11 @@ func CreateChannel(baloo *BalooConf, channelName string, errValidate bool) (slac
 }
 
 // ArchiveChannel - archive a slack channel created by bot and return payload. must send channel slackID, not channel name
-func ArchiveChannel(baloo *BalooConf, channelID string) (slackPayload ChannelRespPayload, success bool, err error) {
+func ArchiveChannel(tiktok *TikTokConf, channelID string) (slackPayload ChannelRespPayload, success bool, err error) {
 
 	form := url.Values{}
 
-	form.Set("token", baloo.Config.SlackOAuth)
+	form.Set("token", tiktok.Config.SlackOAuth)
 	form.Set("channel", channelID)
 
 	s := form.Encode()
@@ -346,12 +346,12 @@ func ArchiveChannel(baloo *BalooConf, channelID string) (slackPayload ChannelRes
 	req, err := http.NewRequest("POST", channelArchiveURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+tiktok.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(baloo, "Slack ArchiveChannel - http.Do() error: ", err)
+		errTrap(tiktok, "Slack ArchiveChannel - http.Do() error: ", err)
 		return slackPayload, false, err
 	}
 	defer resp.Body.Close()
@@ -366,11 +366,11 @@ func ArchiveChannel(baloo *BalooConf, channelID string) (slackPayload ChannelRes
 }
 
 // UnArchiveChannel - un-archive a slack channel and return payload. must send channel slackID, not channel name
-func UnArchiveChannel(baloo *BalooConf, channelID string) (slackPayload BasicSlackPayload, err error) {
+func UnArchiveChannel(tiktok *TikTokConf, channelID string) (slackPayload BasicSlackPayload, err error) {
 
 	form := url.Values{}
 
-	form.Set("token", baloo.Config.SlackOAuth)
+	form.Set("token", tiktok.Config.SlackOAuth)
 	form.Set("channel", channelID)
 
 	s := form.Encode()
@@ -378,12 +378,12 @@ func UnArchiveChannel(baloo *BalooConf, channelID string) (slackPayload BasicSla
 	req, err := http.NewRequest("POST", channelUnArchiveURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+tiktok.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(baloo, "Slack UnArchiveChannel - http.Do() error: ", err)
+		errTrap(tiktok, "Slack UnArchiveChannel - http.Do() error: ", err)
 		return slackPayload, err
 	}
 	defer resp.Body.Close()
@@ -398,7 +398,7 @@ func UnArchiveChannel(baloo *BalooConf, channelID string) (slackPayload BasicSla
 }
 
 // ChannelList - Return slice of slack channels
-func ChannelList(baloo *BalooConf, noArchived bool) (slackPayload ChannelListPayload, success bool, err error) {
+func ChannelList(tiktok *TikTokConf, noArchived bool) (slackPayload ChannelListPayload, success bool, err error) {
 	var ignoreArchive string
 
 	form := url.Values{}
@@ -409,7 +409,7 @@ func ChannelList(baloo *BalooConf, noArchived bool) (slackPayload ChannelListPay
 		ignoreArchive = "false"
 	}
 
-	form.Set("token", baloo.Config.SlackToken)
+	form.Set("token", tiktok.Config.SlackToken)
 	form.Set("exclude_archived", ignoreArchive)
 	form.Set("limit", "1000")
 	form.Set("types", "public_channel")
@@ -419,12 +419,12 @@ func ChannelList(baloo *BalooConf, noArchived bool) (slackPayload ChannelListPay
 	req, err := http.NewRequest("POST", channelListURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+tiktok.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(baloo, "Slack ChannelList - http.Do() error: ", err)
+		errTrap(tiktok, "Slack ChannelList - http.Do() error: ", err)
 		return slackPayload, false, err
 	}
 	defer resp.Body.Close()
@@ -439,11 +439,11 @@ func ChannelList(baloo *BalooConf, noArchived bool) (slackPayload ChannelListPay
 }
 
 // ChannelInvite - Invite a user to a specific channel. Expects slack channel ID and user ID not slack names
-func ChannelInvite(baloo *BalooConf, channelID string, userID string) (slackPayload BasicSlackPayload, err error) {
+func ChannelInvite(tiktok *TikTokConf, channelID string, userID string) (slackPayload BasicSlackPayload, err error) {
 
 	form := url.Values{}
 
-	form.Set("token", baloo.Config.SlackOAuth)
+	form.Set("token", tiktok.Config.SlackOAuth)
 	form.Set("channel", channelID)
 	form.Set("user", userID)
 
@@ -452,12 +452,12 @@ func ChannelInvite(baloo *BalooConf, channelID string, userID string) (slackPayl
 	req, err := http.NewRequest("POST", channelInviteURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+tiktok.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(baloo, "Slack ChannelInvite - http.Do() error: ", err)
+		errTrap(tiktok, "Slack ChannelInvite - http.Do() error: ", err)
 		return slackPayload, err
 	}
 	defer resp.Body.Close()
@@ -472,11 +472,11 @@ func ChannelInvite(baloo *BalooConf, channelID string, userID string) (slackPayl
 }
 
 // ChannelTopicSet - Set topic in a channel. Expects slack channel ID not name. Bot MUST be in channel to work
-func ChannelTopicSet(baloo *BalooConf, channelID string, topic string) (slackPayload BasicSlackPayload, err error) {
+func ChannelTopicSet(tiktok *TikTokConf, channelID string, topic string) (slackPayload BasicSlackPayload, err error) {
 
 	form := url.Values{}
 
-	form.Set("token", baloo.Config.SlackToken)
+	form.Set("token", tiktok.Config.SlackToken)
 	form.Set("channel", channelID)
 	form.Set("topic", topic)
 
@@ -485,12 +485,12 @@ func ChannelTopicSet(baloo *BalooConf, channelID string, topic string) (slackPay
 	req, err := http.NewRequest("POST", channelTopicSetURL, strings.NewReader(s))
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("Authorization", "Bearer "+baloo.Config.SlackToken)
+	req.Header.Add("Authorization", "Bearer "+tiktok.Config.SlackToken)
 
 	c := &http.Client{}
 	resp, err := c.Do(req)
 	if err != nil {
-		errTrap(baloo, "Slack ChannelTopicSet - http.Do() error: ", err)
+		errTrap(tiktok, "Slack ChannelTopicSet - http.Do() error: ", err)
 		return slackPayload, err
 	}
 	defer resp.Body.Close()

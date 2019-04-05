@@ -21,8 +21,8 @@ type Cronjobs struct {
 	}
 }
 
-// BalooStruct primary configuration struct
-type BalooStruct struct {
+// TikTokStruct primary configuration struct
+type TikTokStruct struct {
 	SlackHook               string
 	SlackToken              string
 	SlackOAuth              string
@@ -109,13 +109,13 @@ type Config struct {
 	General GeneralOptions
 }
 
-// BalooConf - Struct of baloo conf file section
-type BalooConf struct {
-	Config BalooStruct
+// TikTokConf - Struct of tiktok conf file section
+type TikTokConf struct {
+	Config TikTokStruct
 }
 
 var conf Config
-var baloo BalooConf
+var tiktok TikTokConf
 var jobList Cronjobs
 
 // LoadCronFile - CRON Tabs
@@ -134,20 +134,20 @@ func LoadCronFile() (*Cronjobs, error) {
 	return &jobList, nil
 }
 
-// LoadBalooConf Main Config
-func LoadBalooConf() (*BalooConf, error) {
-	configFile := "cfg/baloo.toml"
+// LoadTikTokConf Main Config
+func LoadTikTokConf() (*TikTokConf, error) {
+	configFile := "cfg/tiktok.toml"
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
-		return nil, errors.New("config file does not exist - baloo.toml must exist in run directory")
+		return nil, errors.New("config file does not exist - tiktok.toml must exist in run directory")
 	} else if err != nil {
 		return nil, err
 	}
 
-	if _, err := toml.DecodeFile(configFile, &baloo); err != nil {
+	if _, err := toml.DecodeFile(configFile, &tiktok); err != nil {
 		return nil, err
 	}
 
-	return &baloo, nil
+	return &tiktok, nil
 }
 
 // LoadConfig - load toml config file
@@ -208,7 +208,7 @@ func SanityCheck(ConfigLocation string, ms GeneralOptions) (sane bool, output st
 }
 
 // LoadConf - load a teams conf file to do something
-func LoadConf(baloo *BalooConf, team string) (opts Config, err error) {
+func LoadConf(tiktok *TikTokConf, team string) (opts Config, err error) {
 
 	var attachments Attachment
 
@@ -217,7 +217,7 @@ func LoadConf(baloo *BalooConf, team string) (opts Config, err error) {
 	// Load the config file
 	slopts, err := LoadConfig(configLocation)
 	if err != nil {
-		errTrap(baloo, "Failure Loading requested team file `"+configLocation+"`.", err)
+		errTrap(tiktok, "Failure Loading requested team file `"+configLocation+"`.", err)
 		return opts, err
 	}
 
@@ -226,11 +226,11 @@ func LoadConf(baloo *BalooConf, team string) (opts Config, err error) {
 	// Run sanity check on the config file
 	sane, output := SanityCheck(configLocation, opts.General)
 	if !sane {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println(output)
 		}
-		if baloo.Config.LogToSlack {
-			LogToSlack("Config file failed Sanity check for team file `"+configLocation+"`. ```"+output+"```", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Config file failed Sanity check for team file `"+configLocation+"`. ```"+output+"```", tiktok, attachments)
 		}
 		return opts, err
 	}
@@ -239,12 +239,12 @@ func LoadConf(baloo *BalooConf, team string) (opts Config, err error) {
 }
 
 // FindToml - Get list of TOML files
-func FindToml(baloo *BalooConf) (tomls []os.FileInfo, err error) {
+func FindToml(tiktok *TikTokConf) (tomls []os.FileInfo, err error) {
 
 	tomls, err = ioutil.ReadDir("cfg/")
 
 	if err != nil {
-		errTrap(baloo, "Error attempting to read directory listing for `./*.toml`", err)
+		errTrap(tiktok, "Error attempting to read directory listing for `./*.toml`", err)
 		return nil, err
 	}
 
@@ -252,17 +252,17 @@ func FindToml(baloo *BalooConf) (tomls []os.FileInfo, err error) {
 }
 
 // ListAllTOML - list all the available TOML files in a string
-func ListAllTOML(baloo *BalooConf) (message string) {
+func ListAllTOML(tiktok *TikTokConf) (message string) {
 
-	tomls, _ := FindToml(baloo)
+	tomls, _ := FindToml(tiktok)
 
 	for _, f := range tomls {
 
-		if f.Name() != "example.toml" && f.Name() != "crons.toml" && f.Name() != "baloo.toml" {
+		if f.Name() != "example.toml" && f.Name() != "crons.toml" && f.Name() != "tiktok.toml" {
 			s := strings.Split(f.Name(), ".")
 
 			if s[len(s)-1] == "toml" {
-				opts, _ := LoadConf(baloo, s[0])
+				opts, _ := LoadConf(tiktok, s[0])
 				message = message + "<https://trello.com/b/" + opts.General.BoardID + "|" + opts.General.TeamName + " trello board>.  Refer to ID: [" + s[0] + "]\n"
 			}
 

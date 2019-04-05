@@ -483,18 +483,18 @@ type ListData []struct {
 type Themes []Theme
 
 // AddBoardMember - Add a trello member to a board
-func AddBoardMember(baloo *BalooConf, boardID string, memberID string) error {
-	url := "https://api.trello.com/1/boards/" + boardID + "/members/" + memberID + "?type=normal&key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+func AddBoardMember(tiktok *TikTokConf, boardID string, memberID string) error {
+	url := "https://api.trello.com/1/boards/" + boardID + "/members/" + memberID + "?type=normal&key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("PUT", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `AddBoardMember` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `AddBoardMember` in `trello.go`", err)
 		return err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `AddBoardMember` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `AddBoardMember` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -503,18 +503,18 @@ func AddBoardMember(baloo *BalooConf, boardID string, memberID string) error {
 }
 
 // CreateList - adlio doesn't have this function so here it is
-func CreateList(boardID string, listName string, baloo *BalooConf) error {
+func CreateList(boardID string, listName string, tiktok *TikTokConf) error {
 	url := "https://api.trello.com/1/lists/"
 	var jsonStr = []byte(`{
 		"name":"` + listName + `",
 		"idBoard":"` + boardID + `",
-		"key":"` + baloo.Config.Tkey + `",
-		"token":"` + baloo.Config.Ttoken + `"
+		"key":"` + tiktok.Config.Tkey + `",
+		"token":"` + tiktok.Config.Ttoken + `"
 		}`)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `CreateList` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `CreateList` in `trello.go`", err)
 		return err
 	}
 
@@ -523,7 +523,7 @@ func CreateList(boardID string, listName string, baloo *BalooConf) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `CreateList` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `CreateList` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -531,18 +531,18 @@ func CreateList(boardID string, listName string, baloo *BalooConf) error {
 }
 
 // CreateCard - custom card creation
-func CreateCard(cardName string, listID string, baloo *BalooConf) error {
+func CreateCard(cardName string, listID string, tiktok *TikTokConf) error {
 	url := "https://api.trello.com/1/cards"
 	var jsonStr = []byte(`{
 		"name":"` + cardName + `",
 		"idList":"` + listID + `",
-		"key":"` + baloo.Config.Tkey + `",
-		"token":"` + baloo.Config.Ttoken + `"
+		"key":"` + tiktok.Config.Tkey + `",
+		"token":"` + tiktok.Config.Ttoken + `"
 		}`)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `CreateCard` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `CreateCard` in `trello.go`", err)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -550,7 +550,7 @@ func CreateCard(cardName string, listID string, baloo *BalooConf) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `CreateList` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `CreateList` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -558,7 +558,7 @@ func CreateCard(cardName string, listID string, baloo *BalooConf) error {
 }
 
 // CreateBoard - adlio doesn't have this function so here it is
-func CreateBoard(boardName string, orgName string, baloo *BalooConf) (trellrep Boards, err error) {
+func CreateBoard(boardName string, orgName string, tiktok *TikTokConf) (trellrep Boards, err error) {
 
 	url := "https://api.trello.com/1/boards/"
 
@@ -577,13 +577,13 @@ func CreateBoard(boardName string, orgName string, baloo *BalooConf) (trellrep B
 		"prefs_cardCovers":"true",
 		"prefs_background":"green",
 		"prefs_cardAging":"regular",
-		"key":"` + baloo.Config.Tkey + `",
-		"token":"` + baloo.Config.Ttoken + `"
+		"key":"` + tiktok.Config.Tkey + `",
+		"token":"` + tiktok.Config.Ttoken + `"
 		}`)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `CreateBoard` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `CreateBoard` in `trello.go`", err)
 		return trellrep, err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -591,7 +591,7 @@ func CreateBoard(boardName string, orgName string, baloo *BalooConf) (trellrep B
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `CreateBoard` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `CreateBoard` in `trello.go`", err)
 		return trellrep, err
 	}
 
@@ -604,18 +604,18 @@ func CreateBoard(boardName string, orgName string, baloo *BalooConf) (trellrep B
 }
 
 //AssignCollection - Assign a board to a speific collection (via its ID)
-func AssignCollection(boardID string, collectionID string, baloo *BalooConf) string {
-	url := "https://api.trello.com/1/boards/" + boardID + "/idTags?value=" + collectionID + "&key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+func AssignCollection(boardID string, collectionID string, tiktok *TikTokConf) string {
+	url := "https://api.trello.com/1/boards/" + boardID + "/idTags?value=" + collectionID + "&key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `AssignCollection` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `AssignCollection` in `trello.go`", err)
 		return "Error see logs"
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `AssignCollection` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `AssignCollection` in `trello.go`", err)
 		return "Error see logs"
 	}
 	defer resp.Body.Close()
@@ -624,18 +624,18 @@ func AssignCollection(boardID string, collectionID string, baloo *BalooConf) str
 }
 
 // GetPowerUpField - adlio/trello doesn't support Powerup/Plugin card fields, so buildling this function to add that
-func GetPowerUpField(cardID string, baloo *BalooConf) (pluginCard PluginCollection, err error) {
-	url := "https://api.trello.com/1/cards/" + cardID + "/plugindata?key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+func GetPowerUpField(cardID string, tiktok *TikTokConf) (pluginCard PluginCollection, err error) {
+	url := "https://api.trello.com/1/cards/" + cardID + "/plugindata?key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `GetPowerUpField` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `GetPowerUpField` in `trello.go`", err)
 		return pluginCard, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `GetPowerUpField` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `GetPowerUpField` in `trello.go`", err)
 		return pluginCard, err
 	}
 	defer resp.Body.Close()
@@ -645,13 +645,13 @@ func GetPowerUpField(cardID string, baloo *BalooConf) (pluginCard PluginCollecti
 }
 
 // adlia/trello doesn't support label removal, so this function does that thing
-func removeLabel(cardID string, labelID string, baloo *BalooConf) (err error) {
+func removeLabel(cardID string, labelID string, tiktok *TikTokConf) (err error) {
 	url := "https://api.trello.com/1/cards/" + cardID + "/idLabels/" + labelID
 
-	var jsonStr = []byte(`{"key": "` + baloo.Config.Tkey + `", "token": "` + baloo.Config.Ttoken + `"}`)
+	var jsonStr = []byte(`{"key": "` + tiktok.Config.Tkey + `", "token": "` + tiktok.Config.Ttoken + `"}`)
 	req, err := http.NewRequest("DELETE", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `removeLabel` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `removeLabel` in `trello.go`", err)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -659,7 +659,7 @@ func removeLabel(cardID string, labelID string, baloo *BalooConf) (err error) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `removeLabel` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `removeLabel` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -669,13 +669,13 @@ func removeLabel(cardID string, labelID string, baloo *BalooConf) (err error) {
 
 // PutCustomField - used in multiple places
 // adlio/trello doesn't support custom card fields, so this function posts to changes in custom fields
-func PutCustomField(cardID string, customID string, baloo *BalooConf, someValueType string, somevalue string) (err error) {
+func PutCustomField(cardID string, customID string, tiktok *TikTokConf, someValueType string, somevalue string) (err error) {
 	url := "https://api.trello.com/1/card/" + cardID + "/customField/" + customID + "/item"
 
-	var jsonStr = []byte(`{"key": "` + baloo.Config.Tkey + `", "token": "` + baloo.Config.Ttoken + `", "value": { "` + someValueType + `": "` + somevalue + `" }}`)
+	var jsonStr = []byte(`{"key": "` + tiktok.Config.Tkey + `", "token": "` + tiktok.Config.Ttoken + `", "value": { "` + someValueType + `": "` + somevalue + `" }}`)
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `PutCustomField` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `PutCustomField` in `trello.go`", err)
 		return err
 	}
 	req.Header.Set("X-Custom-Header", "")
@@ -684,7 +684,7 @@ func PutCustomField(cardID string, customID string, baloo *BalooConf, someValueT
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `PutCustomField` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `PutCustomField` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -693,14 +693,14 @@ func PutCustomField(cardID string, customID string, baloo *BalooConf, someValueT
 }
 
 // RemoveHead - Remove member from trello card
-func RemoveHead(baloo *BalooConf, cardID string, memberID string) error {
+func RemoveHead(tiktok *TikTokConf, cardID string, memberID string) error {
 
 	url := "https://api.trello.com/1/cards/" + cardID + "/idMembers/" + memberID
 
-	var jsonStr = []byte(`{"key": "` + baloo.Config.Tkey + `", "token": "` + baloo.Config.Ttoken + `"}`)
+	var jsonStr = []byte(`{"key": "` + tiktok.Config.Tkey + `", "token": "` + tiktok.Config.Ttoken + `"}`)
 	req, err := http.NewRequest("DELETE", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `RemoveHead` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `RemoveHead` in `trello.go`", err)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -708,7 +708,7 @@ func RemoveHead(baloo *BalooConf, cardID string, memberID string) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `RemoveHead` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `RemoveHead` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -718,19 +718,19 @@ func RemoveHead(baloo *BalooConf, cardID string, memberID string) error {
 }
 
 // GetCardListHistory - return list history of a card
-func GetCardListHistory(cardID string, baloo *BalooConf) (cardListHistory CardListHistory) {
+func GetCardListHistory(cardID string, tiktok *TikTokConf) (cardListHistory CardListHistory) {
 
-	url := "https://api.trello.com/1/cards/" + cardID + "/actions?filter=updateCard:idList&key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+	url := "https://api.trello.com/1/cards/" + cardID + "/actions?filter=updateCard:idList&key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `GetTimePutList` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `GetTimePutList` in `trello.go`", err)
 		return cardListHistory
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `GetTimePutList` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `GetTimePutList` in `trello.go`", err)
 		return cardListHistory
 	}
 	defer resp.Body.Close()
@@ -740,9 +740,9 @@ func GetCardListHistory(cardID string, baloo *BalooConf) (cardListHistory CardLi
 }
 
 // SkipColumn - check if a card was ever in a specific column
-func SkipColumn(baloo *BalooConf, skippedColumn string, cardID string) (skipped bool) {
+func SkipColumn(tiktok *TikTokConf, skippedColumn string, cardID string) (skipped bool) {
 
-	cardListHistory := GetCardListHistory(cardID, baloo)
+	cardListHistory := GetCardListHistory(cardID, tiktok)
 
 	for _, h := range cardListHistory {
 		if h.Data.ListBefore.ID == skippedColumn || h.Data.ListAfter.ID == skippedColumn {
@@ -754,21 +754,21 @@ func SkipColumn(baloo *BalooConf, skippedColumn string, cardID string) (skipped 
 }
 
 // GetTimePutList - Get datetime card was last put in a given list
-func GetTimePutList(listID string, cardID string, opts Config, baloo *BalooConf) (found bool, cardListTime time.Time) {
+func GetTimePutList(listID string, cardID string, opts Config, tiktok *TikTokConf) (found bool, cardListTime time.Time) {
 
 	var cardListHistory CardListHistory
 
-	url := "https://api.trello.com/1/cards/" + cardID + "/actions?filter=updateCard:idList&key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+	url := "https://api.trello.com/1/cards/" + cardID + "/actions?filter=updateCard:idList&key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `GetTimePutList` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `GetTimePutList` in `trello.go`", err)
 		return false, cardListTime
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `GetTimePutList` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `GetTimePutList` in `trello.go`", err)
 		return false, cardListTime
 	}
 	defer resp.Body.Close()
@@ -786,7 +786,7 @@ func GetTimePutList(listID string, cardID string, opts Config, baloo *BalooConf)
 }
 
 // DupeTrelloBoard - Duplicate an entire trello board and assign it to the Dupe Collection
-func DupeTrelloBoard(boardID string, newName string, trelloOrg string, baloo *BalooConf) (output string, err error) {
+func DupeTrelloBoard(boardID string, newName string, trelloOrg string, tiktok *TikTokConf) (output string, err error) {
 
 	var newBoard Boards
 
@@ -798,13 +798,13 @@ func DupeTrelloBoard(boardID string, newName string, trelloOrg string, baloo *Ba
 		"prefs_permissionLevel":"org",
 		"keepFromSource":"cards",
 		"prefs_background":"red",
-		"key":"` + baloo.Config.Tkey + `",
-		"token":"` + baloo.Config.Ttoken + `"
+		"key":"` + tiktok.Config.Tkey + `",
+		"token":"` + tiktok.Config.Ttoken + `"
 		}`)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `DupeTrelloBoard` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `DupeTrelloBoard` in `trello.go`", err)
 		return "Error in http.NewRequest in `DupeTrelloBoard` in `trello.go`", err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -812,7 +812,7 @@ func DupeTrelloBoard(boardID string, newName string, trelloOrg string, baloo *Ba
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `DupeTrelloBoard` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `DupeTrelloBoard` in `trello.go`", err)
 		return "Error in client.Do in `DupeTrelloBoard` in `trello.go`", err
 	}
 
@@ -820,19 +820,19 @@ func DupeTrelloBoard(boardID string, newName string, trelloOrg string, baloo *Ba
 
 	err = json.NewDecoder(resp.Body).Decode(&newBoard)
 	if err != nil {
-		errTrap(baloo, "Error in json.NewDecoder in `DupeTrelloBoard` in `trello.go`", err)
+		errTrap(tiktok, "Error in json.NewDecoder in `DupeTrelloBoard` in `trello.go`", err)
 		return "Error in json.NewDecoder in `DupeTrelloBoard` in `trello.go`", err
 	}
 
 	message := "Board duplicated to <" + newBoard.ShortURL + "|" + newName + "> ID#: `" + newBoard.ID + "`\n"
 
-	if baloo.Config.DupeCollectionID != "" {
-		output := AssignCollection(newBoard.ID, baloo.Config.DupeCollectionID, baloo)
-		if baloo.Config.LogToSlack {
+	if tiktok.Config.DupeCollectionID != "" {
+		output := AssignCollection(newBoard.ID, tiktok.Config.DupeCollectionID, tiktok)
+		if tiktok.Config.LogToSlack {
 			var attachments Attachment
 			attachments.Text = ""
 			attachments.Color = ""
-			LogToSlack(output, baloo, attachments)
+			LogToSlack(output, tiktok, attachments)
 		}
 		message = message + output
 	}
@@ -842,7 +842,7 @@ func DupeTrelloBoard(boardID string, newName string, trelloOrg string, baloo *Ba
 
 // RetrieveAll - Get all board data (cards/lists/etc)
 // whichCards ==  none / all / closed / open / visible per https://developers.trello.com/reference#cards-nested-resource
-func RetrieveAll(baloo *BalooConf, boardID string, whichCards string) (allTheThings BoardData, err error) {
+func RetrieveAll(tiktok *TikTokConf, boardID string, whichCards string) (allTheThings BoardData, err error) {
 
 	// handle invalid card types
 	switch whichCards {
@@ -858,18 +858,18 @@ func RetrieveAll(baloo *BalooConf, boardID string, whichCards string) (allTheThi
 		whichCards = "all"
 	}
 
-	url := "https://api.trello.com/1/boards/" + boardID + "/?card_customFieldItems=true&cards=" + whichCards + "&key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+	url := "https://api.trello.com/1/boards/" + boardID + "/?card_customFieldItems=true&cards=" + whichCards + "&key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "ERROR in RetrieveAll in `nested.go` *GET*", err)
+		errTrap(tiktok, "ERROR in RetrieveAll in `nested.go` *GET*", err)
 		return allTheThings, err
 	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "ERROR in RetrieveAll in `nested.go` client.Do(req)", err)
+		errTrap(tiktok, "ERROR in RetrieveAll in `nested.go` client.Do(req)", err)
 		return allTheThings, err
 	}
 	defer resp.Body.Close()
@@ -880,18 +880,18 @@ func RetrieveAll(baloo *BalooConf, boardID string, whichCards string) (allTheThi
 }
 
 // GetLabel - Get labels on a board
-func GetLabel(baloo *BalooConf, boardID string) (allThemes Themes, err error) {
-	url := "https://api.trello.com/1/board/" + boardID + "/labels?key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+func GetLabel(tiktok *TikTokConf, boardID string) (allThemes Themes, err error) {
+	url := "https://api.trello.com/1/board/" + boardID + "/labels?key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `GetLabel` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `GetLabel` in `trello.go`", err)
 		return allThemes, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `GetLabel` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `GetLabel` in `trello.go`", err)
 		return allThemes, err
 	}
 	defer resp.Body.Close()
@@ -902,18 +902,18 @@ func GetLabel(baloo *BalooConf, boardID string) (allThemes Themes, err error) {
 }
 
 // GetDescHistory - retrieve card description history
-func GetDescHistory(baloo *BalooConf, cardID string) (descHistory CardDescHistory, err error) {
-	url := "https://trello.com/1/cards/" + cardID + "/actions?filter=updateCard:desc&key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+func GetDescHistory(tiktok *TikTokConf, cardID string) (descHistory CardDescHistory, err error) {
+	url := "https://trello.com/1/cards/" + cardID + "/actions?filter=updateCard:desc&key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `GetDescHistory` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `GetDescHistory` in `trello.go`", err)
 		return descHistory, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `GetDescHistory` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `GetDescHistory` in `trello.go`", err)
 		return descHistory, err
 	}
 	defer resp.Body.Close()
@@ -923,19 +923,19 @@ func GetDescHistory(baloo *BalooConf, cardID string) (descHistory CardDescHistor
 }
 
 // GetAttachments - get trello card attachment data
-func GetAttachments(baloo *BalooConf, cardID string) (cAttach []CardAttachment, err error) {
+func GetAttachments(tiktok *TikTokConf, cardID string) (cAttach []CardAttachment, err error) {
 
-	url := "https://trello.com/1/cards/" + cardID + "/attachments?key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+	url := "https://trello.com/1/cards/" + cardID + "/attachments?key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `GetAttachments` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `GetAttachments` in `trello.go`", err)
 		return cAttach, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `GetAttachments` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `GetAttachments` in `trello.go`", err)
 		return cAttach, err
 	}
 	defer resp.Body.Close()
@@ -945,7 +945,7 @@ func GetAttachments(baloo *BalooConf, cardID string) (cAttach []CardAttachment, 
 }
 
 // GetWBoards - search and retrieve all Trello boards in organization that have {W} in the title.  used for alerting on retro items
-func GetWBoards(baloo *BalooConf) (retroArray []RetroStruct, err error) {
+func GetWBoards(tiktok *TikTokConf) (retroArray []RetroStruct, err error) {
 
 	type tempID []struct {
 		Name string `json:"name"`
@@ -955,17 +955,17 @@ func GetWBoards(baloo *BalooConf) (retroArray []RetroStruct, err error) {
 	var holdID tempID
 	var tempArray RetroStruct
 
-	url := "https://api.trello.com/1/organizations/" + baloo.Config.TrelloOrgID + "/boards?filter=open&fields=id%2Cname&key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+	url := "https://api.trello.com/1/organizations/" + tiktok.Config.TrelloOrgID + "/boards?filter=open&fields=id%2Cname&key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `GetWBoards` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `GetWBoards` in `trello.go`", err)
 		return retroArray, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `GetWBoards` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `GetWBoards` in `trello.go`", err)
 		return retroArray, err
 	}
 	defer resp.Body.Close()
@@ -984,20 +984,20 @@ func GetWBoards(baloo *BalooConf) (retroArray []RetroStruct, err error) {
 }
 
 // GetMemberInfo - get members data
-func GetMemberInfo(headID string, baloo *BalooConf) (fullname string, avatarhash string, userName string) {
+func GetMemberInfo(headID string, tiktok *TikTokConf) (fullname string, avatarhash string, userName string) {
 	var memberData Member
 
-	url := "https://api.trello.com/1/member/" + headID + "/?key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+	url := "https://api.trello.com/1/member/" + headID + "/?key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `GetMemberInfo` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `GetMemberInfo` in `trello.go`", err)
 		fmt.Println(err)
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `GetMemberInfo` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `GetMemberInfo` in `trello.go`", err)
 		fmt.Println(err)
 	}
 	defer resp.Body.Close()
@@ -1007,17 +1007,17 @@ func GetMemberInfo(headID string, baloo *BalooConf) (fullname string, avatarhash
 }
 
 // CommentCard - add a comment to a card
-func CommentCard(cardID string, comment string, baloo *BalooConf) error {
+func CommentCard(cardID string, comment string, tiktok *TikTokConf) error {
 	url := "https://api.trello.com/1/cards/" + cardID + "/actions/comments"
 	var jsonStr = []byte(`{
 		"text":"` + comment + `",
-		"key":"` + baloo.Config.Tkey + `",
-		"token":"` + baloo.Config.Ttoken + `"
+		"key":"` + tiktok.Config.Tkey + `",
+		"token":"` + tiktok.Config.Ttoken + `"
 		}`)
 
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `CommentCard` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `CommentCard` in `trello.go`", err)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -1025,7 +1025,7 @@ func CommentCard(cardID string, comment string, baloo *BalooConf) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `CommentCard` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `CommentCard` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -1034,19 +1034,19 @@ func CommentCard(cardID string, comment string, baloo *BalooConf) error {
 }
 
 // GetCardComments - retrieve all comments on a given trello card
-func GetCardComments(cardID string, baloo *BalooConf) (cardComments CardComment, err error) {
+func GetCardComments(cardID string, tiktok *TikTokConf) (cardComments CardComment, err error) {
 
-	url := "https://api.trello.com/1/cards/" + cardID + "/actions?filter=commentCard&key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+	url := "https://api.trello.com/1/cards/" + cardID + "/actions?filter=commentCard&key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `GetCardComments` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `GetCardComments` in `trello.go`", err)
 		return cardComments, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `GetCardComments` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `GetCardComments` in `trello.go`", err)
 		return cardComments, err
 	}
 	defer resp.Body.Close()
@@ -1057,20 +1057,20 @@ func GetCardComments(cardID string, baloo *BalooConf) (cardComments CardComment,
 }
 
 // GetLists - Get all lists data in a board
-func GetLists(baloo *BalooConf, boardID string) (listData ListData, err error) {
+func GetLists(tiktok *TikTokConf, boardID string) (listData ListData, err error) {
 
-	url := "https://api.trello.com/1/boards/" + boardID + "/lists?key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+	url := "https://api.trello.com/1/boards/" + boardID + "/lists?key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "ERROR in GetListID in `trello.go` *GET*", err)
+		errTrap(tiktok, "ERROR in GetListID in `trello.go` *GET*", err)
 		return listData, err
 	}
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "ERROR in GetListID in `trello.go` client.Do(req)", err)
+		errTrap(tiktok, "ERROR in GetListID in `trello.go` client.Do(req)", err)
 		return listData, err
 	}
 	defer resp.Body.Close()
@@ -1081,17 +1081,17 @@ func GetLists(baloo *BalooConf, boardID string) (listData ListData, err error) {
 }
 
 // CardPosition - change card position
-func CardPosition(baloo *BalooConf, cardID string, position string) error {
+func CardPosition(tiktok *TikTokConf, cardID string, position string) error {
 	url := "https://api.trello.com/1/cards/" + cardID
 	var jsonStr = []byte(`{
 		"pos":"` + position + `",
-		"key":"` + baloo.Config.Tkey + `",
-		"token":"` + baloo.Config.Ttoken + `"
+		"key":"` + tiktok.Config.Tkey + `",
+		"token":"` + tiktok.Config.Ttoken + `"
 		}`)
 
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `CardPosition` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `CardPosition` in `trello.go`", err)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -1099,7 +1099,7 @@ func CardPosition(baloo *BalooConf, cardID string, position string) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `CardPosition` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `CardPosition` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -1108,17 +1108,17 @@ func CardPosition(baloo *BalooConf, cardID string, position string) error {
 }
 
 // MoveCardList - Move a card to a different list
-func MoveCardList(baloo *BalooConf, cardID string, newList string) error {
+func MoveCardList(tiktok *TikTokConf, cardID string, newList string) error {
 	url := "https://api.trello.com/1/cards/" + cardID
 	var jsonStr = []byte(`{
 		"idList":"` + newList + `",
-		"key":"` + baloo.Config.Tkey + `",
-		"token":"` + baloo.Config.Ttoken + `"
+		"key":"` + tiktok.Config.Tkey + `",
+		"token":"` + tiktok.Config.Ttoken + `"
 		}`)
 
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `MoveCardList` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `MoveCardList` in `trello.go`", err)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -1126,7 +1126,7 @@ func MoveCardList(baloo *BalooConf, cardID string, newList string) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `MoveCardList` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `MoveCardList` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -1136,17 +1136,17 @@ func MoveCardList(baloo *BalooConf, cardID string, newList string) error {
 
 // ReOrderCardInList - Change placement of a card in a list
 // newPos == "top", "bottom" or positive float
-func ReOrderCardInList(baloo *BalooConf, cardID string, newPos string) error {
+func ReOrderCardInList(tiktok *TikTokConf, cardID string, newPos string) error {
 	url := "https://api.trello.com/1/cards/" + cardID
 	var jsonStr = []byte(`{
 		"pos":"` + newPos + `", 
-		"key":"` + baloo.Config.Tkey + `",
-		"token":"` + baloo.Config.Ttoken + `"
+		"key":"` + tiktok.Config.Tkey + `",
+		"token":"` + tiktok.Config.Ttoken + `"
 		}`)
 
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `ReOrderCardInList` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `ReOrderCardInList` in `trello.go`", err)
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -1154,7 +1154,7 @@ func ReOrderCardInList(baloo *BalooConf, cardID string, newPos string) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `ReOrderCardInList` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `ReOrderCardInList` in `trello.go`", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -1163,18 +1163,18 @@ func ReOrderCardInList(baloo *BalooConf, cardID string, newPos string) error {
 }
 
 // GetCardAction - retrieve card actions
-func GetCardAction(baloo *BalooConf, cardID string, limit int) (actions CardAction, err error) {
-	url := "https://trello.com/1/cards/" + cardID + "/actions?filter=all&limit=" + strconv.Itoa(limit) + "&key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+func GetCardAction(tiktok *TikTokConf, cardID string, limit int) (actions CardAction, err error) {
+	url := "https://trello.com/1/cards/" + cardID + "/actions?filter=all&limit=" + strconv.Itoa(limit) + "&key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error in http.NewRequest in `GetDescHistory` in `trello.go`", err)
+		errTrap(tiktok, "Error in http.NewRequest in `GetDescHistory` in `trello.go`", err)
 		return actions, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error in client.Do in `GetDescHistory` in `trello.go`", err)
+		errTrap(tiktok, "Error in client.Do in `GetDescHistory` in `trello.go`", err)
 		return actions, err
 	}
 	defer resp.Body.Close()
@@ -1184,14 +1184,14 @@ func GetCardAction(baloo *BalooConf, cardID string, limit int) (actions CardActi
 }
 
 // GetCreateDate - Retrieve creation date of a trello card
-func GetCreateDate(baloo *BalooConf, cardID string) (createDate time.Time, err error) {
+func GetCreateDate(tiktok *TikTokConf, cardID string) (createDate time.Time, err error) {
 	if cardID == "" {
 		return time.Time{}, nil
 	}
 
 	ts, err := strconv.ParseUint(cardID[:8], 16, 64)
 	if err != nil {
-		errTrap(baloo, "ID `"+cardID+"` failed to convert to timestamp in `GetCreateDate`.", err)
+		errTrap(tiktok, "ID `"+cardID+"` failed to convert to timestamp in `GetCreateDate`.", err)
 	} else {
 		createDate = time.Unix(int64(ts), 0)
 	}

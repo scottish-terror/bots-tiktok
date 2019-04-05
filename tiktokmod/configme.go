@@ -56,8 +56,8 @@ var AllowMembersLabel = "DEMO"
 // TrainingLabel - Default label name for training cards
 var TrainingLabel = "Training"
 
-// SilenceCardLabel - Default label name for label that will disable 98% of baloo monitoring/alerting
-var SilenceCardLabel = "BalooConf Hush"
+// SilenceCardLabel - Default label name for label that will disable 98% of tiktok monitoring/alerting
+var SilenceCardLabel = "TikTokConf Hush"
 
 // ConfigMe struct for passing config data around
 type ConfigMe struct {
@@ -106,18 +106,18 @@ type Labels struct {
 }
 
 // GetBoardCustoms - grab all custom fields on a board
-func GetBoardCustoms(boardID string, baloo *BalooConf) (customList CustomCollection, err error) {
-	url := "https://api.trello.com/1/boards/" + boardID + "/customFields?key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+func GetBoardCustoms(boardID string, tiktok *TikTokConf) (customList CustomCollection, err error) {
+	url := "https://api.trello.com/1/boards/" + boardID + "/customFields?key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error http Request to trello in `configme.go` func `GetBoardCustoms`", err)
+		errTrap(tiktok, "Error http Request to trello in `configme.go` func `GetBoardCustoms`", err)
 		return customList, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error http.Client request to trello in `configme.go` func `GetBoardCustoms`", err)
+		errTrap(tiktok, "Error http.Client request to trello in `configme.go` func `GetBoardCustoms`", err)
 		return customList, err
 	}
 	defer resp.Body.Close()
@@ -127,18 +127,18 @@ func GetBoardCustoms(boardID string, baloo *BalooConf) (customList CustomCollect
 }
 
 // GetBoardLabels - grab all labels on a board.  not part of Adilo/trello
-func GetBoardLabels(boardID string, baloo *BalooConf) (labelList LabelCollection, err error) {
-	url := "https://api.trello.com/1/boards/" + boardID + "/labels?key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+func GetBoardLabels(boardID string, tiktok *TikTokConf) (labelList LabelCollection, err error) {
+	url := "https://api.trello.com/1/boards/" + boardID + "/labels?key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		errTrap(baloo, "Error http Request to trello in `configme.go` func `GetBoardLabels`", err)
+		errTrap(tiktok, "Error http Request to trello in `configme.go` func `GetBoardLabels`", err)
 		return labelList, err
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		errTrap(baloo, "Error http.Client request to trello in `configme.go` func `GetBoardLabels`", err)
+		errTrap(tiktok, "Error http.Client request to trello in `configme.go` func `GetBoardLabels`", err)
 		return labelList, err
 	}
 	defer resp.Body.Close()
@@ -148,7 +148,7 @@ func GetBoardLabels(boardID string, baloo *BalooConf) (labelList LabelCollection
 }
 
 // BuildConfig - grab UID's out of trello to help setup config files
-func BuildConfig(boardID string, baloo *BalooConf, user string, api *slack.Client) {
+func BuildConfig(boardID string, tiktok *TikTokConf, user string, api *slack.Client) {
 
 	var config ConfigMe
 	var attachments Attachment
@@ -162,9 +162,9 @@ func BuildConfig(boardID string, baloo *BalooConf, user string, api *slack.Clien
 	userInfo, _ := api.GetUserInfo(user)
 
 	// handle columns
-	listData, err := GetLists(baloo, boardID)
+	listData, err := GetLists(tiktok, boardID)
 	if err != nil {
-		errTrap(baloo, "Trying to run Config Builder for "+userInfo.Name+" but had request for all lists on board `"+boardID+"` returned error.", err)
+		errTrap(tiktok, "Trying to run Config Builder for "+userInfo.Name+" but had request for all lists on board `"+boardID+"` returned error.", err)
 		return
 	}
 
@@ -224,10 +224,10 @@ func BuildConfig(boardID string, baloo *BalooConf, user string, api *slack.Clien
 
 	myPayload.Text = message
 	myPayload.Channel = userInfo.ID
-	_ = WranglerDM(baloo, myPayload)
+	_ = WranglerDM(tiktok, myPayload)
 
 	// handle labels
-	labelSet, _ := GetBoardLabels(boardID, baloo)
+	labelSet, _ := GetBoardLabels(boardID, tiktok)
 
 	for _, l := range labelSet {
 		if l.Name == LabelRO {
@@ -265,10 +265,10 @@ func BuildConfig(boardID string, baloo *BalooConf, user string, api *slack.Clien
 	}
 
 	myPayload.Text = message
-	_ = WranglerDM(baloo, myPayload)
+	_ = WranglerDM(tiktok, myPayload)
 
 	// handle custom fields
-	customSet, _ := GetBoardCustoms(boardID, baloo)
+	customSet, _ := GetBoardCustoms(boardID, tiktok)
 
 	for _, c := range customSet {
 		if c.Name == SprintName {
@@ -288,7 +288,7 @@ func BuildConfig(boardID string, baloo *BalooConf, user string, api *slack.Clien
 	}
 
 	myPayload.Text = message
-	_ = WranglerDM(baloo, myPayload)
+	_ = WranglerDM(tiktok, myPayload)
 
 	message = "*Hey, here's the config data you need to make your TOML file!*\n"
 
@@ -312,5 +312,5 @@ func BuildConfig(boardID string, baloo *BalooConf, user string, api *slack.Clien
 	message = message + "```"
 
 	myPayload.Text = message
-	_ = WranglerDM(baloo, myPayload)
+	_ = WranglerDM(tiktok, myPayload)
 }

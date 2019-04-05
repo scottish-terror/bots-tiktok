@@ -18,8 +18,8 @@ func main() {
 	var cronjobs *tiktokmod.Cronjobs
 	var CronState string
 
-	// Load BalooConf Config
-	baloo, err := tiktokmod.LoadBalooConf()
+	// Load TikTokConf Config
+	tiktok, err := tiktokmod.LoadTikTokConf()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)
@@ -27,18 +27,18 @@ func main() {
 
 	// Set version number
 	// Major.Features.Bugs-Tweaks & tomls
-	baloo.Config.Version = "4.0.0-3"
+	tiktok.Config.Version = "4.0.0-3"
 
 	// Grab CLI parameters at launch
-	wOpts, nocron := tiktokmod.Startup(baloo)
+	wOpts, nocron := tiktokmod.Startup(tiktok)
 
 	// Load Cron
 	if nocron {
 
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("Not loading CRONs per CLI parameter -nocron")
 		}
-		if baloo.Config.LogToSlack {
+		if tiktok.Config.LogToSlack {
 			tiktokmod.LogToSlack("Not Loading CRON based on CLI parameter -nocron", wOpts, attachments)
 		}
 		CronState = "Not Loaded"
@@ -48,11 +48,11 @@ func main() {
 
 		cronjobs, c, err = tiktokmod.CronLoad(wOpts)
 		if err != nil {
-			if baloo.Config.DEBUG {
+			if tiktok.Config.DEBUG {
 				fmt.Println("CRON Jobs failed to load due to file error.")
 			}
 		} else {
-			if baloo.Config.DEBUG {
+			if tiktok.Config.DEBUG {
 				fmt.Println("CRON Jobs Loaded!")
 			}
 		}
@@ -61,7 +61,7 @@ func main() {
 	}
 
 	// initate Slack RTM and get started
-	api := slack.New(baloo.Config.SlackToken)
+	api := slack.New(tiktok.Config.SlackToken)
 	rtm := api.NewRTM()
 	go rtm.ManageConnection()
 
@@ -71,23 +71,23 @@ func main() {
 		case *slack.HelloEvent:
 
 		case *slack.ConnectedEvent:
-			baloo.Config.BotID = ev.Info.User.ID
-			baloo.Config.BotName = strings.ToUpper(ev.Info.User.Name)
-			baloo.Config.TeamID = ev.Info.Team.ID
-			baloo.Config.TeamName = ev.Info.Team.Name
+			tiktok.Config.BotID = ev.Info.User.ID
+			tiktok.Config.BotName = strings.ToUpper(ev.Info.User.Name)
+			tiktok.Config.TeamID = ev.Info.Team.ID
+			tiktok.Config.TeamName = ev.Info.Team.Name
 
 			//update this "C7XVAJVRS " to a channel ID that matches what he joined (how do i grab that from the connect)
 			rtm.SendMessage(rtm.NewOutgoingMessage("Hello! I rebooted, if you care.  :unicorn_face:", "C7XVAJVRS"))
 
 		case *slack.MessageEvent:
-			if baloo.Config.DEBUG {
+			if tiktok.Config.DEBUG {
 				fmt.Printf("Message: %v\n", ev)
 			}
 
 			// Check stream if someone says my name or is DM'ing me
 			//   Ignore things that I post so i don't loop myself
-			if strings.Contains(ev.Msg.Text, "@"+baloo.Config.BotID) || string(ev.Msg.Channel[0]) == "D" {
-				if ev.Msg.User != baloo.Config.BotID {
+			if strings.Contains(ev.Msg.Text, "@"+tiktok.Config.BotID) || string(ev.Msg.Channel[0]) == "D" {
+				if ev.Msg.User != tiktok.Config.BotID {
 					// some bot responses are case sensitive due to Trello being case sensitive, so removing the lower case function
 					//   until i think of a better way to handle
 					// lowerString := strings.ToLower(ev.Msg.Text)
@@ -108,17 +108,17 @@ func main() {
 			}
 
 		case *slack.LatencyReport:
-			if baloo.Config.DEBUG {
+			if tiktok.Config.DEBUG {
 				fmt.Printf("Current latency: %v\n", ev.Value)
 			}
 
 		case *slack.RTMError:
-			if baloo.Config.DEBUG {
+			if tiktok.Config.DEBUG {
 				fmt.Printf("Error: %s\n", ev.Error())
 			}
 
 		case *slack.InvalidAuthEvent:
-			if baloo.Config.DEBUG {
+			if tiktok.Config.DEBUG {
 				fmt.Printf("Invalid credentials")
 			}
 			return

@@ -39,16 +39,16 @@ func DownloadFile(filepath string, url string) error {
 }
 
 // errTrap - Generic error handling function
-func errTrap(baloo *BalooConf, message string, err error) {
+func errTrap(tiktok *TikTokConf, message string, err error) {
 	var attachments Attachment
 
-	if baloo.Config.DEBUG {
+	if tiktok.Config.DEBUG {
 		fmt.Println(message + "(" + err.Error() + ")")
 	}
-	if baloo.Config.LogToSlack {
+	if tiktok.Config.LogToSlack {
 		attachments.Color = "#ff0000"
 		attachments.Text = err.Error()
-		LogToSlack(message, baloo, attachments)
+		LogToSlack(message, tiktok, attachments)
 	}
 }
 
@@ -79,11 +79,11 @@ func amInslice(validDates []time.Time, rightnow time.Time) bool {
 }
 
 // SliceExists - Determine if value is in a slice
-func SliceExists(baloo *BalooConf, slice interface{}, item interface{}) bool {
+func SliceExists(tiktok *TikTokConf, slice interface{}, item interface{}) bool {
 	s := reflect.ValueOf(slice)
 
 	if s.Kind() != reflect.Slice {
-		if baloo.Config.DEBUG {
+		if tiktok.Config.DEBUG {
 			fmt.Println("SliceExists() given a non-slice type")
 		}
 		return false
@@ -99,7 +99,7 @@ func SliceExists(baloo *BalooConf, slice interface{}, item interface{}) bool {
 }
 
 // PointCleanup - module to syncronize points between Plugins and Customfields
-func PointCleanup(opts Config, baloo *BalooConf, teamID string) (rtnMessage string) {
+func PointCleanup(opts Config, tiktok *TikTokConf, teamID string) (rtnMessage string) {
 	var attachments Attachment
 	var listList []lists
 	var apMessage string
@@ -125,13 +125,13 @@ func PointCleanup(opts Config, baloo *BalooConf, teamID string) (rtnMessage stri
 
 	for l := range listList {
 
-		if baloo.Config.LogToSlack {
-			LogToSlack("Sync'ing points on cards in `"+listList[l].channelName+"` on the `"+opts.General.TeamName+"` board.", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Sync'ing points on cards in `"+listList[l].channelName+"` on the `"+opts.General.TeamName+"` board.", tiktok, attachments)
 			if listList[l].channelID == opts.General.ReadyForWork || listList[l].channelID == opts.General.Working || listList[l].channelID == opts.General.ReadyForReview {
-				LogToSlack("I'm trolling the `"+listList[l].channelName+"` list cards in the `"+opts.General.TeamName+"` board for Point Changes.", baloo, attachments)
+				LogToSlack("I'm trolling the `"+listList[l].channelName+"` list cards in the `"+opts.General.TeamName+"` board for Point Changes.", tiktok, attachments)
 			}
 		}
-		rtnMessage, tMessage, err = SyncPoints(teamID, listList[l].channelID, opts, baloo)
+		rtnMessage, tMessage, err = SyncPoints(teamID, listList[l].channelID, opts, tiktok)
 		if err != nil {
 			return "Errors, returning `from action.go`"
 		}
@@ -143,14 +143,14 @@ func PointCleanup(opts Config, baloo *BalooConf, teamID string) (rtnMessage stri
 	if apMessage != "" {
 		attachments.Text = apMessage
 		attachments.Color = "#ff0000"
-		Wrangler(baloo.Config.SlackHook, "<!here> Points have been changed on these cards that are in the *current sprint*.", opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, "<!here> Points have been changed on these cards that are in the *current sprint*.", opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 	}
 
 	return rtnMessage
 }
 
 // CleanBackLog - Clean-up BackLog
-func CleanBackLog(opts Config, baloo *BalooConf) error {
+func CleanBackLog(opts Config, tiktok *TikTokConf) error {
 	var attachments Attachment
 	var nmessage string
 	var faceCount int
@@ -165,13 +165,13 @@ func CleanBackLog(opts Config, baloo *BalooConf) error {
 	m["fields"] = "name"
 	m["customFieldItems"] = "true"
 
-	if baloo.Config.LogToSlack {
-		LogToSlack("I'm checking the BackLog in the `"+opts.General.TeamName+"` and cleaning up those cards.", baloo, attachments)
+	if tiktok.Config.LogToSlack {
+		LogToSlack("I'm checking the BackLog in the `"+opts.General.TeamName+"` and cleaning up those cards.", tiktok, attachments)
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in RetrieveAll `actions.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in RetrieveAll `actions.go` for `"+opts.General.TeamName+"` board", err)
 		return err
 	}
 
@@ -180,17 +180,17 @@ func CleanBackLog(opts Config, baloo *BalooConf) error {
 			numCards++
 
 			//remove squad labels
-			allSquads, err := GetDBSquads(baloo, opts.General.BoardID)
+			allSquads, err := GetDBSquads(tiktok, opts.General.BoardID)
 			if err != nil {
-				errTrap(baloo, "Failed DB Call to get squad information in trello.go func `SquadPoints`", err)
+				errTrap(tiktok, "Failed DB Call to get squad information in trello.go func `SquadPoints`", err)
 				return err
 			}
 			for _, L := range allSquads {
 				for _, lab := range aTt.Labels {
 					if lab.ID == L.LabelID {
-						err := removeLabel(aTt.ID, L.LabelID, baloo)
+						err := removeLabel(aTt.ID, L.LabelID, tiktok)
 						if err != nil {
-							errTrap(baloo, "Error from `removeLabel in `CleanBackLog` in `actions.go`", err)
+							errTrap(tiktok, "Error from `removeLabel in `CleanBackLog` in `actions.go`", err)
 						}
 						squadLabel++
 					}
@@ -201,9 +201,9 @@ func CleanBackLog(opts Config, baloo *BalooConf) error {
 			//remove faces
 			if len(aTt.IDMembers) > 0 {
 				for _, h := range aTt.IDMembers {
-					err := RemoveHead(baloo, aTt.ID, h)
+					err := RemoveHead(tiktok, aTt.ID, h)
 					if err != nil {
-						errTrap(baloo, "Error in `RemoveHeads` called from `CleanBackLog` in `actions.go`", err)
+						errTrap(tiktok, "Error in `RemoveHeads` called from `CleanBackLog` in `actions.go`", err)
 					}
 					faceCount++
 				}
@@ -213,18 +213,18 @@ func CleanBackLog(opts Config, baloo *BalooConf) error {
 			for _, c := range aTt.CustomFieldItems {
 				if c.IDCustomField == opts.General.CfpointsID {
 					if c.Value.Number != "0" {
-						err = PutCustomField(aTt.ID, opts.General.CfpointsID, baloo, "number", "0")
+						err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "number", "0")
 						if err != nil {
-							errTrap(baloo, "Error from `PutCustomField` for *CFPOINTSID* in `CleanBackLog` in `actions.go`", err)
+							errTrap(tiktok, "Error from `PutCustomField` for *CFPOINTSID* in `CleanBackLog` in `actions.go`", err)
 						}
 						customCount++
 					}
 				}
 				if c.IDCustomField == opts.General.CfsprintID {
 					if c.Value.Text != "" {
-						err = PutCustomField(aTt.ID, opts.General.CfsprintID, baloo, "text", "")
+						err = PutCustomField(aTt.ID, opts.General.CfsprintID, tiktok, "text", "")
 						if err != nil {
-							errTrap(baloo, "Error from `PutCustomField` for *CFSPRINTID* in `CleanBackLog` in `actions.go`", err)
+							errTrap(tiktok, "Error from `PutCustomField` for *CFSPRINTID* in `CleanBackLog` in `actions.go`", err)
 						}
 						customCount++
 					}
@@ -236,7 +236,7 @@ func CleanBackLog(opts Config, baloo *BalooConf) error {
 			//   This means we can't clear/zero Story Points.
 
 			//check card age
-			value, cardListTime := GetTimePutList(opts.General.BacklogID, aTt.ID, opts, baloo)
+			value, cardListTime := GetTimePutList(opts.General.BacklogID, aTt.ID, opts, tiktok)
 
 			if value {
 				format := "2006-01-02 15:04:05"
@@ -251,7 +251,7 @@ func CleanBackLog(opts Config, baloo *BalooConf) error {
 					// Currently just logs to logging that card is old.
 					//  This is where expansion of what to do with super old cards would happen.  Alerts, etc...
 					ancientCard++
-					LogToSlack("*Card in BackLog is older then "+strconv.Itoa(opts.General.BackLogDays)+" days old @ "+strconv.Itoa(days)+"days*", baloo, attachments)
+					LogToSlack("*Card in BackLog is older then "+strconv.Itoa(opts.General.BackLogDays)+" days old @ "+strconv.Itoa(days)+"days*", tiktok, attachments)
 				}
 			}
 
@@ -284,22 +284,22 @@ func CleanBackLog(opts Config, baloo *BalooConf) error {
 	nmessage = nmessage + "There is a total of " + strconv.Itoa(numCards) + " cards in the backlog currently.\n"
 	attachments.Color = "#00ff00"
 	attachments.Text = nmessage
-	Wrangler(baloo.Config.SlackHook, "Team, I just troll'd the backlog for clean up. :sweep:", opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+	Wrangler(tiktok.Config.SlackHook, "Team, I just troll'd the backlog for clean up. :sweep:", opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 
 	return nil
 }
 
 // ArchiveBacklog - Archive old cards in the backlog
-func ArchiveBacklog(baloo *BalooConf, opts Config) (err error) {
+func ArchiveBacklog(tiktok *TikTokConf, opts Config) (err error) {
 
 	var message string
 	var attachments Attachment
 	var cardCount int
 	var hushed bool
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in RetrieveAll `actions.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in RetrieveAll `actions.go` for `"+opts.General.TeamName+"` board", err)
 		return err
 	}
 
@@ -318,9 +318,9 @@ func ArchiveBacklog(baloo *BalooConf, opts Config) (err error) {
 			}
 
 			if !hushed {
-				createDate, err := GetCreateDate(baloo, aTt.ID)
+				createDate, err := GetCreateDate(tiktok, aTt.ID)
 				if err != nil {
-					errTrap(baloo, "Skipping card <"+aTt.URL+"|"+aTt.Name+"> due to error retrieve creation date in `ArchiveBackLog` `actions.go`", err)
+					errTrap(tiktok, "Skipping card <"+aTt.URL+"|"+aTt.Name+"> due to error retrieve creation date in `ArchiveBackLog` `actions.go`", err)
 				}
 
 				format := "2006-01-02 15:04:05"
@@ -335,16 +335,16 @@ func ArchiveBacklog(baloo *BalooConf, opts Config) (err error) {
 					//archive it
 					message = message + "<" + aTt.URL + "|" + aTt.Name + "> is " + strconv.Itoa(days) + " days old.\n"
 
-					url := "https://api.trello.com/1/cards/" + aTt.ID + "?closed=true&key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+					url := "https://api.trello.com/1/cards/" + aTt.ID + "?closed=true&key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 					req, err := http.NewRequest("PUT", url, nil)
 					if err != nil {
-						errTrap(baloo, "Error archiving card "+aTt.URL+" during http.NewRequest in `ArchiveBacklog` `actions.go`", err)
+						errTrap(tiktok, "Error archiving card "+aTt.URL+" during http.NewRequest in `ArchiveBacklog` `actions.go`", err)
 					}
 					client := &http.Client{}
 					resp, err := client.Do(req)
 					if err != nil {
-						errTrap(baloo, "Error archiving card "+aTt.URL+" during client.Do API PUT in `ArchiveBacklog` `actions.go`", err)
+						errTrap(tiktok, "Error archiving card "+aTt.URL+" during client.Do API PUT in `ArchiveBacklog` `actions.go`", err)
 					}
 					defer resp.Body.Close()
 
@@ -352,10 +352,10 @@ func ArchiveBacklog(baloo *BalooConf, opts Config) (err error) {
 
 				}
 			} else {
-				if baloo.Config.LogToSlack {
+				if tiktok.Config.LogToSlack {
 					attachments.Color = ""
 					attachments.Text = ""
-					LogToSlack("Skipping backlog archival of "+aTt.Name+" card beacuse it is hushed or a template card.", baloo, attachments)
+					LogToSlack("Skipping backlog archival of "+aTt.Name+" card beacuse it is hushed or a template card.", tiktok, attachments)
 				}
 			}
 		}
@@ -363,31 +363,31 @@ func ArchiveBacklog(baloo *BalooConf, opts Config) (err error) {
 
 	attachments.Color = "#00ff00"
 	attachments.Text = message
-	Wrangler(baloo.Config.SlackHook, "I archived "+strconv.Itoa(cardCount)+" card(s) in the `BackLog` that were greater then "+strconv.Itoa(opts.General.BackLogDays)+" old.  Here's the list:\n", opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+	Wrangler(tiktok.Config.SlackHook, "I archived "+strconv.Itoa(cardCount)+" card(s) in the `BackLog` that were greater then "+strconv.Itoa(opts.General.BackLogDays)+" old.  Here's the list:\n", opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 
-	if baloo.Config.LogToSlack {
+	if tiktok.Config.LogToSlack {
 		attachments.Color = ""
 		attachments.Text = ""
-		LogToSlack("I've archived "+strconv.Itoa(cardCount)+" card(s) in the `BackLog` for team `"+opts.General.TeamName+"` that were greater then "+strconv.Itoa(opts.General.BackLogDays)+" old. See Slack Channel "+opts.General.ComplaintChannel+" for details.", baloo, attachments)
+		LogToSlack("I've archived "+strconv.Itoa(cardCount)+" card(s) in the `BackLog` for team `"+opts.General.TeamName+"` that were greater then "+strconv.Itoa(opts.General.BackLogDays)+" old. See Slack Channel "+opts.General.ComplaintChannel+" for details.", tiktok, attachments)
 	}
 
 	return nil
 }
 
 // CleanDone - Clean Done column of old cards
-func CleanDone(opts Config, baloo *BalooConf) (string, error) {
+func CleanDone(opts Config, tiktok *TikTokConf) (string, error) {
 
 	var attachments Attachment
 	var cardCount int
 	var message string
 
-	if baloo.Config.LogToSlack {
-		LogToSlack("I'm searching the Done List in the `"+opts.General.TeamName+"` board for cards that are older than "+strconv.Itoa(opts.General.ArchiveDoneDays)+" days and archiving them. ", baloo, attachments)
+	if tiktok.Config.LogToSlack {
+		LogToSlack("I'm searching the Done List in the `"+opts.General.TeamName+"` board for cards that are older than "+strconv.Itoa(opts.General.ArchiveDoneDays)+" days and archiving them. ", tiktok, attachments)
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in RetrieveAll `actions.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in RetrieveAll `actions.go` for `"+opts.General.TeamName+"` board", err)
 		return "Trello error in RetrieveAll `actions.go` for `" + opts.General.TeamName + "` board", err
 	}
 
@@ -395,7 +395,7 @@ func CleanDone(opts Config, baloo *BalooConf) (string, error) {
 
 	for _, aTt := range allTheThings.Cards {
 		if aTt.IDList == opts.General.Done {
-			value, cardListTime := GetTimePutList(opts.General.Done, aTt.ID, opts, baloo)
+			value, cardListTime := GetTimePutList(opts.General.Done, aTt.ID, opts, tiktok)
 
 			if value {
 				format := "2006-01-02 15:04:05"
@@ -408,39 +408,39 @@ func CleanDone(opts Config, baloo *BalooConf) (string, error) {
 
 				if days > opts.General.ArchiveDoneDays {
 
-					url := "https://api.trello.com/1/cards/" + aTt.ID + "?closed=true&key=" + baloo.Config.Tkey + "&token=" + baloo.Config.Ttoken
+					url := "https://api.trello.com/1/cards/" + aTt.ID + "?closed=true&key=" + tiktok.Config.Tkey + "&token=" + tiktok.Config.Ttoken
 
 					req, err := http.NewRequest("PUT", url, nil)
 					if err != nil {
-						errTrap(baloo, "", err)
+						errTrap(tiktok, "", err)
 						return "NewRequest Put", err
 					}
 					client := &http.Client{}
 					resp, err := client.Do(req)
 					if err != nil {
-						errTrap(baloo, "Error client.DO API Post `actions.go`", err)
+						errTrap(tiktok, "Error client.DO API Post `actions.go`", err)
 						return "client.Do", err
 					}
 					defer resp.Body.Close()
 
 					cardCount = cardCount + 1
 
-					if baloo.Config.LogToSlack {
+					if tiktok.Config.LogToSlack {
 						attachments.Color = ""
 						attachments.Text = ""
-						LogToSlack("Card _"+aTt.Name+"_ in the Done List on `"+opts.General.TeamName+"` board is more than *"+strconv.Itoa(opts.General.ArchiveDoneDays)+"* days old.  It has been archived. ", baloo, attachments)
+						LogToSlack("Card _"+aTt.Name+"_ in the Done List on `"+opts.General.TeamName+"` board is more than *"+strconv.Itoa(opts.General.ArchiveDoneDays)+"* days old.  It has been archived. ", tiktok, attachments)
 					}
-					if baloo.Config.DEBUG {
+					if tiktok.Config.DEBUG {
 						fmt.Printf("Card %s is Days %s old.  Archiving Card!\n", aTt.Name, strconv.Itoa(days))
 					}
 				} else {
-					if baloo.Config.DEBUG {
+					if tiktok.Config.DEBUG {
 						fmt.Printf("Card %s is Days %s old. NOT Archiving\n", aTt.Name, strconv.Itoa(days))
 					}
-					if baloo.Config.LogToSlack {
+					if tiktok.Config.LogToSlack {
 						attachments.Color = ""
 						attachments.Text = ""
-						LogToSlack("Card _"+aTt.Name+"_ in the Done List on `"+opts.General.TeamName+"` board is only *"+strconv.Itoa(days)+"* days old.  NOT Archiving!. ", baloo, attachments)
+						LogToSlack("Card _"+aTt.Name+"_ in the Done List on `"+opts.General.TeamName+"` board is only *"+strconv.Itoa(days)+"* days old.  NOT Archiving!. ", tiktok, attachments)
 					}
 				}
 
@@ -456,13 +456,13 @@ func CleanDone(opts Config, baloo *BalooConf) (string, error) {
 	}
 	attachments.Color = ""
 	attachments.Text = ""
-	Wrangler(baloo.Config.SlackHook, message, opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+	Wrangler(tiktok.Config.SlackHook, message, opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 
 	return "", nil
 }
 
 // Permissions - determine if user has permissions to do something
-func Permissions(baloo *BalooConf, slackID string, action string, api *slack.Client, chkchannel string) bool {
+func Permissions(tiktok *TikTokConf, slackID string, action string, api *slack.Client, chkchannel string) bool {
 
 	userInfo, _ := api.GetUserInfo(slackID)
 
@@ -471,13 +471,13 @@ func Permissions(baloo *BalooConf, slackID string, action string, api *slack.Cli
 		ctx := context.Background()
 		adminGroup, err := api.GetGroupInfoContext(ctx, chkchannel)
 		if err != nil {
-			errTrap(baloo, "Error in Func `permissions` for AdminChannel ID.\n", err)
+			errTrap(tiktok, "Error in Func `permissions` for AdminChannel ID.\n", err)
 			return false
 		}
 		for f := range adminGroup.Members {
 			channeluserInfo, err := api.GetUserInfo(adminGroup.Members[f])
 			if err != nil {
-				errTrap(baloo, "Error in Func `permissions` for AdminChannel ID.", err)
+				errTrap(tiktok, "Error in Func `permissions` for AdminChannel ID.", err)
 				return false
 			}
 			if userInfo.Name == channeluserInfo.Name {
@@ -492,7 +492,7 @@ func Permissions(baloo *BalooConf, slackID string, action string, api *slack.Cli
 		ctx := context.Background()
 		scrumGroup, err := api.GetGroupInfoContext(ctx, chkchannel)
 		if err != nil {
-			errTrap(baloo, "Error in Func `permissions` for ScrumChannel ID", err)
+			errTrap(tiktok, "Error in Func `permissions` for ScrumChannel ID", err)
 			return false
 		}
 		for f := range scrumGroup.Members {
@@ -507,20 +507,20 @@ func Permissions(baloo *BalooConf, slackID string, action string, api *slack.Cli
 }
 
 // PRSummary - Summarize PR Column
-func PRSummary(opts Config, baloo *BalooConf) (output string, err error) {
+func PRSummary(opts Config, tiktok *TikTokConf) (output string, err error) {
 
 	var attachments Attachment
 	var message string
 
-	if baloo.Config.LogToSlack {
+	if tiktok.Config.LogToSlack {
 		attachments.Text = ""
 		attachments.Color = ""
-		LogToSlack("Checking for PR cards to return a list of active ones on `"+opts.General.TeamName+"` board", baloo, attachments)
+		LogToSlack("Checking for PR cards to return a list of active ones on `"+opts.General.TeamName+"` board", tiktok, attachments)
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in PRSummary in `actions.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in PRSummary in `actions.go` for `"+opts.General.TeamName+"` board", err)
 		return "Trello error in PRSummary in `trello.go` for `" + opts.General.TeamName + "` board", err
 	}
 
@@ -534,7 +534,7 @@ func PRSummary(opts Config, baloo *BalooConf) (output string, err error) {
 		hmessage := "Reminder, here are the current PR's for discussion at Stand-up today:\n"
 		attachments.Color = "#006400"
 		attachments.Text = message
-		Wrangler(baloo.Config.SlackHook, hmessage, opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, hmessage, opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 		return "", nil
 	}
 
@@ -542,23 +542,23 @@ func PRSummary(opts Config, baloo *BalooConf) (output string, err error) {
 }
 
 // CountCards - function to count # of cards per theme in pre-sprint columns for reporting
-func CountCards(opts Config, baloo *BalooConf, teamID string) (allThemes Themes, err error) {
+func CountCards(opts Config, tiktok *TikTokConf, teamID string) (allThemes Themes, err error) {
 
-	sOpts, err := GetDBSprint(baloo, teamID)
+	sOpts, err := GetDBSprint(tiktok, teamID)
 	if err != nil {
 		return allThemes, err
 	}
 
 	// Load label information from board
-	allThemes, err = GetLabel(baloo, opts.General.BoardID)
+	allThemes, err = GetLabel(tiktok, opts.General.BoardID)
 	if err != nil {
-		errTrap(baloo, "Failed trello call to get label information in actions.go func `CountCards`", err)
+		errTrap(tiktok, "Failed trello call to get label information in actions.go func `CountCards`", err)
 		return allThemes, err
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error from RetrieveAll in `CountCards` `trello.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error from RetrieveAll in `CountCards` `trello.go` for `"+opts.General.TeamName+"` board", err)
 		return allThemes, err
 	}
 
@@ -576,7 +576,7 @@ func CountCards(opts Config, baloo *BalooConf, teamID string) (allThemes Themes,
 	}
 
 	// write to db and output
-	err = PutThemeCount(baloo, allThemes, sOpts, teamID)
+	err = PutThemeCount(tiktok, allThemes, sOpts, teamID)
 	if err != nil {
 		return allThemes, err
 	}
@@ -585,7 +585,7 @@ func CountCards(opts Config, baloo *BalooConf, teamID string) (allThemes Themes,
 }
 
 // SyncPoints - sync points between Agile power-up and custom field in the provided column
-func SyncPoints(teamID string, listID string, opts Config, baloo *BalooConf) (messasge string, apMessage string, err error) {
+func SyncPoints(teamID string, listID string, opts Config, tiktok *TikTokConf) (messasge string, apMessage string, err error) {
 
 	var attachments Attachment
 	var existPoints string
@@ -598,16 +598,16 @@ func SyncPoints(teamID string, listID string, opts Config, baloo *BalooConf) (me
 	m["fields"] = "name"
 	m["customFieldItems"] = "true"
 
-	sOpts, err := GetDBSprint(baloo, teamID)
+	sOpts, err := GetDBSprint(tiktok, teamID)
 	if err != nil {
-		errTrap(baloo, "Failed DB query, bailing out of syncpoints function in `trello.go`", err)
+		errTrap(tiktok, "Failed DB query, bailing out of syncpoints function in `trello.go`", err)
 		return "", "", err
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "all")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "all")
 
 	if err != nil {
-		errTrap(baloo, "Trello error in RetrieveAll `trello.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in RetrieveAll `trello.go` for `"+opts.General.TeamName+"` board", err)
 		return "", "Trello error in RetrieveAll `trello.go` for `" + opts.General.TeamName + "` board", err
 	}
 
@@ -615,14 +615,14 @@ func SyncPoints(teamID string, listID string, opts Config, baloo *BalooConf) (me
 		if aTt.IDList == listID {
 			var points int
 
-			pluginCard, _ := GetPowerUpField(aTt.ID, baloo)
+			pluginCard, _ := GetPowerUpField(aTt.ID, tiktok)
 
 			foundField = false
 			sprintField = false
 
 			for _, p := range pluginCard {
 
-				if p.IDPlugin == baloo.Config.PointsPowerUpID {
+				if p.IDPlugin == tiktok.Config.PointsPowerUpID {
 					var plugins PointsHistory
 
 					pluginJSON := []byte(p.Value)
@@ -645,9 +645,9 @@ func SyncPoints(teamID string, listID string, opts Config, baloo *BalooConf) (me
 						sprintField = true
 						if cusval.Value.Text == "" || cusval.Value.Text != sOpts.SprintName {
 							// Put custom field
-							err := PutCustomField(aTt.ID, opts.General.CfsprintID, baloo, "text", sOpts.SprintName)
+							err := PutCustomField(aTt.ID, opts.General.CfsprintID, tiktok, "text", sOpts.SprintName)
 							if err != nil {
-								errTrap(baloo, "Error in PutCustomField in trello.go, updating sprintname field", err)
+								errTrap(tiktok, "Error in PutCustomField in trello.go, updating sprintname field", err)
 							}
 						}
 					}
@@ -657,9 +657,9 @@ func SyncPoints(teamID string, listID string, opts Config, baloo *BalooConf) (me
 			// handle cards that have never had customfield SprintName created
 			if !sprintField {
 				if aTt.IDList == opts.General.ReadyForWork || aTt.IDList == opts.General.Working || aTt.IDList == opts.General.ReadyForReview {
-					err := PutCustomField(aTt.ID, opts.General.CfsprintID, baloo, "text", sOpts.SprintName)
+					err := PutCustomField(aTt.ID, opts.General.CfsprintID, tiktok, "text", sOpts.SprintName)
 					if err != nil {
-						errTrap(baloo, "Error in PutCustomField in trello.go, updating sprintname field", err)
+						errTrap(tiktok, "Error in PutCustomField in trello.go, updating sprintname field", err)
 					}
 				}
 			}
@@ -669,8 +669,8 @@ func SyncPoints(teamID string, listID string, opts Config, baloo *BalooConf) (me
 				if existPoints != strconv.Itoa(points) {
 					if existPoints != "" && foundField && existPoints != "0" {
 						apMessage = apMessage + "Points on card <https://trello.com/c/" + aTt.ID + "|" + aTt.Name + "> have changed from " + existPoints + " to " + strconv.Itoa(points) + "\n"
-						if baloo.Config.LogToSlack {
-							LogToSlack("Points on card <https://trello.com/c/"+aTt.ID+"|"+aTt.Name+"> have changed from "+existPoints+" to "+strconv.Itoa(points), baloo, attachments)
+						if tiktok.Config.LogToSlack {
+							LogToSlack("Points on card <https://trello.com/c/"+aTt.ID+"|"+aTt.Name+"> have changed from "+existPoints+" to "+strconv.Itoa(points), tiktok, attachments)
 						}
 					}
 				}
@@ -678,9 +678,9 @@ func SyncPoints(teamID string, listID string, opts Config, baloo *BalooConf) (me
 
 			// Sync fields
 			if existPoints != strconv.Itoa(points) {
-				err = PutCustomField(aTt.ID, opts.General.CfpointsID, baloo, "number", strconv.Itoa(points))
+				err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "number", strconv.Itoa(points))
 				if err != nil {
-					errTrap(baloo, "Error PutCustomField for Sync Fields `actions.go`", err)
+					errTrap(tiktok, "Error PutCustomField for Sync Fields `actions.go`", err)
 				}
 			}
 		}
@@ -689,21 +689,21 @@ func SyncPoints(teamID string, listID string, opts Config, baloo *BalooConf) (me
 }
 
 // ThemePoints - retrieve all the theme points in a given trello colum (list)
-func ThemePoints(opts Config, baloo *BalooConf, columnID string) (allThemes Themes, err error) {
+func ThemePoints(opts Config, tiktok *TikTokConf, columnID string) (allThemes Themes, err error) {
 
 	var points int
 
 	// Load label information from board
-	allThemes, err = GetLabel(baloo, opts.General.BoardID)
+	allThemes, err = GetLabel(tiktok, opts.General.BoardID)
 	if err != nil {
-		errTrap(baloo, "Failed trello call to get label information in trello.go func `ThemePoints`", err)
+		errTrap(tiktok, "Failed trello call to get label information in trello.go func `ThemePoints`", err)
 
 		return allThemes, err
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in RetrieveAll function `ThemePoints` in `actions.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in RetrieveAll function `ThemePoints` in `actions.go` for `"+opts.General.TeamName+"` board", err)
 		return allThemes, err
 	}
 
@@ -711,11 +711,11 @@ func ThemePoints(opts Config, baloo *BalooConf, columnID string) (allThemes Them
 		if columnID == aTt.IDList {
 
 			// get power-up for story points
-			pluginCard, _ := GetPowerUpField(aTt.ID, baloo)
+			pluginCard, _ := GetPowerUpField(aTt.ID, tiktok)
 
 			for _, p := range pluginCard {
 
-				if p.IDPlugin == baloo.Config.PointsPowerUpID {
+				if p.IDPlugin == tiktok.Config.PointsPowerUpID {
 
 					var plugins PointsHistory
 
@@ -740,7 +740,7 @@ func ThemePoints(opts Config, baloo *BalooConf, columnID string) (allThemes Them
 }
 
 // SquadPoints - retrieve all the squad points on a board
-func SquadPoints(columnID string, opts Config, baloo *BalooConf) (allSquads Squads, nonPoints int, err error) {
+func SquadPoints(columnID string, opts Config, tiktok *TikTokConf) (allSquads Squads, nonPoints int, err error) {
 
 	var points int
 	var checker bool
@@ -748,15 +748,15 @@ func SquadPoints(columnID string, opts Config, baloo *BalooConf) (allSquads Squa
 	nonPoints = 0
 
 	// Load Squad Information
-	allSquads, err = GetDBSquads(baloo, opts.General.BoardID)
+	allSquads, err = GetDBSquads(tiktok, opts.General.BoardID)
 	if err != nil {
-		errTrap(baloo, "Failed DB Call to get squad information in `actions.go` func `SquadPoints`", err)
+		errTrap(tiktok, "Failed DB Call to get squad information in `actions.go` func `SquadPoints`", err)
 		return allSquads, nonPoints, err
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in RetrieveAll function `SquadPoints` in `actions.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in RetrieveAll function `SquadPoints` in `actions.go` for `"+opts.General.TeamName+"` board", err)
 		return allSquads, nonPoints, err
 	}
 
@@ -765,11 +765,11 @@ func SquadPoints(columnID string, opts Config, baloo *BalooConf) (allSquads Squa
 			if aTt.IDList == columnID {
 
 				// get power-up for story points
-				pluginCard, _ := GetPowerUpField(aTt.ID, baloo)
+				pluginCard, _ := GetPowerUpField(aTt.ID, tiktok)
 
 				for _, p := range pluginCard {
 
-					if p.IDPlugin == baloo.Config.PointsPowerUpID {
+					if p.IDPlugin == tiktok.Config.PointsPowerUpID {
 
 						var plugins PointsHistory
 
@@ -804,16 +804,16 @@ func SquadPoints(columnID string, opts Config, baloo *BalooConf) (allSquads Squa
 }
 
 // EpicLink - Verify feature cards are linked to Epics
-func EpicLink(baloo *BalooConf, opts Config) {
+func EpicLink(tiktok *TikTokConf, opts Config) {
 	var attachments Attachment
 	var featureCard bool
 	var linkedCard bool
 	var amessage string
 	var hush bool
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in EpicLink `actions.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in EpicLink `actions.go` for `"+opts.General.TeamName+"` board", err)
 		return
 	}
 
@@ -841,9 +841,9 @@ func EpicLink(baloo *BalooConf, opts Config) {
 
 					if featureCard {
 						// check cards for any attachment back to Epic BoardID
-						cardAttachment, err := GetAttachments(baloo, aTt.ID)
+						cardAttachment, err := GetAttachments(tiktok, aTt.ID)
 						if err != nil {
-							errTrap(baloo, "Trello error in EpicLink `actions.go` for cardID `"+aTt.ID+"` board", err)
+							errTrap(tiktok, "Trello error in EpicLink `actions.go` for cardID `"+aTt.ID+"` board", err)
 
 						} else {
 
@@ -869,18 +869,18 @@ func EpicLink(baloo *BalooConf, opts Config) {
 	if amessage != "" {
 		attachments.Color = "#ff0000"
 		attachments.Text = amessage
-		Wrangler(baloo.Config.SlackHook, "The following `Feature` cards do not have Epic links!", opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, "The following `Feature` cards do not have Epic links!", opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 	}
 
 	return
 }
 
 // CheckThemes - Check that cards in a specific list have Theme Labels, returns formatted output
-func CheckThemes(baloo *BalooConf, opts Config, listID string) (amessage string, err error) {
+func CheckThemes(tiktok *TikTokConf, opts Config, listID string) (amessage string, err error) {
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in CheckThemes `actions.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in CheckThemes `actions.go` for `"+opts.General.TeamName+"` board", err)
 		return "", err
 	}
 
@@ -899,7 +899,7 @@ func CheckThemes(baloo *BalooConf, opts Config, listID string) (amessage string,
 }
 
 // CardPlay - Pull card timing data and dump to CSV
-func CardPlay(baloo *BalooConf, opts Config, channelResponse string, teamID string, csv bool) {
+func CardPlay(tiktok *TikTokConf, opts Config, channelResponse string, teamID string, csv bool) {
 	var message string
 	var wdays string
 	var prdays string
@@ -915,10 +915,10 @@ func CardPlay(baloo *BalooConf, opts Config, channelResponse string, teamID stri
 	format := "2006-01-02 15:04:05"
 
 	if csv {
-		Wrangler(baloo.Config.SlackHook, "Running card movement routine on `"+teamID+"`, this may take some time", channelResponse, baloo.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, "Running card movement routine on `"+teamID+"`, this may take some time", channelResponse, tiktok.Config.SlackEmoji, attachments)
 	}
-	if baloo.Config.LogToSlack {
-		LogToSlack("Running Card movement routines on "+teamID+".", baloo, attachments)
+	if tiktok.Config.LogToSlack {
+		LogToSlack("Running Card movement routines on "+teamID+".", tiktok, attachments)
 	}
 
 	// Trello args maps for custom fields
@@ -927,25 +927,25 @@ func CardPlay(baloo *BalooConf, opts Config, channelResponse string, teamID stri
 	m["fields"] = "name"
 	m["customFieldItems"] = "true"
 
-	sOpts, err := GetDBSprint(baloo, teamID)
+	sOpts, err := GetDBSprint(tiktok, teamID)
 	if err != nil {
-		errTrap(baloo, "DB Error on `GetDBSprint` in `actions.go` for `CardPlay` func", err)
+		errTrap(tiktok, "DB Error on `GetDBSprint` in `actions.go` for `CardPlay` func", err)
 		return
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in RetrieveAll `cardplay.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in RetrieveAll `cardplay.go` for `"+opts.General.TeamName+"` board", err)
 		return
 	}
 
 	message = "Card ID,Card Title,Points,Card URL,List,Started in Working,Days,Started in PR,Days,Entered Done,Owners\n"
 
 	if !csv {
-		if baloo.Config.LogToSlack {
-			LogToSlack("Truncating tiktok_cardtracker to prepare for new data", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Truncating tiktok_cardtracker to prepare for new data", tiktok, attachments)
 		}
-		err := zeroCardDataDB(baloo)
+		err := zeroCardDataDB(tiktok)
 		if err != nil {
 			return
 		}
@@ -958,7 +958,7 @@ func CardPlay(baloo *BalooConf, opts Config, channelResponse string, teamID stri
 					if cusval.IDCustomField == opts.General.CfsprintID {
 						if cusval.Value.Text == sOpts.SprintName {
 
-							powerUp, _ := GetPowerUpField(aTt.ID, baloo)
+							powerUp, _ := GetPowerUpField(aTt.ID, tiktok)
 							for p := range powerUp {
 
 								var plugins PointsHistory
@@ -970,17 +970,17 @@ func CardPlay(baloo *BalooConf, opts Config, channelResponse string, teamID stri
 
 							header = ""
 							for _, head := range aTt.IDMembers {
-								fullname, _, _ := GetMemberInfo(head, baloo)
+								fullname, _, _ := GetMemberInfo(head, tiktok)
 								header = header + fullname + "|"
 							}
 
 							// Get Date for each list
 							tz, err := time.LoadLocation("America/Los_Angeles")
 							if err != nil {
-								errTrap(baloo, "TZ Error", err)
+								errTrap(tiktok, "TZ Error", err)
 								return
 							}
-							_, cardListTime := GetTimePutList(opts.General.Working, aTt.ID, opts, baloo)
+							_, cardListTime := GetTimePutList(opts.General.Working, aTt.ID, opts, tiktok)
 
 							cardTimeW := cardListTime.In(tz)
 							workingTime := cardTimeW.Format("2006-01-02 15:04:05")
@@ -989,7 +989,7 @@ func CardPlay(baloo *BalooConf, opts Config, channelResponse string, teamID stri
 								cardTimeW = time.Date(2000, 01, 01, 00, 00, 0, 0, time.UTC)
 							}
 
-							_, cardListTime = GetTimePutList(opts.General.ReadyForReview, aTt.ID, opts, baloo)
+							_, cardListTime = GetTimePutList(opts.General.ReadyForReview, aTt.ID, opts, tiktok)
 							cardTimePR := cardListTime.In(tz)
 							PRTime := cardTimePR.Format("2006-01-02 15:04:05")
 							if strings.Contains(PRTime, "0000-12-31 ") {
@@ -997,7 +997,7 @@ func CardPlay(baloo *BalooConf, opts Config, channelResponse string, teamID stri
 								cardTimePR = time.Date(2000, 01, 01, 00, 00, 0, 0, time.UTC)
 
 							}
-							_, cardListTime = GetTimePutList(opts.General.Done, aTt.ID, opts, baloo)
+							_, cardListTime = GetTimePutList(opts.General.Done, aTt.ID, opts, tiktok)
 							cardTimeD := cardListTime.In(tz)
 							DoneTime := cardTimeD.Format("2006-01-02 15:04:05")
 							if strings.Contains(DoneTime, "0000-12-31 ") {
@@ -1036,7 +1036,7 @@ func CardPlay(baloo *BalooConf, opts Config, channelResponse string, teamID stri
 								prdays = strconv.Itoa(UATDays)
 							}
 
-							list, _ := GetLists(baloo, opts.General.BoardID)
+							list, _ := GetLists(tiktok, opts.General.BoardID)
 							for _, listName := range list {
 								if listName.ID == aTt.IDList {
 									realName = listName.Name
@@ -1058,9 +1058,9 @@ func CardPlay(baloo *BalooConf, opts Config, channelResponse string, teamID stri
 								allCardData.StartedInPR = cardTimePR
 								allCardData.StartedInWorking = cardTimeW
 
-								err = PutCardData(baloo, allCardData, teamID)
+								err = PutCardData(tiktok, allCardData, teamID)
 								if err != nil {
-									errTrap(baloo, "PutCardData error in `Cardplay` in `actions.go`", err)
+									errTrap(tiktok, "PutCardData error in `Cardplay` in `actions.go`", err)
 									return
 								}
 
@@ -1077,16 +1077,16 @@ func CardPlay(baloo *BalooConf, opts Config, channelResponse string, teamID stri
 	now := tnow.Format("01-02-2006-15:04")
 
 	if csv {
-		err = PostSnippet(baloo, "csv", message, channelResponse, "Card-Data-"+now)
+		err = PostSnippet(tiktok, "csv", message, channelResponse, "Card-Data-"+now)
 
 		if err != nil {
-			Wrangler(baloo.Config.SlackHook, "There was an error getting your information, please check the logs in #"+baloo.Config.LogChannel, channelResponse, baloo.Config.SlackEmoji, attachments)
+			Wrangler(tiktok.Config.SlackHook, "There was an error getting your information, please check the logs in #"+tiktok.Config.LogChannel, channelResponse, tiktok.Config.SlackEmoji, attachments)
 		}
 	} else {
 		if channelResponse != "" {
-			Wrangler(baloo.Config.SlackHook, "Card movement data gathering complete, database updated", channelResponse, baloo.Config.SlackEmoji, attachments)
+			Wrangler(tiktok.Config.SlackHook, "Card movement data gathering complete, database updated", channelResponse, tiktok.Config.SlackEmoji, attachments)
 		}
-		LogToSlack("Card movement data gathering complete, database updated", baloo, attachments)
+		LogToSlack("Card movement data gathering complete, database updated", tiktok, attachments)
 	}
 
 }
@@ -1148,54 +1148,54 @@ func GetColumn(opts Config, someString string) (columnID string, colName string)
 }
 
 // RecordChapters - Record Chapter card info to SQL DB per specified column/list
-func RecordChapters(baloo *BalooConf, teamID string, listName string) error {
+func RecordChapters(tiktok *TikTokConf, teamID string, listName string) error {
 	var columnID string
 	var colName string
 
-	opts, err := LoadConf(baloo, teamID)
+	opts, err := LoadConf(tiktok, teamID)
 	if err != nil {
-		errTrap(baloo, "Load Conf Error for TeamID "+teamID, err)
+		errTrap(tiktok, "Load Conf Error for TeamID "+teamID, err)
 		return err
 	}
 
 	columnID, colName = GetColumn(opts, listName)
 
-	allChapters, _, err := ChapterCount(baloo, opts, columnID)
+	allChapters, _, err := ChapterCount(tiktok, opts, columnID)
 	if err != nil {
 		return err
 	}
 
 	for _, chapter := range allChapters {
-		_ = RecordChapterCount(baloo, chapter.ChapterName, colName, chapter.ChapterCount, teamID)
+		_ = RecordChapterCount(tiktok, chapter.ChapterName, colName, chapter.ChapterCount, teamID)
 	}
 
 	return nil
 }
 
 //RetroCheck - Check a specified Retro board for un-finished action cards
-func RetroCheck(baloo *BalooConf, opts Config, boardID string) (err error) {
+func RetroCheck(tiktok *TikTokConf, opts Config, boardID string) (err error) {
 	var attachments Attachment
 	var listID string
 	var testPayload BotDMPayload
 
-	users, err := GetDBUsers(baloo)
+	users, err := GetDBUsers(tiktok)
 	if err != nil {
-		errTrap(baloo, "Error getting user data from `GetDBUsers` in `RetroCheck` in `actions.go`", err)
+		errTrap(tiktok, "Error getting user data from `GetDBUsers` in `RetroCheck` in `actions.go`", err)
 		return
 	}
 
-	allTheThings, err := RetrieveAll(baloo, boardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, boardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in RetroCheck in `trello.go` for `"+allTheThings.Name+"` ("+boardID+") retro board", err)
+		errTrap(tiktok, "Trello error in RetroCheck in `trello.go` for `"+allTheThings.Name+"` ("+boardID+") retro board", err)
 		return
 	}
 
-	if baloo.Config.LogToSlack {
-		LogToSlack("Scanning Retro Board `"+allTheThings.Name+"` for open action items.", baloo, attachments)
+	if tiktok.Config.LogToSlack {
+		LogToSlack("Scanning Retro Board `"+allTheThings.Name+"` for open action items.", tiktok, attachments)
 	}
 
 	// Get Actions column ListID from its name
-	listData, err := GetLists(baloo, boardID)
+	listData, err := GetLists(tiktok, boardID)
 	if err != nil {
 		return err
 	}
@@ -1206,8 +1206,8 @@ func RetroCheck(baloo *BalooConf, opts Config, boardID string) (err error) {
 	}
 
 	if listID == "" {
-		if baloo.Config.LogToSlack {
-			LogToSlack("No `Action Items` list found in Retro board "+allTheThings.Name+" so skipping it.", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("No `Action Items` list found in Retro board "+allTheThings.Name+" so skipping it.", tiktok, attachments)
 		}
 	} else {
 		for _, aTt := range allTheThings.Cards {
@@ -1225,16 +1225,16 @@ func RetroCheck(baloo *BalooConf, opts Config, boardID string) (err error) {
 					if days >= opts.General.RetroActionDays {
 						if len(aTt.IDMembers) > 0 {
 							for _, tu := range aTt.IDMembers {
-								_, _, userName := GetMemberInfo(tu, baloo)
+								_, _, userName := GetMemberInfo(tu, tiktok)
 								for _, u := range users {
 									if userName == u.Trello {
-										if baloo.Config.LogToSlack {
-											LogToSlack(baloo.Config.BotName+" Retro Action Card: Sent warning to @"+u.Trello+" that this card `"+aTt.Name+"` is still not completed and has no activity within "+strconv.Itoa(opts.General.RetroActionDays)+" day warning period.", baloo, attachments)
+										if tiktok.Config.LogToSlack {
+											LogToSlack(tiktok.Config.BotName+" Retro Action Card: Sent warning to @"+u.Trello+" that this card `"+aTt.Name+"` is still not completed and has no activity within "+strconv.Itoa(opts.General.RetroActionDays)+" day warning period.", tiktok, attachments)
 										}
 										testPayload.Text = "*Warning!* You have a Retro Action Item that is still not complete and has no activity in the past " + strconv.Itoa(opts.General.RetroActionDays) + " days.\n<https://trello.com/c/" + aTt.ID + "|" + aTt.Name + ">"
 										testPayload.Channel = u.SlackID
 
-										err := WranglerDM(baloo, testPayload)
+										err := WranglerDM(tiktok, testPayload)
 										if err != nil {
 											return err
 										}
@@ -1253,23 +1253,23 @@ func RetroCheck(baloo *BalooConf, opts Config, boardID string) (err error) {
 }
 
 // CheckActionCards - Loop through retro boards and verify all retro cards are checked for in-action
-func CheckActionCards(baloo *BalooConf, opts Config, teamID string) {
+func CheckActionCards(tiktok *TikTokConf, opts Config, teamID string) {
 
 	var retroAll []RetroStruct
 
 	// get sprint retros
-	retroStruct, err := GetRetroID(baloo, teamID)
+	retroStruct, err := GetRetroID(tiktok, teamID)
 	if err != nil {
 		return
 	}
 
 	// get and append other retros in DB
-	retroAdds, err := GetWBoards(baloo)
+	retroAdds, err := GetWBoards(tiktok)
 
 	retroAll = append(retroStruct, retroAdds...)
 
 	for _, r := range retroAll {
-		err := RetroCheck(baloo, opts, r.RetroID)
+		err := RetroCheck(tiktok, opts, r.RetroID)
 		if err != nil {
 			return
 		}
@@ -1277,15 +1277,15 @@ func CheckActionCards(baloo *BalooConf, opts Config, teamID string) {
 }
 
 //TemplateCard - Check for template cards and move them to top of backlog
-func TemplateCard(baloo *BalooConf, opts Config) {
+func TemplateCard(tiktok *TikTokConf, opts Config) {
 
 	var attachments Attachment
 
-	LogToSlack("Scanning board "+opts.General.TeamName+" for template cards to ensure they are in the right spot.", baloo, attachments)
+	LogToSlack("Scanning board "+opts.General.TeamName+" for template cards to ensure they are in the right spot.", tiktok, attachments)
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in TemplateCard `actions.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in TemplateCard `actions.go` for `"+opts.General.TeamName+"` board", err)
 		return
 	}
 
@@ -1296,14 +1296,14 @@ func TemplateCard(baloo *BalooConf, opts Config) {
 				if l.ID == opts.General.TemplateLabelID {
 
 					if aTt.IDList != opts.General.BacklogID {
-						err := MoveCardList(baloo, aTt.ID, opts.General.BacklogID)
+						err := MoveCardList(tiktok, aTt.ID, opts.General.BacklogID)
 						if err != nil {
 							return
 						}
 					}
 
 					// change position
-					err := CardPosition(baloo, aTt.ID, "top")
+					err := CardPosition(tiktok, aTt.ID, "top")
 					if err != nil {
 						return
 					}

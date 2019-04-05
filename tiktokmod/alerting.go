@@ -15,7 +15,7 @@ type lists struct {
 }
 
 // AlertRunner - Run the alerts in Planning / Next Sprint / Ready for Work / Working
-func AlertRunner(opts Config, baloo *BalooConf) (string, error) {
+func AlertRunner(opts Config, tiktok *TikTokConf) (string, error) {
 
 	var attachments Attachment
 	var messageAlertOut string
@@ -26,16 +26,16 @@ func AlertRunner(opts Config, baloo *BalooConf) (string, error) {
 	var hush bool
 	var weHaveSpike bool
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Error retrieving all cards on board "+opts.General.BoardID+" in `alerting.go` func `AlertRunner`", err)
+		errTrap(tiktok, "Error retrieving all cards on board "+opts.General.BoardID+" in `alerting.go` func `AlertRunner`", err)
 		return "", err
 	}
 
-	if baloo.Config.LogToSlack {
+	if tiktok.Config.LogToSlack {
 		attachments.Color = ""
 		attachments.Text = ""
-		LogToSlack("I'm trolling cards in the `"+opts.General.TeamName+"` board for zero points or points greater than "+strconv.Itoa(opts.General.MaxPoints)+" as well as member checking and spike checking.", baloo, attachments)
+		LogToSlack("I'm trolling cards in the `"+opts.General.TeamName+"` board for zero points or points greater than "+strconv.Itoa(opts.General.MaxPoints)+" as well as member checking and spike checking.", tiktok, attachments)
 	}
 
 	for _, aTt := range allTheThings.Cards {
@@ -57,7 +57,7 @@ func AlertRunner(opts Config, baloo *BalooConf) (string, error) {
 					weHaveSpike = false
 				}
 
-				points := GetCardPoints(opts, baloo, aTt.ID)
+				points := GetCardPoints(opts, tiktok, aTt.ID)
 				spoints := strconv.Itoa(points)
 
 				if points > opts.General.MaxPoints {
@@ -74,9 +74,9 @@ func AlertRunner(opts Config, baloo *BalooConf) (string, error) {
 					if len(aTt.IDMembers) > 0 {
 
 						for _, head := range aTt.IDMembers {
-							err := RemoveHead(baloo, aTt.ID, head)
+							err := RemoveHead(tiktok, aTt.ID, head)
 							if err != nil {
-								errTrap(baloo, "Error attempting to remove head from card <"+aTt.ShortURL+"|"+aTt.Name+"> in `AlertRunner` in `alerting.go`", err)
+								errTrap(tiktok, "Error attempting to remove head from card <"+aTt.ShortURL+"|"+aTt.Name+"> in `AlertRunner` in `alerting.go`", err)
 							}
 						}
 
@@ -97,44 +97,44 @@ func AlertRunner(opts Config, baloo *BalooConf) (string, error) {
 	if rHmessage != "" {
 		attachments.Color = "#ff0000"
 		attachments.Text = "These cards should not be assigned yet!\n" + rHmessage
-		Wrangler(baloo.Config.SlackHook, "<!here> NOTICE!  I have *removed* people from these cards", opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, "<!here> NOTICE!  I have *removed* people from these cards", opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 	}
 
 	if mHmessage != "" {
 		attachments.Color = "#ff0000"
 		attachments.Text = "I'm sad! These cards are in the working column but have nobody assigned to them!\n" + mHmessage
-		Wrangler(baloo.Config.SlackHook, "<!here> Warning Un-Assigned Work!!", opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, "<!here> Warning Un-Assigned Work!!", opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 	}
 
 	if messageAlertOut != "" {
 		attachments.Color = "#ff0000"
 		attachments.Text = "These cards have too many or not enough points!\n" + messageAlertOut
-		Wrangler(baloo.Config.SlackHook, "<!here> Warning cards with Point issues!!", opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, "<!here> Warning cards with Point issues!!", opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 	}
 
-	temp, _ = CheckThemes(baloo, opts, opts.General.Upcoming)
+	temp, _ = CheckThemes(tiktok, opts, opts.General.Upcoming)
 	tMessage = tMessage + temp
-	temp, _ = CheckThemes(baloo, opts, opts.General.Scoped)
+	temp, _ = CheckThemes(tiktok, opts, opts.General.Scoped)
 	tMessage = tMessage + temp
-	temp, _ = CheckThemes(baloo, opts, opts.General.ReadyForWork)
+	temp, _ = CheckThemes(tiktok, opts, opts.General.ReadyForWork)
 	tMessage = tMessage + temp
 
 	if tMessage != "" {
 		attachments.Color = "#ff0000"
 		attachments.Text = tMessage
-		Wrangler(baloo.Config.SlackHook, "*WARNING*! The following cards do *not* have appropriate Theme Labels on them: ", opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, "*WARNING*! The following cards do *not* have appropriate Theme Labels on them: ", opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 	}
 
 	return "", nil
 }
 
 // GetCardPoints - Get the points on a card from the power-up
-func GetCardPoints(opts Config, baloo *BalooConf, cardID string) (points int) {
-	pluginCard, _ := GetPowerUpField(cardID, baloo)
+func GetCardPoints(opts Config, tiktok *TikTokConf, cardID string) (points int) {
+	pluginCard, _ := GetPowerUpField(cardID, tiktok)
 
 	for _, p := range pluginCard {
 
-		if p.IDPlugin == baloo.Config.PointsPowerUpID {
+		if p.IDPlugin == tiktok.Config.PointsPowerUpID {
 
 			var plugins PointsHistory
 
@@ -148,7 +148,7 @@ func GetCardPoints(opts Config, baloo *BalooConf, cardID string) (points int) {
 }
 
 // StalePRcards - Check for cards that are aged out in the PR column
-func StalePRcards(opts Config, baloo *BalooConf) (message string, err error) {
+func StalePRcards(opts Config, tiktok *TikTokConf) (message string, err error) {
 
 	var attachments Attachment
 	var smessage string
@@ -156,19 +156,19 @@ func StalePRcards(opts Config, baloo *BalooConf) (message string, err error) {
 	var tMessage string
 	var prFound bool
 
-	LogToSlack("I'm trolling the PR Column cards in the `"+opts.General.TeamName+"` board.", baloo, attachments)
+	LogToSlack("I'm trolling the PR Column cards in the `"+opts.General.TeamName+"` board.", tiktok, attachments)
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Error retrieving all cards from func `RetrieveAll` in `StalePRCards` in `alerting.go` with board "+opts.General.TeamName, err)
+		errTrap(tiktok, "Error retrieving all cards from func `RetrieveAll` in `StalePRCards` in `alerting.go` with board "+opts.General.TeamName, err)
 	}
 
 	for _, aTt := range allTheThings.Cards {
 
 		if aTt.IDList == opts.General.ReadyForReview {
-			cardAction, err := GetCardAction(baloo, aTt.ID, 1)
+			cardAction, err := GetCardAction(tiktok, aTt.ID, 1)
 			if err != nil {
-				errTrap(baloo, "Error from `GetCardAction` in `StalePRCards` in `alerting.go`", err)
+				errTrap(tiktok, "Error from `GetCardAction` in `StalePRCards` in `alerting.go`", err)
 			}
 
 			for _, actions := range cardAction {
@@ -185,30 +185,30 @@ func StalePRcards(opts Config, baloo *BalooConf) (message string, err error) {
 				}
 
 				// compenstate if yesterday was a holiday
-				isHoliday, _ := IsHoliday(baloo, time.Now().AddDate(0, 0, -1))
+				isHoliday, _ := IsHoliday(tiktok, time.Now().AddDate(0, 0, -1))
 				if isHoliday {
 					diff = diff - time.Duration(24)*time.Hour
 				}
 
-				if baloo.Config.LogToSlack {
-					LogToSlack("Time in list for card <"+aTt.ShortURL+"|"+aTt.Name+"> is "+diff.String(), baloo, attachments)
+				if tiktok.Config.LogToSlack {
+					LogToSlack("Time in list for card <"+aTt.ShortURL+"|"+aTt.Name+"> is "+diff.String(), tiktok, attachments)
 				}
 
 				if diff > staleTimer {
 					// retrieve github PR from trello attachments if it exists
 					if aTt.Badges.Attachments > 0 {
-						attached, _ := GetAttachments(baloo, aTt.ID)
+						attached, _ := GetAttachments(tiktok, aTt.ID)
 						prFound = false
 						for _, a := range attached {
 							if !a.IsUpload && strings.Contains(a.URL, "github.com") && strings.Contains(a.URL, "/pull/") {
 								prFound = true
-								if baloo.Config.LogToSlack {
-									LogToSlack("<"+aTt.ShortURL+"|"+aTt.Name+"> has PR attached: <"+a.URL+"|"+a.Name+">", baloo, attachments)
+								if tiktok.Config.LogToSlack {
+									LogToSlack("<"+aTt.ShortURL+"|"+aTt.Name+"> has PR attached: <"+a.URL+"|"+a.Name+">", tiktok, attachments)
 								}
 								// get PR out of URL
 								u, err := url.Parse(a.URL)
 								if err != nil {
-									errTrap(baloo, "Error parsing Github URL in Trello card attachment in `StalePRCards` in `alerting.go` - URL: "+a.URL, err)
+									errTrap(tiktok, "Error parsing Github URL in Trello card attachment in `StalePRCards` in `alerting.go` - URL: "+a.URL, err)
 								}
 								splitPath := strings.Split(u.Path, "/")
 								if len(splitPath) > 0 {
@@ -217,7 +217,7 @@ func StalePRcards(opts Config, baloo *BalooConf) (message string, err error) {
 									locale = len(splitPath) - 3
 									repoName := splitPath[locale]
 
-									prDetail, err := GitPR(baloo, repoName, prNum)
+									prDetail, err := GitPR(tiktok, repoName, prNum)
 									if err == nil {
 										// look in github to see if PR is closed/merged
 										if *prDetail.Merged {
@@ -228,7 +228,7 @@ func StalePRcards(opts Config, baloo *BalooConf) (message string, err error) {
 											tMessage = ""
 											if len(aTt.IDMembers) > 0 {
 												for _, u := range aTt.IDMembers {
-													user, err := GetUser(baloo, "trello", u)
+													user, err := GetUser(tiktok, "trello", u)
 													if err == nil {
 														if user.SlackID != "" {
 															tMessage = tMessage + "@" + user.SlackID + " "
@@ -237,11 +237,11 @@ func StalePRcards(opts Config, baloo *BalooConf) (message string, err error) {
 												}
 												uMessage = tMessage + " The Github Pull Request for this card was merged on `" + lastUpdate + "`, does this card need to be closed in Trello? <" + aTt.URL + "|" + aTt.Name + ">\n"
 
-												if baloo.Config.LogToSlack {
-													LogToSlack("PR <"+*prDetail.HTMLURL+"|"+*prDetail.Title+"> is merged but card still open, alerting owners ("+tMessage+") and channel", baloo, attachments)
+												if tiktok.Config.LogToSlack {
+													LogToSlack("PR <"+*prDetail.HTMLURL+"|"+*prDetail.Title+"> is merged but card still open, alerting owners ("+tMessage+") and channel", tiktok, attachments)
 												}
 											}
-											Wrangler(baloo.Config.SlackHook, uMessage, opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+											Wrangler(tiktok.Config.SlackHook, uMessage, opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 										} else {
 											// look in github to see if PR has been commented on in past 24 hours
 											upAt := *prDetail.UpdatedAt
@@ -256,20 +256,20 @@ func StalePRcards(opts Config, baloo *BalooConf) (message string, err error) {
 											}
 
 											// compenstate if yesterday was a holiday
-											isHoliday, _ := IsHoliday(baloo, time.Now().AddDate(0, 0, -1))
+											isHoliday, _ := IsHoliday(tiktok, time.Now().AddDate(0, 0, -1))
 											if isHoliday {
 												diff = diff - time.Duration(24)*time.Hour
 											}
 
-											if baloo.Config.LogToSlack {
-												LogToSlack("PR <"+*prDetail.HTMLURL+"|"+*prDetail.Title+"> was last modifed/updated "+diff.String()+" ago", baloo, attachments)
+											if tiktok.Config.LogToSlack {
+												LogToSlack("PR <"+*prDetail.HTMLURL+"|"+*prDetail.Title+"> was last modifed/updated "+diff.String()+" ago", tiktok, attachments)
 											}
 
 											if diff > staleTimer {
 												smessage = smessage + "<" + aTt.ShortURL + "|" + aTt.Name + ">\n"
 											} else {
-												if baloo.Config.LogToSlack {
-													LogToSlack("<"+aTt.URL+"|"+aTt.Name+"> is lagging in trello but has current updates in Github, no alerting.  PR Is here <"+*prDetail.HTMLURL+"|"+*prDetail.Title+">", baloo, attachments)
+												if tiktok.Config.LogToSlack {
+													LogToSlack("<"+aTt.URL+"|"+aTt.Name+"> is lagging in trello but has current updates in Github, no alerting.  PR Is here <"+*prDetail.HTMLURL+"|"+*prDetail.Title+">", tiktok, attachments)
 												}
 											}
 										}
@@ -278,21 +278,21 @@ func StalePRcards(opts Config, baloo *BalooConf) (message string, err error) {
 							}
 						}
 						if !prFound {
-							if baloo.Config.LogToSlack {
-								LogToSlack("No github PR's found attached to <"+aTt.ShortURL+"|"+aTt.Name+">", baloo, attachments)
+							if tiktok.Config.LogToSlack {
+								LogToSlack("No github PR's found attached to <"+aTt.ShortURL+"|"+aTt.Name+">", tiktok, attachments)
 							}
 							smessage = smessage + "<" + aTt.ShortURL + "|" + aTt.Name + ">\n"
 						}
 					} else {
 						// no PR attached so assuming the worst
-						if baloo.Config.LogToSlack {
-							LogToSlack("No PR attached to <"+aTt.ShortURL+"|"+aTt.Name+"> and its over time so sending warning message.", baloo, attachments)
+						if tiktok.Config.LogToSlack {
+							LogToSlack("No PR attached to <"+aTt.ShortURL+"|"+aTt.Name+"> and its over time so sending warning message.", tiktok, attachments)
 						}
 						smessage = smessage + "<" + aTt.ShortURL + "|" + aTt.Name + ">\n"
 					}
 				} else {
-					if baloo.Config.LogToSlack {
-						LogToSlack("Ignoring <"+aTt.ShortURL+"|"+aTt.Name+">.", baloo, attachments)
+					if tiktok.Config.LogToSlack {
+						LogToSlack("Ignoring <"+aTt.ShortURL+"|"+aTt.Name+">.", tiktok, attachments)
 					}
 				}
 
@@ -304,28 +304,28 @@ func StalePRcards(opts Config, baloo *BalooConf) (message string, err error) {
 	if smessage != "" {
 		attachments.Color = "#ff0000"
 		attachments.Text = "These are " + strconv.Itoa(opts.General.StaleTime) + " hours or older\n" + smessage
-		Wrangler(baloo.Config.SlackHook, "<!here> WARNING!! Lagging PR Card(s)!!", opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, "<!here> WARNING!! Lagging PR Card(s)!!", opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 	}
 
 	return "", nil
 }
 
 // SkippedPR - Alert if cards have skipped PR column
-func SkippedPR(baloo *BalooConf, opts Config) {
+func SkippedPR(tiktok *TikTokConf, opts Config) {
 	var message string
 	var attachments Attachment
 	var commentMsg string
 	var checkThisCard bool
 
-	users, err := GetDBUsers(baloo)
+	users, err := GetDBUsers(tiktok)
 	if err != nil {
-		errTrap(baloo, "Error getting user data from `GetDBUsers` in `SkippedPR` in `alerting.go`", err)
+		errTrap(tiktok, "Error getting user data from `GetDBUsers` in `SkippedPR` in `alerting.go`", err)
 		return
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in RetrieveAll in `SkippedPR` in `alerting.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in RetrieveAll in `SkippedPR` in `alerting.go` for `"+opts.General.TeamName+"` board", err)
 		return
 	}
 
@@ -337,42 +337,42 @@ func SkippedPR(baloo *BalooConf, opts Config) {
 				checkThisCard = true
 
 				// check if card has already been commented on by TikTok and skip it if so
-				cardComments, err := GetCardComments(aTt.ID, baloo)
+				cardComments, err := GetCardComments(aTt.ID, tiktok)
 				if err != nil {
-					errTrap(baloo, "Error on return from `GetCardComments` in `SkippedPR` in `Trello.go`", err)
+					errTrap(tiktok, "Error on return from `GetCardComments` in `SkippedPR` in `Trello.go`", err)
 					return
 				}
 				for _, c := range cardComments {
-					if c.MemberCreator.Username == baloo.Config.BotTrelloID {
-						if strings.Contains(c.Data.Text, baloo.Config.BotName+" PR Message:") {
+					if c.MemberCreator.Username == tiktok.Config.BotTrelloID {
+						if strings.Contains(c.Data.Text, tiktok.Config.BotName+" PR Message:") {
 							checkThisCard = false
 						}
 					}
 				}
 
 				if checkThisCard {
-					cardListHistory := GetCardListHistory(aTt.ID, baloo)
+					cardListHistory := GetCardListHistory(aTt.ID, tiktok)
 
 					for _, h := range cardListHistory {
 						if h.Data.ListAfter.ID == opts.General.Done {
 							if h.Data.ListBefore.ID != opts.General.ReadyForReview {
 								message = message + "<https://trello.com/c/" + aTt.ID + "|" + aTt.Name + ">\n"
-								commentMsg = baloo.Config.BotName + " PR Message: Couldn't find a card owner on this card that has skipped the Review process so I sent a general alert to the " + opts.General.ComplaintChannel + " slack channel about it."
+								commentMsg = tiktok.Config.BotName + " PR Message: Couldn't find a card owner on this card that has skipped the Review process so I sent a general alert to the " + opts.General.ComplaintChannel + " slack channel about it."
 
 								for _, u := range users {
 									if len(aTt.IDMembers) > 0 {
-										_, _, userName := GetMemberInfo(aTt.IDMembers[0], baloo)
+										_, _, userName := GetMemberInfo(aTt.IDMembers[0], tiktok)
 										if userName == u.Trello {
-											commentMsg = baloo.Config.BotName + " PR Message: Sent warning to @" + u.Trello + " that this card skipped the Review process and they should put an update in it with an explanation."
-											Wrangler(baloo.Config.SlackHook, "*Warning!* This card with your face on it, appears to have skipped the `Review` column, please resolve this by adding notes as to why this happened. Even spikes should be reviewed! Thank you!\n<https://trello.com/c/"+aTt.ID+"|"+aTt.Name+">", "@"+u.SlackID, baloo.Config.SlackEmoji, attachments)
+											commentMsg = tiktok.Config.BotName + " PR Message: Sent warning to @" + u.Trello + " that this card skipped the Review process and they should put an update in it with an explanation."
+											Wrangler(tiktok.Config.SlackHook, "*Warning!* This card with your face on it, appears to have skipped the `Review` column, please resolve this by adding notes as to why this happened. Even spikes should be reviewed! Thank you!\n<https://trello.com/c/"+aTt.ID+"|"+aTt.Name+">", "@"+u.SlackID, tiktok.Config.SlackEmoji, attachments)
 										}
 									}
 								}
 
 								// put comment on the card so it gets ignored next round
-								err = CommentCard(aTt.ID, commentMsg, baloo)
+								err = CommentCard(aTt.ID, commentMsg, tiktok)
 								if err != nil {
-									errTrap(baloo, "Error attempting to comment on card "+aTt.ID+" bailing out of SkippedPR routine", err)
+									errTrap(tiktok, "Error attempting to comment on card "+aTt.ID+" bailing out of SkippedPR routine", err)
 									return
 								}
 
@@ -389,20 +389,20 @@ func SkippedPR(baloo *BalooConf, opts Config) {
 		attachments.Color = "#ff0000"
 		attachments.Text = message
 		headerMsg := "*Warning* The following cards appear to have skipped the review column in trello.  If you are an owner of one of these cards I will slack you directly about putting a note in it regarding why it skipped `Ready for Review`!\nPlease review these!"
-		Wrangler(baloo.Config.SlackHook, headerMsg, opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, headerMsg, opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 	}
 }
 
 // CheckBugs - Check for bugs and alert on them
-func CheckBugs(opts Config, baloo *BalooConf) (critBugNum int) {
+func CheckBugs(opts Config, tiktok *TikTokConf) (critBugNum int) {
 	var message string
 	var amessage string
 	var criticalID string
 	var attachments Attachment
 
-	bugLabels, err := GetBugID(baloo, opts.General.BoardID)
+	bugLabels, err := GetBugID(tiktok, opts.General.BoardID)
 	if err != nil {
-		errTrap(baloo, "Error getting user data from `GetDBUsers` in `SkippedPR` in `alerting.go`", err)
+		errTrap(tiktok, "Error getting user data from `GetDBUsers` in `SkippedPR` in `alerting.go`", err)
 		return 0
 	}
 	for _, bugs := range bugLabels {
@@ -411,9 +411,9 @@ func CheckBugs(opts Config, baloo *BalooConf) (critBugNum int) {
 		}
 	}
 
-	allTheThings, err := RetrieveAll(baloo, opts.General.BoardID, "visible")
+	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
-		errTrap(baloo, "Trello error in RetrieveAll in `CheckBugs` in `alerting.go` for `"+opts.General.TeamName+"` board", err)
+		errTrap(tiktok, "Trello error in RetrieveAll in `CheckBugs` in `alerting.go` for `"+opts.General.TeamName+"` board", err)
 		return 0
 	}
 
@@ -442,10 +442,10 @@ func CheckBugs(opts Config, baloo *BalooConf) (critBugNum int) {
 
 		attachments.Color = "#FF0000"
 		attachments.Text = message
-		Wrangler(baloo.Config.SlackHook, amessage, opts.General.ComplaintChannel, baloo.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, amessage, opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 	} else {
-		if baloo.Config.LogToSlack {
-			LogToSlack("No Critical Bugs Found", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("No Critical Bugs Found", tiktok, attachments)
 		}
 	}
 
@@ -454,7 +454,7 @@ func CheckBugs(opts Config, baloo *BalooConf) (critBugNum int) {
 }
 
 // SendAlert - send a slack alert message about a sprint meeting reminder (standup/demo/retro/wdw)
-func SendAlert(baloo *BalooConf, opts Config, alertType string) {
+func SendAlert(tiktok *TikTokConf, opts Config, alertType string) {
 	var attachments Attachment
 	var meetType string
 	var location string
@@ -462,10 +462,10 @@ func SendAlert(baloo *BalooConf, opts Config, alertType string) {
 	var message string
 
 	// Check for Holiday
-	isHoliday, holiday := IsHoliday(baloo, time.Now())
+	isHoliday, holiday := IsHoliday(tiktok, time.Now())
 	if isHoliday && opts.General.HolidaySupport {
-		if baloo.Config.LogToSlack {
-			LogToSlack("Today is Holiday, skipping "+alertType+" slack alert. ("+holiday.Name+")", baloo, attachments)
+		if tiktok.Config.LogToSlack {
+			LogToSlack("Today is Holiday, skipping "+alertType+" slack alert. ("+holiday.Name+")", tiktok, attachments)
 		}
 
 		return
@@ -507,7 +507,7 @@ func SendAlert(baloo *BalooConf, opts Config, alertType string) {
 	} else {
 		message = "<!here> " + preMsg[rand.Intn(len(preMsg))] + " - " + location
 	}
-	Wrangler(baloo.Config.SlackHook, message, channel, baloo.Config.SlackEmoji, attachments)
+	Wrangler(tiktok.Config.SlackHook, message, channel, tiktok.Config.SlackEmoji, attachments)
 
 	return
 }
