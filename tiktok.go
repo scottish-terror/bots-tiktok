@@ -6,20 +6,20 @@ import (
 	"strings"
 
 	"github.com/robfig/cron"
-	"github.com/srv1054/bots-baloo/baloomod"
+	"github.com/srv1054/bots-tiktok/tiktokmod"
 
 	"github.com/nlopes/slack"
 )
 
 func main() {
 
-	var attachments baloomod.Attachment
+	var attachments tiktokmod.Attachment
 	var c *cron.Cron
-	var cronjobs *baloomod.Cronjobs
+	var cronjobs *tiktokmod.Cronjobs
 	var CronState string
 
 	// Load BalooConf Config
-	baloo, err := baloomod.LoadBalooConf()
+	baloo, err := tiktokmod.LoadBalooConf()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(0)
@@ -30,7 +30,7 @@ func main() {
 	baloo.Config.Version = "4.0.0-3"
 
 	// Grab CLI parameters at launch
-	wOpts, nocron := baloomod.Startup(baloo)
+	wOpts, nocron := tiktokmod.Startup(baloo)
 
 	// Load Cron
 	if nocron {
@@ -39,14 +39,14 @@ func main() {
 			fmt.Println("Not loading CRONs per CLI parameter -nocron")
 		}
 		if baloo.Config.LogToSlack {
-			baloomod.LogToSlack("Not Loading CRON based on CLI parameter -nocron", wOpts, attachments)
+			tiktokmod.LogToSlack("Not Loading CRON based on CLI parameter -nocron", wOpts, attachments)
 		}
 		CronState = "Not Loaded"
 		c = cron.New()
 
 	} else {
 
-		cronjobs, c, err = baloomod.CronLoad(wOpts)
+		cronjobs, c, err = tiktokmod.CronLoad(wOpts)
 		if err != nil {
 			if baloo.Config.DEBUG {
 				fmt.Println("CRON Jobs failed to load due to file error.")
@@ -94,15 +94,15 @@ func main() {
 					lowerString := ev.Msg.Text
 
 					// BOT Responses
-					baloomod.Responder(lowerString, wOpts, ev, rtm)
+					tiktokmod.Responder(lowerString, wOpts, ev, rtm)
 
 					// BOT Actions
-					c, cronjobs, CronState = baloomod.BotActions(lowerString, wOpts, ev, rtm, api, c, cronjobs, CronState)
+					c, cronjobs, CronState = tiktokmod.BotActions(lowerString, wOpts, ev, rtm, api, c, cronjobs, CronState)
 
 					// HELP INFO
 					if strings.Contains(lowerString, "help") || strings.Contains(lowerString, "what do you do") || strings.Contains(lowerString, "what can you do") || strings.Contains(lowerString, "who are you") {
 						rtm.SendMessage(rtm.NewOutgoingMessage("I have DM'd you some help information!", ev.Msg.Channel))
-						baloomod.Help(wOpts, ev.Msg.User, api)
+						tiktokmod.Help(wOpts, ev.Msg.User, api)
 					}
 				}
 			}

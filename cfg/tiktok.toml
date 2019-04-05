@@ -1,9 +1,9 @@
 
 [baloo]
 
-	LogChannel			= "#baloo-logs"		   			# Channel to spew all trello changes into, for logging and potential rollback. Must have value even if LogToSlack is false
+	LogChannel			= "#tiktok-logs"	   			# Channel to spew all trello changes into, for logging and potential rollback. Must have value even if LogToSlack is false
 	LogToSlack			= true							# Log bot data to slack (recommended)
-	SlackEmoji          = ":baloo:" 					# "bot" slack Emoji name (Include pre and post colons  :myemoji: )
+	SlackEmoji          = ":tik-tok-head:" 				# "bot" slack Emoji name (Include pre and post colons  :myemoji: )
 	DEBUG				= false							# Output Debug info to CLI
 	DupeCollectionID 	= ""							# TrelloID of Collection to stash duplicated boards in.  Blank is None
 	LoggingPrefix 		= ""		 					# pre-fix to all slack logging messages (optional)
@@ -15,7 +15,7 @@
 	UseGCP 					= false				# Should "bot" connect to a Google Cloud DB 
 	SQLHost					= "172.30.1.205"   	# Hostname of MySQL DB or GCP connection instance
 	SQLPort					= "3306"			# Port of MySQL DB (NOT required for GCP Connection instances)
-	SQLDBName				= "baloo"			# Name of "bot" SQL Database
+	SQLDBName				= "tiktok"			# Name of "bot" SQL Database
 	AllowNativePasswords  	= true 				# False - Disallows the usage of MySQL native password method.
 	AllowCleartextPasswords = true 				# True - Allows using the cleartext client side plugin if required by an account, such as one defined with the PAM authentication plugin
 	AllowAllFiles 			= true 				# True - Disables the file Whitelist for LOAD DATA LOCAL INFILE and allows all files.

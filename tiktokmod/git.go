@@ -1,4 +1,4 @@
-package baloomod
+package tiktokmod
 
 import (
 	"context"
