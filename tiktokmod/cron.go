@@ -1,4 +1,4 @@
-package baloomod
+package tiktokmod
 
 // Manages CRON job calls to functions
 

@@ -1,4 +1,4 @@
-package baloomod
+package tiktokmod
 
 // handles slack API interface for sending webhooks back with responses
 
