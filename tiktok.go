@@ -9,7 +9,7 @@ import (
 	"github.com/srv1054/bots-tiktok/tiktokmod"
 
 	"github.com/nlopes/slack"
-) 
+)
 
 func main() {
 
@@ -18,7 +18,7 @@ func main() {
 	var cronjobs *tiktokmod.Cronjobs
 	var CronState string
 
-	// Load TikTokConf Config
+	// Load TikTokConf Configuration
 	tiktok, err := tiktokmod.LoadTikTokConf()
 	if err != nil {
 		fmt.Println(err)
