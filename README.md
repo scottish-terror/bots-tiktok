@@ -2,6 +2,18 @@
 
 Tik-Tok v3 is an always on services type bot.  
 
+Tik-Tok Modules
+```
+go get github.com/robfig/cron
+go get github.com/nlopes/slack
+go get github.com/google/go-github/github
+go get golang.org/x/oauth2
+go get github.com/parnurzeal/gorequest
+go get github.com/GoogleCloudPlatform/cloudsql-proxy/proxy/dialers/mysql
+go get github.com/BurntSushi/toml
+go get github.com/jinzhu/copier
+```
+
 Tik-Tok *required* CLI parameters
 ```
 Usage of Tik-Tok.go:
