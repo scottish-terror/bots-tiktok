@@ -36,6 +36,9 @@ Tik-Tok has a Tik-Tok.toml file that has some base configuration parameters you 
 
 Each team/board that needs Tik-Tok to operate on it must be configured a specific way and then contain a .TOML file with the settings and configuration for that board.   Below is how to configure your specific board .TOML file.   Tik-Tok does not need to be restarted if a new .TOML file is built and added to his working directory.  He will find it on command.  The name of the TOML file (minus the extension) is how you will refer to that when talking to Tik-Tok.  For example a file called  SAAS.toml will be referred to when talking to Tik-Tok as [SAAS].  
 
+###  Bot Help
+https://github.com/scottish-terror/bots-tiktok/wiki/Tik-Tok-Help
+
 ###  Configuring your Trello Board
 * Board must be created ahead of time you will need the boardID.  BoardID is in the URL when viewing the board. `https://trello.com/b/<BOARDID>/`
 * Board must initially have colum/list names Matching the list below. *NOTE*: Columns/Lists can be renamed once the ID's have been acquired, but can not be deleted and re-created without getting the new ID
@@ -68,7 +71,7 @@ To find all the unique Trello UID's for the TOML config file, you can ask Tik-To
 * All cron jobs for Tik-Tok are contained in the toml file called `crons.toml` stored in Tik-Tok's working directory.  This file can be edited at any time and you can issue a `reload cronjobs` command to Tik-Tok and he will re-read the file and load the new changes.   He will log errors around this in whichever slack channel you've specified logging to go to.
 
 #### Available Cron Functions
-* Cron functions are now listed in the Tik-Tok Help Wiki here: https://github.com/srv1054/bots-Tik-Tok/wiki/Tik-Tok-Help
+* Cron functions are now listed in the Tik-Tok Help Wiki here: https://github.com/scottish-terror/bots-tiktok/wiki/Tik-Tok-Help
 
 ### PERMISSIONS
 For specific tasks (such as shutdown) Tik-Tok will require you to have permissions.  Currently some tasks are for `admin` only.  This is a list of slack users contained in the `actions.go` file in the Permissions Function. Eventually this will be moved to a datastore.   Other permissions (such as launching a new sprint) will require the user to a member of a specific private slack channel.
