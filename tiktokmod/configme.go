@@ -18,10 +18,10 @@ SEE README.md for more Details about how to use this
 var BacklogName = "Backlog"
 
 // Upcoming - Default name of Upcoming/Un-Scoped List
-var Upcoming = "Upcoming Un-Scoped"
+var Upcoming = "Upcoming"
 
 // Scoped - Default name of Backlog List
-var Scoped = "Ready for Points"
+var Scoped = "Scoped"
 
 // NextSprintName - Default name of Next Sprint List
 var NextSprintName = "Next Sprint"
@@ -33,7 +33,7 @@ var ReadyForWork = "Ready for Work"
 var WorkingName = "Working"
 
 // RFRName - Default name of PR List
-var RFRName = "Ready for Review (PR)"
+var RFRName = "Ready for Review"
 
 // DoneName - Default name of Done List
 var DoneName = "Done"
@@ -57,7 +57,7 @@ var AllowMembersLabel = "DEMO"
 var TrainingLabel = "Training"
 
 // SilenceCardLabel - Default label name for label that will disable 98% of tiktok monitoring/alerting
-var SilenceCardLabel = "TikTokConf Hush"
+var SilenceCardLabel = "TikTok Hush"
 
 // ConfigMe struct for passing config data around
 type ConfigMe struct {
