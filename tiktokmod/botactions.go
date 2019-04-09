@@ -1199,10 +1199,10 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 								rtm.SendMessage(rtm.NewOutgoingMessage("Awesome, I've registered your info!", ev.Msg.Channel))
 								umessage := "Name: " + newUserData.Name + "\nE-Mail: " + newUserData.Email + "\nSlack: " + newUserData.SlackID + "\nTrello: " + newUserData.Trello + "\nGithub: " + newUserData.Github + "\n"
 
-								myPayload.Text = umessage
+								myPayload.Text = "I've registered you as follows:"
 								myPayload.Channel = userInfo.ID
 								attachments.Color = "#00FF55"
-								attachments.Text = "I've registered you as follows:"
+								attachments.Text = umessage
 								myPayload.Attachments = append(myPayload.Attachments, attachments)
 								_ = WranglerDM(tiktok, myPayload)
 
