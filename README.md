@@ -1,8 +1,8 @@
 ## Tik-Tok Bot - Distinguished Scrum Master 
 
-Tik-Tok v3 is an always on services type bot.  
+Tik-Tok v4 is an always on services type bot.  
 
-Tik-Tok Modules
+Tik-Tok Modules if you want to compile or contribute.  Binaries are in the release section.
 ```
 go get github.com/robfig/cron
 go get github.com/nlopes/slack
