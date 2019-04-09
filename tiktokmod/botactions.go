@@ -1156,6 +1156,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 	if strings.Contains(lowerString, "add me") || strings.Contains(lowerString, "register me") {
 		var newUserData UserData
 		var tempSID string
+		var myPayload BotDMPayload
 
 		userData := Between(ev.Msg.Text, "[", "]")
 		if userData == "" {
@@ -1197,12 +1198,19 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 							if AddDBUser(tiktok, newUserData) {
 								rtm.SendMessage(rtm.NewOutgoingMessage("Awesome, I've registered your info!", ev.Msg.Channel))
 								umessage := "Name: " + newUserData.Name + "\nE-Mail: " + newUserData.Email + "\nSlack: " + newUserData.SlackID + "\nTrello: " + newUserData.Trello + "\nGithub: " + newUserData.Github + "\n"
+
+								myPayload.Text = umessage
+								myPayload.Channel = userInfo.ID
+								attachments.Color = "#00FF55"
+								attachments.Text = "I've registered you as follows:"
+								testPayload.Attachments = append(testPayload.Attachments, attachments)
+								_ = WranglerDM(tiktok, myPayload)
+
 								attachments.Color = "#00FF55"
 								attachments.Text = umessage
 								if tiktok.Config.LogToSlack {
 									LogToSlack("A new user was registered per their request.", tiktok, attachments)
 								}
-								Wrangler(tiktok.Config.SlackHook, "I've registered you as follows:", "@"+userInfo.Name, tiktok.Config.SlackEmoji, attachments)
 							} else {
 								rtm.SendMessage(rtm.NewOutgoingMessage("Something went horribly wrong I could not add your new user info!", ev.Msg.Channel))
 							}
