@@ -31,7 +31,6 @@ func main() {
 
 	// Grab CLI parameters at launch
 	tiktokOpts, nocron := tiktokmod.Startup(tiktok)
-	fmt.Printf("%+v", tiktokOpts)
 
 	// Load Cron
 	if nocron {
@@ -117,10 +116,16 @@ func main() {
 			if tiktok.Config.DEBUG {
 				fmt.Printf("Error: %s\n", ev.Error())
 			}
+			if tiktok.Config.LogToSlack {
+				tiktokmod.LogToSlack("`ERROR`: RTMError, See Console DEBUG", tiktok, attachments)
+			}
 
 		case *slack.InvalidAuthEvent:
 			if tiktok.Config.DEBUG {
 				fmt.Printf("Invalid credentials")
+			}
+			if tiktok.Config.LogToSlack {
+				tiktokmod.LogToSlack("`ERROR`: Invalid Slack API Credentials", tiktok, attachments)
 			}
 			return
 
