@@ -1,5 +1,5 @@
 
-[tiktok]  
+[config]  
 
 	LogChannel			= "#tiktok-logs"	   			# Channel to spew all trello changes into, for logging and potential rollback. Must have value even if LogToSlack is false
 	LogToSlack			= true							# Log bot data to slack (recommended)
