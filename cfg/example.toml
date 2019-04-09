@@ -29,7 +29,7 @@
         TemplateLabelID     = "" # UID For NCL Label being used to mark cards as Templates
         CfsprintID          = "" # The Custom Field UID for Sprint Name Field  (in trello MUST be text field)
         CfpointsID          = "" # The Custom Field UID for Card Points (in trello MUST be text field)
-        retroCollectionID   = "" # The ID of the Collection you want to put your Retro Boards in. (Default for FRSaaS Team)
+        RetroCollectionID   = "" # The ID of the Collection you want to put your Retro Boards in. (Default for FRSaaS Team)
         AllowMembersLabel   = "" # The UID of the label that should cause alerting for "members on cards" to be supressed
         TrainingLabel       = "" # The UID of the label that should be used for training cards, this will suppress many normal process alerts
         SilenceCardLabel    = "" # The UID of the label that will silence 100% of the bot in relation to that card and all alerts and actions
