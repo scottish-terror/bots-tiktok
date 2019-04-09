@@ -8,7 +8,7 @@
         TrelloOrg       = "McBoard"   # Short Team name for Trello Organization
         StaleTime       = 24   # Must be an integer in hours!!
         MaxPoints       = 8    # Points GREATER than this number are flagged as too large and will alert and fail automated card moves
-	    ArchiveDoneDays = 28   # Number of Days old a card should be in the Done column to be auto-archived
+	ArchiveDoneDays = 28   # Number of Days old a card should be in the Done column to be auto-archived
         BackLogDays     = 180  # Number of days before the bot archives a card in the backlog
         SprintDuration  = 14   # Duration of each sprint including weekends and holidays (IE 2 weeks == 14 days)    
         RetroActionDays = 9    # Number of days before the bot continues to complain to card owners about incomplete retro action items    
@@ -16,36 +16,36 @@
         HolidaySupport  = true # Ignore Holidays in the SQL DB botname_holidays table when alerting
 
 # Trelloness - Requires Trello UID's Not "Names"
-        BacklogID           = "" # Trello UID for your Backlog Column 
-        Upcoming            = "" # Trello UID for your Upcoming/Un-Scoped Column
-        Scoped              = "" # Trello UID for your Scoped Cards Column
-        NextsprintID        = "" # Trello UID for your Next Sprint Column
-        ReadyForWork        = "" # Trello UID for your Ready For Work Column
-        Working             = "" # Trello UID for your Working Column
-        ReadyForReview      = "" # Trello UID for your Waiting for Review or PR Column
-        Done                = "" # Trello UID for your Done Column
-        BoardID             = "" # Trello Board UID (found in board URL)
-        ROLabelID           = "" # UID For label being used for ROLL-OVER flagging
-        TemplateLabelID     = "" # UID For NCL Label being used to mark cards as Templates
-        CfsprintID          = "" # The Custom Field UID for Sprint Name Field  (in trello MUST be text field)
-        CfpointsID          = "" # The Custom Field UID for Card Points (in trello MUST be text field)
+        BacklogID           = "5c92c5df082cbc5c4b879eb6" # Trello UID for your Backlog Column 
+        Upcoming            = "5c92c5e60007324d1ec0fe15" # Trello UID for your Upcoming/Un-Scoped Column
+        Scoped              = "5c92c62c28c0822a27860f90" # Trello UID for your Scoped Cards Column
+        NextsprintID        = "5c92c62f58798c100b58919d" # Trello UID for your Next Sprint Column
+        ReadyForWork        = "5c92c63516ba708aa660720d" # Trello UID for your Ready For Work Column
+        Working             = "5c92c6374cdf6a119b330af9" # Trello UID for your Working Column
+        ReadyForReview      = "5c92c643d14917143fa7b6e2" # Trello UID for your Waiting for Review or PR Column
+        Done                = "5c92c645058c7740d20b6a20" # Trello UID for your Done Column
+        BoardID             = "n3TcRtpw" # Trello Board UID (found in board URL)
+        ROLabelID           = "5c92c65769ec7d094e0621c3" # UID For label being used for ROLL-OVER flagging
+        TemplateLabelID     = "5c92c68ec1e49b4c89da4f6e" # UID For NCL Label being used to mark cards as Templates
+        CfsprintID          = "5c92c70b453f9866f34a8e8b" # The Custom Field UID for Sprint Name Field  (in trello MUST be text field)
+        CfpointsID          = "5c92c718c7464067406630c4" # The Custom Field UID for Card Points (in trello MUST be text field)
         retroCollectionID   = "" # The ID of the Collection you want to put your Retro Boards in. (Default for FRSaaS Team)
-        AllowMembersLabel   = "" # The UID of the label that should cause alerting for "members on cards" to be supressed
-        TrainingLabel       = "" # The UID of the label that should be used for training cards, this will suppress many normal process alerts
-        SilenceCardLabel    = "" # The UID of the label that will silence 100% of the bot in relation to that card and all alerts and actions
+        AllowMembersLabel   = "5c92c6959c06e55c997758f0" # The UID of the label that should cause alerting for "members on cards" to be supressed
+        TrainingLabel       = "5c92c5bf91d0c2ddc55c5c34" # The UID of the label that should be used for training cards, this will suppress many normal process alerts
+        SilenceCardLabel    = "5c92c6c07ab76418edf26784" # The UID of the label that will silence 100% of the bot in relation to that card and all alerts and actions
         DemoBoardID         = "" # The UID of the board that manages Demo cards.  This can be identical across TOML files
 
 # Slackness
-        RetroChannel        = "" # Channel to post Retro based info in (must start with @ or # per slack)
-        SprintChannel       = "" # Channel to post sprint update messages (must start with @ or # per slack)
-        ComplaintChannel    = "" # Channel to post PR and card issues/complaints (must start with @ or # per slack)
+        RetroChannel        = "#sprint-notifications" # Channel to post Retro based info in (must start with @ or # per slack)
+        SprintChannel       = "#sprint-notifications" # Channel to post sprint update messages (must start with @ or # per slack)
+        ComplaintChannel    = "#sprint-notifications" # Channel to post PR and card issues/complaints (must start with @ or # per slack)
 
 # Sprint Meeting Reminder Settings
-        StandupAlertChannel = "" # Channel to post stand-up starting reminders
-        StandupLink         = "" # Meeting link or URL for stand-up
-        DemoAlertChannel    = "" # Channel to post Demo meeting start reminder 
-        DemoAlertLink       = "" # Meeting link or URL for Demo Meeting
-        RetroAlertChannel   = "" # Channel to post retro meeting start reminder
-        RetroAlertLink      = "" # Meeting link or URL for Retro Meeting
-        WDWAlertChannel     = "" # Channel to post WDW meeting start reminder
-        WDWAlertLink        = "" # Meeting link or URL for WDW Meeting
+        StandupAlertChannel = "#land-of-bots" # Channel to post stand-up starting reminders
+        StandupLink         = "meet.google.com/wqf-fmwe-rvy" # Meeting link or URL for stand-up
+        DemoAlertChannel    = "#land-of-bots" # Channel to post Demo meeting start reminder 
+        DemoAlertLink       = "meet.google.com/wqf-fmwe-rvy" # Meeting link or URL for Demo Meeting
+        RetroAlertChannel   = "#sprint-notifications" # Channel to post retro meeting start reminder
+        RetroAlertLink      = "meet.google.com/wqf-fmwe-rvy" # Meeting link or URL for Retro Meeting 
+        WDWAlertChannel     = "#sprint-notifications" # Channel to post WDW meeting start reminder
+        WDWAlertLink        = "meet.google.com/wqf-fmwe-rvy" # Meeting link or URL for WDW Meeting
