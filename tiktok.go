@@ -30,7 +30,8 @@ func main() {
 	tiktok.Config.Version = "4.0.0-3"
 
 	// Grab CLI parameters at launch
-	wOpts, nocron := tiktokmod.Startup(tiktok)
+	tiktokOpts, nocron := tiktokmod.Startup(tiktok)
+	fmt.Printf("%+v", tiktokOpts)
 
 	// Load Cron
 	if nocron {
@@ -39,14 +40,14 @@ func main() {
 			fmt.Println("Not loading CRONs per CLI parameter -nocron")
 		}
 		if tiktok.Config.LogToSlack {
-			tiktokmod.LogToSlack("Not Loading CRON based on CLI parameter -nocron", wOpts, attachments)
+			tiktokmod.LogToSlack("Not Loading CRON based on CLI parameter -nocron", tiktokOpts, attachments)
 		}
 		CronState = "Not Loaded"
 		c = cron.New()
 
 	} else {
 
-		cronjobs, c, err = tiktokmod.CronLoad(wOpts)
+		cronjobs, c, err = tiktokmod.CronLoad(tiktokOpts)
 		if err != nil {
 			if tiktok.Config.DEBUG {
 				fmt.Println("CRON Jobs failed to load due to file error.")
@@ -85,24 +86,24 @@ func main() {
 			}
 
 			// Check stream if someone says my name or is DM'ing me
-			//   Ignore things that I post so i don't loop myself
 			if strings.Contains(ev.Msg.Text, "@"+tiktok.Config.BotID) || string(ev.Msg.Channel[0]) == "D" {
+				// Ignore things that I post so i don't loop myself
 				if ev.Msg.User != tiktok.Config.BotID {
 					// some bot responses are case sensitive due to Trello being case sensitive, so removing the lower case function
 					//   until i think of a better way to handle
-					// lowerString := strings.ToLower(ev.Msg.Text)
-					lowerString := ev.Msg.Text
+					// saidWhat := strings.ToLower(ev.Msg.Text)
+					saidWhat := ev.Msg.Text
 
 					// BOT Responses
-					tiktokmod.Responder(lowerString, wOpts, ev, rtm)
+					tiktokmod.Responder(saidWhat, tiktokOpts, ev, rtm)
 
 					// BOT Actions
-					c, cronjobs, CronState = tiktokmod.BotActions(lowerString, wOpts, ev, rtm, api, c, cronjobs, CronState)
+					c, cronjobs, CronState = tiktokmod.BotActions(saidWhat, tiktokOpts, ev, rtm, api, c, cronjobs, CronState)
 
 					// HELP INFO
-					if strings.Contains(lowerString, "help") || strings.Contains(lowerString, "what do you do") || strings.Contains(lowerString, "what can you do") || strings.Contains(lowerString, "who are you") {
+					if strings.Contains(saidWhat, "help") || strings.Contains(saidWhat, "what do you do") || strings.Contains(saidWhat, "what can you do") || strings.Contains(saidWhat, "who are you") {
 						rtm.SendMessage(rtm.NewOutgoingMessage("I have DM'd you some help information!", ev.Msg.Channel))
-						tiktokmod.Help(wOpts, ev.Msg.User, api)
+						tiktokmod.Help(tiktokOpts, ev.Msg.User, api)
 					}
 				}
 			}
@@ -126,5 +127,8 @@ func main() {
 		default:
 
 		}
+	}
+	if tiktok.Config.DEBUG {
+		fmt.Println("Dumped out of RTM Loop!")
 	}
 }

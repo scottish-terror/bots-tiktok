@@ -44,7 +44,6 @@ func Startup(tiktokOpts *TikTokConf) (*TikTokConf, bool) {
 		os.Exit(0)
 	}
 
-	// Start up message
 	if tiktokOpts.Config.LogToSlack {
 		LogToSlack("*Hi I'm starting up after being stopped!* - Version `"+tiktokOpts.Config.Version+"`", tiktokOpts, attachments)
 	}

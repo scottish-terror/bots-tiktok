@@ -20,6 +20,7 @@
 .slack
 .swp
 .desktop*
+tiktok
 
 # secrets, IDE noise, debug and binaries
 secrets/
