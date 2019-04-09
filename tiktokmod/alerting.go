@@ -496,8 +496,8 @@ func SendAlert(tiktok *TikTokConf, opts Config, alertType string) {
 
 	preMsg := []string{
 		"Hey everybody its time for " + meetType,
-		"Diiireective?  Oh ya its " + meetType + " time!",
-		"W_WaaLLeee is my name, " + meetType + " is my game.  Join us for " + meetType + "!",
+		"Oh ya its " + meetType + " time!",
+		"Tick tock, join us for " + meetType + "!",
 		"Hey there, its that time again! Let's do " + meetType,
 	}
 
