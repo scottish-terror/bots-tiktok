@@ -18,7 +18,7 @@
 ### SAAS-E CRONS
 [[cronjob]]
 
-    timing = "0 15 17 * * MON-FRI"
-    action = "pr"
-    config = "saase"
+    timing = "0 40 10 * * MON-FRI"
+    action = "standupalert"
+    config = "mcboard"
 
