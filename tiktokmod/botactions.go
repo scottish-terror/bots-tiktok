@@ -1203,7 +1203,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 								myPayload.Channel = userInfo.ID
 								attachments.Color = "#00FF55"
 								attachments.Text = "I've registered you as follows:"
-								testPayload.Attachments = append(testPayload.Attachments, attachments)
+								myPayload.Attachments = append(myPayload.Attachments, attachments)
 								_ = WranglerDM(tiktok, myPayload)
 
 								attachments.Color = "#00FF55"
