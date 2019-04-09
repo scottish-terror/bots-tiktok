@@ -15,7 +15,7 @@ func Help(tiktok *TikTokConf, user string, api *slack.Client) {
 
 	message = message + "*Hi, I heard you need some help!*\n"
 	message = message + "I can do many things based on specific keywords and permissions.\n\n"
-	message = message + "For *more detailed easier to read* help go here <https://github.com/srv1054/bots-tiktok/wiki/Tik-Tok-Help|to my Wiki Page>\n\n"
+	message = message + "For *more detailed easier to read* help go here <https://github.com/scottish-terror/bots-tiktok/wiki/Tik-Tok-Help|to my Wiki Page>\n\n"
 	message = message + "Here's some more common commands I know though:\n\n"
 
 	hmessage = hmessage + "* what's your 411 (or version)\n"
