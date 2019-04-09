@@ -193,7 +193,7 @@ func SanityCheck(ConfigLocation string, ms GeneralOptions) (sane bool, output st
 		field.SetString(str)
 		if str == "" {
 			// ignore these fields which can be blank
-			if typ == "DemoBoardID" || typ == "StandupAlertChannel" || typ == "StandupLink" || typ == "DemoAlertChannel" || typ == "DemoAlertLink" || typ == "RetroAlertChannel" || typ == "RetroAlertLink" || typ == "WDWAlertChannel" || typ == "WDWAlertLink" {
+			if typ == "RetroCollectionID" || typ == "DemoBoardID" || typ == "StandupAlertChannel" || typ == "StandupLink" || typ == "DemoAlertChannel" || typ == "DemoAlertLink" || typ == "RetroAlertChannel" || typ == "RetroAlertLink" || typ == "WDWAlertChannel" || typ == "WDWAlertLink" {
 				str = ""
 			} else {
 				message = message + "Value " + typ + " can not be blank!\n"
