@@ -4,7 +4,7 @@
 	LogChannel			= "#tiktok-logs"	   			# Channel to spew all trello changes into, for logging and potential rollback. Must have value even if LogToSlack is false
 	LogToSlack			= true							# Log bot data to slack (recommended)
 	SlackEmoji          = ":tik-tok-head:" 				# "bot" slack Emoji name (Include pre and post colons  :myemoji: )
-	DEBUG				= true							# Output Debug info to CLI
+	DEBUG				= false							# Output Debug info to CLI
 	DupeCollectionID 	= ""							# TrelloID of Collection to stash duplicated boards in.  Blank is None
 	LoggingPrefix 		= ""		 					# pre-fix to all slack logging messages (optional)
 	PointsPowerUpID     = "59d4ef8cfea15a55b0086614"	# UID Assigned to the Points Power-Up we use in trello (ORG wide /all boards)
