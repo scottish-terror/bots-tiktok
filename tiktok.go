@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/robfig/cron"
-	"github.com/srv1054/bots-tiktok/tiktokmod"
+	"github.com/scottish-terror/bots-tiktok/tiktokmod"
 
 	"github.com/nlopes/slack"
 )
