@@ -15,10 +15,45 @@
 #           * epic-links - check and alert on feature cards not linked to epics
 #   config = "name of toml file (minus extension) to run against"
   
-### SAAS-E CRONS
+### AUTOBOT CRONS ###
 [[cronjob]]
 
     timing = "0 00 9 * * MON-FRI"
     action = "standupalert"
     config = "autobots"
 
+[[cronjob]]
+
+    timing = "0 20 9,15 * * MON-FRI"
+    action = "record-pts"
+    config = "autobots"
+
+[[cronjob]]
+
+    timing = "0 15 10 * * MON-FRI"
+    action = "critical-bug"
+    config = "autobots"
+
+[[cronjob]]
+
+    timing = "0 45 8 * * MON-FRI"
+    action = "holidays"
+    config = "autobots"
+
+[[cronjob]]
+
+    timing = "0 15 9 * * MON-FRI"
+    action = "pr-summary"
+    config = "autobots"
+
+[[cronjob]]
+
+    timing = "0 30 8,12,15 * * MON-FRI"
+    action = "pts"
+    config = "autobots"
+
+[[cronjob]]
+
+    timing = "0 34 8,12,15 * * MON-FRI"
+    action = "troll"
+    config = "autobots"
