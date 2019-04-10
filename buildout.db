@@ -13,4 +13,11 @@ create table tiktok_cardtracker (cardid varchar(100), cardtitle varchar(255), po
 create table tiktok_users (id int not null primary key auto_increment, name varchar(255), slackid varchar(100), trello varchar(100), github varchar(100), email varchar(255));
 create table tiktok_main (v2id int not null primary key auto_increment, teamid varchar(50), sprintstart date, duration int, retroid varchar(100), sprintname varchar(100));
 create table tiktok_burndown (id int not null primary key auto_increment, pointdate datetime, team varchar(100), totalpoints int, rfwpts int, wkgpts int, uatpts int, dnepts int, numcards int);
+create table tiktok_squads (id int not null primary key auto_increment, boardid varchar(100), squadname varchar(255), labelid varchar(255));
 
+insert into tiktok_holidays values (NULL,'New Years Day','2019-01-01','Happy New Year!!');
+insert into tiktok_holidays values (NULL,'Fourth of July','2019-07-04','Happy 4th of July!'); 
+insert into tiktok_holidays values (NULL,'Christmas Day','2019-12-25','Happy Holidays!!');
+insert into tiktok_holidays values (NULL,'New Years Day','2020-01-01','Happy New Year!!');
+
+insert into tiktok_main values (NULL,'AutoBots','2019-03-19',21,'','AutoBots-03-19-2019',15);
