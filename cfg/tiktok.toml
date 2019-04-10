@@ -8,8 +8,8 @@
 	DupeCollectionID 	= ""							# TrelloID of Collection to stash duplicated boards in.  Blank is None
 	LoggingPrefix 		= ""		 					# pre-fix to all slack logging messages (optional)
 	PointsPowerUpID     = "59d4ef8cfea15a55b0086614"	# UID Assigned to the Points Power-Up we use in trello (ORG wide /all boards)
-	BotTrelloID         = "mcboard"		                # Trello UserID for the Bot running the board
-	TrelloOrgID         = ""						    # Trello UID for organization "bot" is working out of
+	BotTrelloID         = "tik_tok"		                # Trello UserID for the Bot running the board
+	TrelloOrgID         = "5cacd4d16fe54966c2d769f7"    # Trello UID for organization "bot" is working out of
 
 	## "bot" MySQL Database
 	UseGCP 					= false				# Should "bot" connect to a Google Cloud DB 
@@ -24,5 +24,5 @@
 	## NOTE: In the case of private channels being used for permissions, Wall*E must be a member of that channel.
 	##   To get a channels UID, have bot join and then ask bot for his 411 (or version).  ``@botname whats your 411``
 
-	AdminSlackChannel = "GH6FQ7YDV"		# Channel user must be a member of to gain "Admin" control over bot Admin functionality
-	ScrumControlChannel = "GH6FQ7YDV"	# Channel user must be a member of to do scrum functions with bot.  Start new Sprints etc... 
+	AdminSlackChannel 		= "GH6FQ7YDV"	# Channel user must be a member of to gain "Admin" control over bot Admin functionality
+	ScrumControlChannel 	= "GH6FQ7YDV"	# Channel user must be a member of to do scrum functions with bot.  Start new Sprints etc... 
