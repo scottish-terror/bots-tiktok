@@ -10,7 +10,7 @@
         MaxPoints       = 8    # Points GREATER than this number are flagged as too large and will alert and fail automated card moves
         ArchiveDoneDays = 28   # Number of Days old a card should be in the Done column to be auto-archived
         BackLogDays     = 180  # Number of days before the bot archives a card in the backlog
-        SprintDuration  = 14   # Duration of each sprint including weekends and holidays (IE 2 weeks == 14 days)    
+        SprintDuration  = 21   # Duration of each sprint including weekends and holidays (IE 2 weeks == 14 days)    
         RetroActionDays = 9    # Number of days before the bot continues to complain to card owners about incomplete retro action items    
         IgnoreWeekends  = true # Ignore weekends when doing time based calculations for alerts
         HolidaySupport  = true # Ignore Holidays in the SQL DB botname_holidays table when alerting
