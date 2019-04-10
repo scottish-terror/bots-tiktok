@@ -3,12 +3,12 @@
 [general]
 
 # General Info
-        TeamName        = "McBoard"   # Name of your team the bot should refer to when talking in slack (instead of your board ID)
-        Sprintname      = "mcboard"   # The Prefix for Sprint Names (current date is appeneded automagically) / toml filename needs to match this in lowercase
-        TrelloOrg       = "McBoard"   # Short Team name for Trello Organization
+        TeamName        = "AutoBots"         # Name of your team the bot should refer to when talking in slack (instead of your board ID)
+        Sprintname      = "AutoBots"         # The Prefix for Sprint Names (current date is appeneded automagically) / toml filename needs to match this in lowercase
+        TrelloOrg       = "ScottishTerror"   # Short Team name for Trello Organization
         StaleTime       = 24   # Must be an integer in hours!!
         MaxPoints       = 8    # Points GREATER than this number are flagged as too large and will alert and fail automated card moves
-	ArchiveDoneDays = 28   # Number of Days old a card should be in the Done column to be auto-archived
+	    ArchiveDoneDays = 28   # Number of Days old a card should be in the Done column to be auto-archived
         BackLogDays     = 180  # Number of days before the bot archives a card in the backlog
         SprintDuration  = 14   # Duration of each sprint including weekends and holidays (IE 2 weeks == 14 days)    
         RetroActionDays = 9    # Number of days before the bot continues to complain to card owners about incomplete retro action items    
