@@ -20,5 +20,5 @@
 
     timing = "0 00 9 * * MON-FRI"
     action = "standupalert"
-    config = "mcboard"
+    config = "autobots"
 
