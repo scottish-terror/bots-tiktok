@@ -365,13 +365,19 @@ func Sprint(opts Config, tiktok *TikTokConf, retroNo bool) (message string, err 
 		}
 
 		// Assign new board to RETRO collections
-		out := AssignCollection(rboardID, opts.General.RetroCollectionID, tiktok)
+		if opts.General.RetroCollectionID != "" {
+			out := AssignCollection(rboardID, opts.General.RetroCollectionID, tiktok)
 
-		if tiktok.Config.DEBUG {
-			fmt.Println(out)
-		}
-		if tiktok.Config.LogToSlack {
-			LogToSlack(out+" for Retro board _"+boardName+"_ for `"+opts.General.TeamName+"`", tiktok, attachments)
+			if tiktok.Config.DEBUG {
+				fmt.Println(out)
+			}
+			if tiktok.Config.LogToSlack {
+				LogToSlack(out+" for Retro board _"+boardName+"_ for `"+opts.General.TeamName+"`", tiktok, attachments)
+			}
+		} else {
+			if tiktok.Config.LogToSlack {
+				LogToSlack("No Trello `Collection` specified in config for Retro board _"+boardName+"_ for `"+opts.General.TeamName+"`", tiktok, attachments)
+			}
 		}
 
 		// Add team members to the board
