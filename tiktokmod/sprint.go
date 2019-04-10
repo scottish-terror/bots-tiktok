@@ -90,6 +90,8 @@ func Sprint(opts Config, tiktok *TikTokConf, retroNo bool) (message string, err 
 		attachments.Text = jmessage
 		Wrangler(tiktok.Config.SlackHook, "*WARNING*! The following cards do *not* have appropriate Theme Labels on them: ", opts.General.ComplaintChannel, tiktok.Config.SlackEmoji, attachments)
 	}
+	attachments.Text = ""
+	attachments.Color = ""
 
 	allTheThings, err := RetrieveAll(tiktok, opts.General.BoardID, "visible")
 	if err != nil {
@@ -116,6 +118,7 @@ func Sprint(opts Config, tiktok *TikTokConf, retroNo bool) (message string, err 
 
 					// move card to next sprint
 					err := MoveCardList(tiktok, aTt.ID, opts.General.NextsprintID)
+
 					if err != nil {
 						errTrap(tiktok, "Error moving card `"+aTt.ID+"` to *Next Sprint* ... skipping", err)
 					} else {
