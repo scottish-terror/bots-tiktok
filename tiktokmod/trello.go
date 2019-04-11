@@ -671,6 +671,8 @@ func removeLabel(cardID string, labelID string, tiktok *TikTokConf) (err error) 
 func PutCustomField(cardID string, customID string, tiktok *TikTokConf, someValueType string, somevalue string) (err error) {
 	url := "https://api.trello.com/1/card/" + cardID + "/customField/" + customID + "/item"
 
+	fmt.Println(url)
+
 	var jsonStr = []byte(`{
 		"key": "` + tiktok.Config.Tkey + `", 
 		"token": "` + tiktok.Config.Ttoken + `", 
