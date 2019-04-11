@@ -667,12 +667,15 @@ func removeLabel(cardID string, labelID string, tiktok *TikTokConf) (err error) 
 	return err
 }
 
-// PutCustomField - used in multiple places
-// adlio/trello doesn't support custom card fields, so this function posts to changes in custom fields
+// PutCustomField - Write data to custom card fields power-up
 func PutCustomField(cardID string, customID string, tiktok *TikTokConf, someValueType string, somevalue string) (err error) {
 	url := "https://api.trello.com/1/card/" + cardID + "/customField/" + customID + "/item"
 
-	var jsonStr = []byte(`{"key": "` + tiktok.Config.Tkey + `", "token": "` + tiktok.Config.Ttoken + `", "value": { "` + someValueType + `": "` + somevalue + `" }}`)
+	var jsonStr = []byte(`{
+		"key": "` + tiktok.Config.Tkey + `", 
+		"token": "` + tiktok.Config.Ttoken + `", 
+		"value": { "` + someValueType + `": "` + somevalue + `" }
+		}`)
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		errTrap(tiktok, "Error in http.NewRequest in `PutCustomField` in `trello.go`", err)
