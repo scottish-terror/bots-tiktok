@@ -21,9 +21,27 @@ func gitmyhub(tiktok *TikTokConf) (ctx context.Context, client *github.Client) {
 	return ctx, client
 }
 
-// RetrieveRepo - retrieve list of repositories. org is optional to filter out specific organization repos from API user repos
-func RetrieveRepo(tiktok *TikTokConf, org string) (repos []*github.Repository) {
-	var newRepo []*github.Repository
+// RetrieveOrgRepo - retrieve list of repositories for an Organization
+func RetrieveOrgRepo(tiktok *TikTokConf, orgName string) (repos []*github.Repository) {
+
+	ctx, client := gitmyhub(tiktok)
+
+	opt := &github.RepositoryListByOrgOptions{
+		Type: "all",
+	}
+
+	repos, _, err := client.Repositories.ListByOrg(ctx, orgName, opt)
+	if err != nil {
+		errTrap(tiktok, "Error in `retrieveRepo` function in `git.go`", err)
+		return
+	}
+
+	return repos
+
+}
+
+// RetrieveRepo - retrieve list of repositories for the API user
+func RetrieveRepo(tiktok *TikTokConf) (repos []*github.Repository) {
 
 	ctx, client := gitmyhub(tiktok)
 
@@ -37,15 +55,6 @@ func RetrieveRepo(tiktok *TikTokConf, org string) (repos []*github.Repository) {
 	if err != nil {
 		errTrap(tiktok, "Error in `retrieveRepo` function in `git.go`", err)
 		return
-	}
-	if org != "" {
-		for _, r := range repos {
-			if *r.Organization.Name == org {
-				newRepo = append(newRepo, r)
-			}
-		}
-
-		return newRepo
 	}
 
 	return repos
