@@ -671,17 +671,22 @@ func GetPreviousSprintPoints(tiktok *TikTokConf, sprintname string) (totalSprint
 
 }
 
-// GetHoliday - Get List of Holidays in SQL DB
+// GetHoliday - Get List of Holidays in SQL DB.  If year is 0, all dates are returned
 func GetHoliday(tiktok *TikTokConf, year string) (theHolidays []Holiday, err error) {
 
 	var tempHoliday Holiday
 	var attachments Attachment
+	var rows *sql.Rows
 
 	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
 
 	if status {
 
-		rows, err := db.Query("SELECT * FROM tiktok_holidays where YEAR(holiday)=? ORDER BY holiday", year)
+		if year == "0" {
+			rows, err = db.Query("SELECT * FROM tiktok_holidays ORDER BY holiday", year)
+		} else {
+			rows, err = db.Query("SELECT * FROM tiktok_holidays where YEAR(holiday)=? ORDER BY holiday", year)
+		}
 		if err != nil {
 			errTrap(tiktok, "`GetHoliday` Function error: DB Query Error", err)
 			return theHolidays, err
