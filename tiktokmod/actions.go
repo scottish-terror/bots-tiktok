@@ -621,7 +621,7 @@ func SyncPoints(teamID string, listID string, opts Config, tiktok *TikTokConf) (
 			}
 
 			for _, cusval := range aTt.CustomFieldItems {
-				// sync points to burndown custom field
+				// get points in burndown custom field
 				if cusval.IDCustomField == opts.General.CfpointsID {
 					existPoints = cusval.Value.Number
 					foundField = true
