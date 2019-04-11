@@ -159,12 +159,6 @@ func CleanBackLog(opts Config, tiktok *TikTokConf) error {
 	var numCards int
 	var squadLabel int
 
-	// Trello args maps for custom fields
-	var m map[string]string
-	m = make(map[string]string)
-	m["fields"] = "name"
-	m["customFieldItems"] = "true"
-
 	if tiktok.Config.LogToSlack {
 		LogToSlack("I'm checking the BackLog in the `"+opts.General.TeamName+"` and cleaning up those cards.", tiktok, attachments)
 	}
