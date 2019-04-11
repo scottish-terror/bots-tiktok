@@ -1513,7 +1513,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
 		LogToSlack(userInfo.Name+" asked me to list all the GitHub REPOs in "+tiktok.Config.GithubOrgName, tiktok, attachments)
 
-		repoList := RetrieveRepo(tiktok)
+		repoList := RetrieveRepo(tiktok, tiktok.Config.GithubOrgName)
 
 		for _, r := range repoList {
 			message = message + "• " + *r.Name + " - " + *r.HTMLURL + "\n"
