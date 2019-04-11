@@ -371,11 +371,16 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 	}
 
 	// Retrieve Holiday List
-	if strings.Contains(strings.ToLower(lowerString), "company holiday") {
+	if strings.Contains(strings.ToLower(lowerString), "company holidays") {
 		var holidaymsg string
+		var year string
 
-		t := time.Now()
-		year := t.Format("2006")
+		if strings.Contains(strings.ToLower(lowerString), "company holidays all") {
+			year = "0"
+		} else {
+			t := time.Now()
+			year = t.Format("2006")
+		}
 
 		holiday, err := GetHoliday(tiktok, year)
 
