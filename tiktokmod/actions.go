@@ -592,12 +592,6 @@ func SyncPoints(teamID string, listID string, opts Config, tiktok *TikTokConf) (
 	var foundField bool
 	var sprintField bool
 
-	// Trello args maps for custom fields
-	var m map[string]string
-	m = make(map[string]string)
-	m["fields"] = "name"
-	m["customFieldItems"] = "true"
-
 	sOpts, err := GetDBSprint(tiktok, teamID)
 	if err != nil {
 		errTrap(tiktok, "Failed DB query, bailing out of syncpoints function in `trello.go`", err)
@@ -677,6 +671,9 @@ func SyncPoints(teamID string, listID string, opts Config, tiktok *TikTokConf) (
 			}
 
 			// Sync fields
+
+			fmt.Println("Card " + aTt.Name + " : PUPts=" + strconv.Itoa(points) + " : existPts=" + existPoints)
+
 			if existPoints != strconv.Itoa(points) {
 				err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "number", strconv.Itoa(points))
 				if err != nil {
