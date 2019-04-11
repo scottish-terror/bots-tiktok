@@ -672,7 +672,7 @@ func SyncPoints(teamID string, listID string, opts Config, tiktok *TikTokConf) (
 
 			// Sync points fields
 			if existPoints != strconv.Itoa(points) {
-				err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "number", strconv.Itoa(points))
+				err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "text", strconv.Itoa(points))
 				if err != nil {
 					errTrap(tiktok, "Error PutCustomField for Sync Fields `actions.go`", err)
 				}
