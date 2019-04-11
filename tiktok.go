@@ -27,7 +27,7 @@ func main() {
 
 	// Set version number
 	// Major.Features.Bugs-Tweaks & tomls
-	tiktok.Config.Version = "4.0.4-0"
+	tiktok.Config.Version = "4.0.5-0"
 
 	// Grab CLI parameters at launch
 	tiktokOpts, nocron := tiktokmod.Startup(tiktok)

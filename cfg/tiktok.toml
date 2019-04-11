@@ -10,6 +10,7 @@
 	PointsPowerUpID     = "59d4ef8cfea15a55b0086614"	# UID Assigned to the Points Power-Up we use in trello (ORG wide /all boards)
 	BotTrelloID         = "tik_tok"		                # Trello UserID for the Bot running the board
 	TrelloOrgID         = "5cacd4d16fe54966c2d769f7"    # Trello UID for organization "bot" is working out of
+	GithubOrgName		= "scottish-terror"				# Name of Github Org to connect to
 
 	## "bot" MySQL Database
 	UseGCP 					= false				# Should "bot" connect to a Google Cloud DB 

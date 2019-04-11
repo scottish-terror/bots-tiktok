@@ -43,7 +43,7 @@ func RetrieveRepo(tiktok *TikTokConf) (repos []*github.Repository) {
 }
 
 // RetrieveUsers - retrieve list of Users
-func RetrieveUsers(tiktok *TikTokConf) (users []*github.User) {
+func RetrieveUsers(tiktok *TikTokConf, org string) (users []*github.User) {
 
 	ctx, client := gitmyhub(tiktok)
 
@@ -51,7 +51,7 @@ func RetrieveUsers(tiktok *TikTokConf) (users []*github.User) {
 		ListOptions: github.ListOptions{PerPage: 100},
 	}
 
-	users, _, err := client.Organizations.ListMembers(ctx, "ForgeCloud", opt)
+	users, _, err := client.Organizations.ListMembers(ctx, org, opt)
 	if err != nil {
 		errTrap(tiktok, "Error in `RetrieveUsers` function in `git.go`", err)
 		return
@@ -62,7 +62,7 @@ func RetrieveUsers(tiktok *TikTokConf) (users []*github.User) {
 }
 
 // GitPRList - retrieve all PRs in a repo
-func GitPRList(tiktok *TikTokConf, repoName string) (pulls []*github.PullRequest, err error) {
+func GitPRList(tiktok *TikTokConf, repoName string, org string) (pulls []*github.PullRequest, err error) {
 
 	ctx, client := gitmyhub(tiktok)
 
@@ -71,7 +71,7 @@ func GitPRList(tiktok *TikTokConf, repoName string) (pulls []*github.PullRequest
 		Direction: "desc",
 	}
 
-	pulls, _, err = client.PullRequests.List(ctx, "ForgeCloud", repoName, opt)
+	pulls, _, err = client.PullRequests.List(ctx, org, repoName, opt)
 	if err != nil {
 		errTrap(tiktok, "Error in `GitPRList` function in `git.go`", err)
 		return pulls, err
@@ -81,11 +81,11 @@ func GitPRList(tiktok *TikTokConf, repoName string) (pulls []*github.PullRequest
 }
 
 // GitPR - retrieve a single PR in a repo
-func GitPR(tiktok *TikTokConf, repoName string, PRID int) (pull *github.PullRequest, err error) {
+func GitPR(tiktok *TikTokConf, repoName string, PRID int, org string) (pull *github.PullRequest, err error) {
 
 	ctx, client := gitmyhub(tiktok)
 
-	pull, _, err = client.PullRequests.Get(ctx, "ForgeCloud", repoName, PRID)
+	pull, _, err = client.PullRequests.Get(ctx, org, repoName, PRID)
 	if err != nil {
 		errTrap(tiktok, "Error in `GitPR` function in `git.go`", err)
 		return pull, err

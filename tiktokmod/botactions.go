@@ -1539,7 +1539,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
 		LogToSlack(userInfo.Name+" asked me to list all the GitHub users in ForgeCloud", tiktok, attachments)
 
-		userList := RetrieveUsers(tiktok)
+		userList := RetrieveUsers(tiktok, tiktok.Config.GitHubOrg)
 
 		for _, u := range userList {
 			if u.HTMLURL != nil {
@@ -1597,7 +1597,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
 		LogToSlack(userInfo.Name+" asked me to list all the open PRs in repo `"+repoName+"` in ForgeCloud", tiktok, attachments)
 
-		pullList, err := GitPRList(tiktok, repoName)
+		pullList, err := GitPRList(tiktok, repoName, tiktok.Config.GitHubOrg)
 		if err != nil {
 			rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the Repo you wanted called `"+repoName+"`", ev.Msg.Channel))
 			return c, cronjobs, CronState

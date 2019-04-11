@@ -217,7 +217,7 @@ func StalePRcards(opts Config, tiktok *TikTokConf) (message string, err error) {
 									locale = len(splitPath) - 3
 									repoName := splitPath[locale]
 
-									prDetail, err := GitPR(tiktok, repoName, prNum)
+									prDetail, err := GitPR(tiktok, repoName, prNum, tiktok.Config.GitHubOrg)
 									if err == nil {
 										// look in github to see if PR is closed/merged
 										if *prDetail.Merged {
