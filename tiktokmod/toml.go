@@ -55,6 +55,7 @@ type TikTokStruct struct {
 	AllowCleartextPasswords bool
 	AllowAllFiles           bool
 	ParseTime               bool
+	GithubOrgName           string
 }
 
 //GeneralOptions struct for configs

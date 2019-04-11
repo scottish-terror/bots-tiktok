@@ -1511,16 +1511,16 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 
 		rtm.SendMessage(rtm.NewOutgoingMessage("Let me grab the Github Repo List, I will Direct Message you the list.", ev.Msg.Channel))
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
-		LogToSlack(userInfo.Name+" asked me to list all the GitHub REPOs ForgeCloud", tiktok, attachments)
+		LogToSlack(userInfo.Name+" asked me to list all the GitHub REPOs in "+tiktok.Config.GithubOrgName, tiktok, attachments)
 
-		repoList := RetrieveRepo(tiktok)
+		repoList := RetrieveOrgRepo(tiktok, tiktok.Config.GithubOrgName)
 
 		for _, r := range repoList {
 			message = message + "• " + *r.Name + " - " + *r.HTMLURL + "\n"
 			numCount++
 		}
 
-		testPayload.Text = "List of all *" + strconv.Itoa(numCount) + "* ForgeCloud REPOs:"
+		testPayload.Text = "List of all *" + strconv.Itoa(numCount) + "* " + tiktok.Config.GithubOrgName + " REPOs:"
 		testPayload.Channel = userInfo.ID
 		attachments.Color = "#6600ff"
 		attachments.Text = message
@@ -1537,9 +1537,9 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 
 		rtm.SendMessage(rtm.NewOutgoingMessage("Let me grab all the Trello users for you, one sec...I will Direct Message you the list.", ev.Msg.Channel))
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
-		LogToSlack(userInfo.Name+" asked me to list all the GitHub users in ForgeCloud", tiktok, attachments)
+		LogToSlack(userInfo.Name+" asked me to list all the GitHub users in "+tiktok.Config.GithubOrgName, tiktok, attachments)
 
-		userList := RetrieveUsers(tiktok)
+		userList := RetrieveUsers(tiktok, tiktok.Config.GithubOrgName)
 
 		for _, u := range userList {
 			if u.HTMLURL != nil {
@@ -1550,7 +1550,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 			numCount++
 		}
 
-		testPayload.Text = "List of all *" + strconv.Itoa(numCount) + "* ForgeCloud Github Users: \n"
+		testPayload.Text = "List of all *" + strconv.Itoa(numCount) + "* " + tiktok.Config.GithubOrgName + " Github Users: \n"
 		testPayload.Channel = userInfo.ID
 		attachments.Color = "#00ff00"
 		attachments.Text = message
@@ -1595,9 +1595,9 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 
 		rtm.SendMessage(rtm.NewOutgoingMessage("Grabbing open PR list for repo `"+repoName+"`", ev.Msg.Channel))
 		userInfo, _ := api.GetUserInfo(ev.Msg.User)
-		LogToSlack(userInfo.Name+" asked me to list all the open PRs in repo `"+repoName+"` in ForgeCloud", tiktok, attachments)
+		LogToSlack(userInfo.Name+" asked me to list all the open PRs in repo `"+repoName+"` in "+tiktok.Config.GithubOrgName, tiktok, attachments)
 
-		pullList, err := GitPRList(tiktok, repoName)
+		pullList, err := GitPRList(tiktok, repoName, tiktok.Config.GithubOrgName)
 		if err != nil {
 			rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the Repo you wanted called `"+repoName+"`", ev.Msg.Channel))
 			return c, cronjobs, CronState
@@ -1619,7 +1619,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 
 		attachments.Text = prMessage
 		attachments.Color = "#0000cc"
-		Wrangler(tiktok.Config.SlackHook, "List of all *Open PRs* on Repo `"+repoName+"` in ForgeCloud Github: \n", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
+		Wrangler(tiktok.Config.SlackHook, "List of all *Open PRs* on Repo `"+repoName+"` in "+tiktok.Config.GithubOrgName+" Github: \n", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
 	}
 
 	return c, cronjobs, CronState
