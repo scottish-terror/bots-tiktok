@@ -981,7 +981,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 	}
 
 	// TROLL the board
-	if strings.Contains(lowerString, "troll team") {
+	if strings.Contains(lowerString, "troll team") || strings.Contains(lowerString, "troll board") {
 
 		attachments.Text = ""
 		attachments.Color = ""

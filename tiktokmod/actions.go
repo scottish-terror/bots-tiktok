@@ -159,12 +159,6 @@ func CleanBackLog(opts Config, tiktok *TikTokConf) error {
 	var numCards int
 	var squadLabel int
 
-	// Trello args maps for custom fields
-	var m map[string]string
-	m = make(map[string]string)
-	m["fields"] = "name"
-	m["customFieldItems"] = "true"
-
 	if tiktok.Config.LogToSlack {
 		LogToSlack("I'm checking the BackLog in the `"+opts.General.TeamName+"` and cleaning up those cards.", tiktok, attachments)
 	}
@@ -592,12 +586,6 @@ func SyncPoints(teamID string, listID string, opts Config, tiktok *TikTokConf) (
 	var foundField bool
 	var sprintField bool
 
-	// Trello args maps for custom fields
-	var m map[string]string
-	m = make(map[string]string)
-	m["fields"] = "name"
-	m["customFieldItems"] = "true"
-
 	sOpts, err := GetDBSprint(tiktok, teamID)
 	if err != nil {
 		errTrap(tiktok, "Failed DB query, bailing out of syncpoints function in `trello.go`", err)
@@ -633,7 +621,7 @@ func SyncPoints(teamID string, listID string, opts Config, tiktok *TikTokConf) (
 			}
 
 			for _, cusval := range aTt.CustomFieldItems {
-				// sync points to burndown custom field
+				// get points in burndown custom field
 				if cusval.IDCustomField == opts.General.CfpointsID {
 					existPoints = cusval.Value.Number
 					foundField = true
@@ -676,7 +664,7 @@ func SyncPoints(teamID string, listID string, opts Config, tiktok *TikTokConf) (
 				}
 			}
 
-			// Sync fields
+			// Sync points fields
 			if existPoints != strconv.Itoa(points) {
 				err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "number", strconv.Itoa(points))
 				if err != nil {

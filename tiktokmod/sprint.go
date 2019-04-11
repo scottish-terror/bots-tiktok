@@ -161,7 +161,7 @@ func Sprint(opts Config, tiktok *TikTokConf, retroNo bool) (message string, err 
 						}
 						countcardsbl++
 
-						err = PutCustomField(aTt.ID, opts.General.CfsprintID, tiktok, "text", " ")
+						err = PutCustomField(aTt.ID, opts.General.CfsprintID, tiktok, "number", " ")
 						if err != nil {
 							errTrap(tiktok, "Trello error in PutCustomField `sprint.go` while moving card to backlog for `"+opts.General.TeamName+"` board", err)
 						}
@@ -222,7 +222,7 @@ func Sprint(opts Config, tiktok *TikTokConf, retroNo bool) (message string, err 
 					}
 				}
 				spoints := strconv.Itoa(points)
-				err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "number", spoints)
+				err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "text", spoints)
 				if err != nil {
 					errTrap(tiktok, "Trello error in PutCustomField `sprint.go` trying to update burndown custom point field for `"+opts.General.TeamName+"` board", err)
 				}
