@@ -28,7 +28,7 @@
         ROLabelID           = "5c92c65769ec7d094e0621c3" # UID For label being used for ROLL-OVER flagging
         TemplateLabelID     = "5c92c68ec1e49b4c89da4f6e" # UID For NCL Label being used to mark cards as Templates
         CfsprintID          = "5c92c70b453f9866f34a8e8b" # The Custom Field UID for Sprint Name Field  (in trello MUST be text field)
-        CfpointsID          = "5c92c718c7464067406630c4" # The Custom Field UID for Card Points (in trello MUST be text field)
+        CfpointsID          = "5caf52dfc663684bd0731420" # The Custom Field UID for Card Points (in trello MUST be text field)
         RetroCollectionID   = "" # The ID of the Collection you want to put your Retro Boards in. (Default for FRSaaS Team)
         AllowMembersLabel   = "5c92c6959c06e55c997758f0" # The UID of the label that should cause alerting for "members on cards" to be supressed
         TrainingLabel       = "5c92c5bf91d0c2ddc55c5c34" # The UID of the label that should be used for training cards, this will suppress many normal process alerts

@@ -207,7 +207,7 @@ func CleanBackLog(opts Config, tiktok *TikTokConf) error {
 			for _, c := range aTt.CustomFieldItems {
 				if c.IDCustomField == opts.General.CfpointsID {
 					if c.Value.Number != "0" {
-						err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "text", "0")
+						err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "number", "0")
 						if err != nil {
 							errTrap(tiktok, "Error from `PutCustomField` for *CFPOINTSID* in `CleanBackLog` in `actions.go`", err)
 						}
@@ -670,7 +670,7 @@ func SyncPoints(teamID string, listID string, opts Config, tiktok *TikTokConf) (
 
 			// Sync points fields
 			if existPoints != strconv.Itoa(points) {
-				err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "text", strconv.Itoa(points))
+				err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "number", strconv.Itoa(points))
 				if err != nil {
 					errTrap(tiktok, "Error PutCustomField for Sync Fields `actions.go`", err)
 				}
