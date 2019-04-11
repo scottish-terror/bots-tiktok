@@ -653,14 +653,9 @@ func SyncPoints(teamID string, listID string, opts Config, tiktok *TikTokConf) (
 			}
 
 			// Check specific lists to see if points have been changed and add to alert if they have
-			fmt.Println("---> " + aTt.Name)
 			if aTt.IDList == opts.General.ReadyForWork || aTt.IDList == opts.General.Working || aTt.IDList == opts.General.ReadyForReview {
-				fmt.Println("List is true")
-				fmt.Println(existPoints + " -- " + strconv.Itoa(points))
 				if existPoints != strconv.Itoa(points) {
-					fmt.Println("points not equal is true")
 					if existPoints != "" && foundField && existPoints != "0" {
-						fmt.Println("all that other shit is true")
 						apMessage = apMessage + "Points on card <https://trello.com/c/" + aTt.ID + "|" + aTt.Name + "> have changed from " + existPoints + " to " + strconv.Itoa(points) + "\n"
 						if tiktok.Config.LogToSlack {
 							LogToSlack("Points on card <https://trello.com/c/"+aTt.ID+"|"+aTt.Name+"> have changed from "+existPoints+" to "+strconv.Itoa(points), tiktok, attachments)
