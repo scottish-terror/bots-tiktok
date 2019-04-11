@@ -213,7 +213,7 @@ func CleanBackLog(opts Config, tiktok *TikTokConf) error {
 			for _, c := range aTt.CustomFieldItems {
 				if c.IDCustomField == opts.General.CfpointsID {
 					if c.Value.Number != "0" {
-						err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "number", "0")
+						err = PutCustomField(aTt.ID, opts.General.CfpointsID, tiktok, "text", "0")
 						if err != nil {
 							errTrap(tiktok, "Error from `PutCustomField` for *CFPOINTSID* in `CleanBackLog` in `actions.go`", err)
 						}
