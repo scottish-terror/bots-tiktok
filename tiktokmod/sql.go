@@ -683,7 +683,7 @@ func GetHoliday(tiktok *TikTokConf, year string) (theHolidays []Holiday, err err
 	if status {
 
 		if year == "0" {
-			rows, err = db.Query("SELECT * FROM tiktok_holidays ORDER BY holiday", year)
+			rows, err = db.Query("SELECT * FROM tiktok_holidays ORDER BY holiday")
 		} else {
 			rows, err = db.Query("SELECT * FROM tiktok_holidays where YEAR(holiday)=? ORDER BY holiday", year)
 		}
