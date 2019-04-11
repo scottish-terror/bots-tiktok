@@ -656,6 +656,7 @@ func SyncPoints(teamID string, listID string, opts Config, tiktok *TikTokConf) (
 			fmt.Println("---> " + aTt.Name)
 			if aTt.IDList == opts.General.ReadyForWork || aTt.IDList == opts.General.Working || aTt.IDList == opts.General.ReadyForReview {
 				fmt.Println("List is true")
+				fmt.Println(existPoints + " -- " + strconv.Itoa(points))
 				if existPoints != strconv.Itoa(points) {
 					fmt.Println("points not equal is true")
 					if existPoints != "" && foundField && existPoints != "0" {
