@@ -14,7 +14,7 @@
 
 	## "bot" MySQL Database
 	UseGCP 					= false				# Should "bot" connect to a Google Cloud DB 
-	SQLHost					= "172.30.1.205"   	# Hostname of MySQL DB or GCP connection instance
+	SQLHost					= "localhost"   	# Hostname of MySQL DB or GCP connection instance
 	SQLPort					= "3306"			# Port of MySQL DB (NOT required for GCP Connection instances)
 	SQLDBName				= "tiktok"			# Name of "bot" SQL Database
 	AllowNativePasswords  	= true 				# False - Disallows the usage of MySQL native password method.
