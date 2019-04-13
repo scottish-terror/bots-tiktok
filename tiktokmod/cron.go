@@ -64,7 +64,6 @@ func StandardCron(tiktok *TikTokConf, teamID string, job string, holiday bool) {
 		return
 	}
 
-	// Check for Holiday if requested to
 	if holiday {
 		isHoliday, holiday := IsHoliday(tiktok, time.Now())
 		if isHoliday && opts.General.HolidaySupport {
@@ -130,7 +129,6 @@ func StandardCron(tiktok *TikTokConf, teamID string, job string, holiday bool) {
 		SendAlert(tiktok, opts, "retro")
 	case "wdwalert":
 		SendAlert(tiktok, opts, "wdw")
-
 	}
 
 	if tiktok.Config.LogToSlack {
@@ -145,6 +143,8 @@ func StandardCron(tiktok *TikTokConf, teamID string, job string, holiday bool) {
 
 // CronLoad - Load or re-load all cron jobs.  Re-read the toml file
 func CronLoad(tiktok *TikTokConf) (cronjobs *Cronjobs, c *cron.Cron, err error) {
+	var attachments Attachment
+
 	c = cron.New()
 
 	cronjobs, err = LoadCronFile()
@@ -159,11 +159,14 @@ func CronLoad(tiktok *TikTokConf) (cronjobs *Cronjobs, c *cron.Cron, err error) 
 
 	c.Stop()
 
+	cMessage := "```"
 	for _, j := range cronjobs.Cronjob {
 
 		var attachments Attachment
 
-		LogToSlack("Loading Cron: `"+j.Action+"` @ `"+j.Timing+"` on `"+j.Config+"`", tiktok, attachments)
+		cMessage = cMessage + "" + "\n"
+
+		LogToSlack("Loading Cron: `"+j.Action+"` @ `"+j.Timing+"` for board `"+j.Config+"`", tiktok, attachments)
 
 		switch j.Action {
 		case "holidays":
@@ -209,9 +212,15 @@ func CronLoad(tiktok *TikTokConf) (cronjobs *Cronjobs, c *cron.Cron, err error) 
 		case "templatecheck":
 			c.AddFunc(j.Timing, newCron(StandardCron, tiktok, j.Config, "templatecheck", false))
 		default:
-			msg := "Warning INVALID Cron Load action called `" + j.Action + "` for Cron entry:  ```" + j.Timing + "  " + j.Config + "```"
-			LogToSlack(msg, tiktok, attachments)
+			cMessage = cMessage + "Warning INVALID Cron Load action called `" + j.Action + "` for Cron entry:  ```" + j.Timing + "  " + j.Config + "```"
 		}
+	}
+	cMessage = cMessage + "```"
+
+	attachments.Text = "Loading Cron Jobs:"
+	attachments.Color = "#00FF00"
+	if tiktok.Config.LogToSlack {
+		LogToSlack(cMessage, tiktok, attachments)
 	}
 
 	c.Start()
