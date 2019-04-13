@@ -219,7 +219,7 @@ func CronLoad(tiktok *TikTokConf) (cronjobs *Cronjobs, c *cron.Cron, err error) 
 	cMessage = cMessage + "```"
 
 	attachments.Text = cMessage
-	attachments.Color = "#00FF00"
+	attachments.Color = "#0000FF"
 	if tiktok.Config.LogToSlack {
 		LogToSlack("Loading Cron Jobs:", tiktok, attachments)
 	}

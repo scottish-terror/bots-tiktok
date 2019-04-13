@@ -49,7 +49,7 @@
 [[cronjob]]
 
     timing = "0 30 8,12,15 * * MON-FRI"
-    action = "pts"
+    action = "points"
     config = "autobots"
 
 [[cronjob]]
