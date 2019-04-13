@@ -162,7 +162,7 @@ func CronLoad(tiktok *TikTokConf) (cronjobs *Cronjobs, c *cron.Cron, err error) 
 	cMessage := "```"
 	for _, j := range cronjobs.Cronjob {
 
-		cMessage = cMessage + j.Action + "` @ `" + j.Timing + "` for board `" + j.Config + "\n"
+		cMessage = cMessage + j.Action + " @ " + j.Timing + " for board " + j.Config + "\n"
 
 		switch j.Action {
 		case "holidays":
@@ -208,7 +208,12 @@ func CronLoad(tiktok *TikTokConf) (cronjobs *Cronjobs, c *cron.Cron, err error) 
 		case "templatecheck":
 			c.AddFunc(j.Timing, newCron(StandardCron, tiktok, j.Config, "templatecheck", false))
 		default:
-			cMessage = cMessage + "Warning INVALID Cron Load action called `" + j.Action + "` for Cron entry:  ```" + j.Timing + "  " + j.Config + "```"
+			if tiktok.Config.LogToSlack {
+				LogToSlack("Warning INVALID Cron Load action called `"+j.Action+"` for Cron entry:  ```"+j.Timing+"  "+j.Config+"```", tiktok, attachments)
+			}
+			if tiktok.Config.DEBUG {
+				fmt.Println("Warning INVALID Cron Load action called `" + j.Action + "` for Cron entry:  ```" + j.Timing + "  " + j.Config + "```")
+			}
 		}
 	}
 	cMessage = cMessage + "```"
