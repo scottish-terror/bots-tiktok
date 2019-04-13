@@ -162,11 +162,7 @@ func CronLoad(tiktok *TikTokConf) (cronjobs *Cronjobs, c *cron.Cron, err error) 
 	cMessage := "```"
 	for _, j := range cronjobs.Cronjob {
 
-		var attachments Attachment
-
-		cMessage = cMessage + "" + "\n"
-
-		LogToSlack("Loading Cron: `"+j.Action+"` @ `"+j.Timing+"` for board `"+j.Config+"`", tiktok, attachments)
+		cMessage = cMessage + j.Action + "` @ `" + j.Timing + "` for board `" + j.Config + "\n"
 
 		switch j.Action {
 		case "holidays":
@@ -217,10 +213,10 @@ func CronLoad(tiktok *TikTokConf) (cronjobs *Cronjobs, c *cron.Cron, err error) 
 	}
 	cMessage = cMessage + "```"
 
-	attachments.Text = "Loading Cron Jobs:"
+	attachments.Text = cMessage
 	attachments.Color = "#00FF00"
 	if tiktok.Config.LogToSlack {
-		LogToSlack(cMessage, tiktok, attachments)
+		LogToSlack("Loading Cron Jobs:", tiktok, attachments)
 	}
 
 	c.Start()
