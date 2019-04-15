@@ -502,11 +502,8 @@ func SendAlert(tiktok *TikTokConf, opts Config, alertType string) {
 	}
 
 	rand.Seed(time.Now().Unix())
-	if alertType == "sdlc" {
-		message = "<!here> Hey everyone, don't forget that we have a " + meetType + " meeting this afternoon if you want to prepare for it!"
-	} else {
-		message = "<!here> " + preMsg[rand.Intn(len(preMsg))] + " - " + location
-	}
+	message = "<!here> " + preMsg[rand.Intn(len(preMsg))] + " - " + location
+
 	Wrangler(tiktok.Config.SlackHook, message, channel, tiktok.Config.SlackEmoji, attachments)
 
 	return

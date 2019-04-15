@@ -24,7 +24,7 @@
 
 [[cronjob]]
 
-    timing = "0 20 9,15 * * MON-FRI"
+    timing = "0 20 9,15 * * *"
     action = "record-pts"
     config = "autobots"
 
@@ -49,7 +49,7 @@
 [[cronjob]]
 
     timing = "0 30 8,12,15 * * MON-FRI"
-    action = "pts"
+    action = "points"
     config = "autobots"
 
 [[cronjob]]
