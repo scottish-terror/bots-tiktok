@@ -21,34 +21,35 @@ Tik-tok requires specific parameters to run/start.  These can be passed in via O
 Tik-Tok *required*  parameters
 ```
   -osenv  If used, specifies that required parameters will be passed via OS Environment variables. 
-            If omitted Tik-Tok will check the CLI Parameters instead
+          If omitted Tik-Tok will check the CLI Parameters instead
 ```
 ```
 Usage of Tik-Tok.go via CLI Parameters:
-  -tkey  Trello API Key
-  -ttoken  Trello API Token
-  -slackhook  Slack API Webhook URL (required)  
-  -slacktoken   Slack Bot Token
+  -tkey        Trello API Key
+  -ttoken      Trello API Token
+  -slackhook   Slack API Webhook URL (required)  
+  -slacktoken  Slack Bot Token
   -slackoauth  Slack App User OAuth Token (required to manage slack channels)
-  -git  Github API Token
-  -dbuser  Google Cloud SQL User
-  -dbpass  Google Cloud SQL Password
+  -git         Github API Token
+  -dbuser      Google Cloud SQL User
+  -dbpass      Google Cloud SQL Password
 ```
 ```
 Usage of Tik-Tok.go via OS Environment Parameters:
-  tkey=  Trello API Key
-  ttoken=  Trello API Token
-  slackhook=  Slack API Webhook URL (required)  
-  slacktoken=   Slack Bot Token
+  tkey=        Trello API Key
+  ttoken=      Trello API Token
+  slackhook=   Slack API Webhook URL (required)  
+  slacktoken=  Slack Bot Token
   slackoauth=  Slack App User OAuth Token (required to manage slack channels)
-  git=  Github API Token
-  dbuser=  Google Cloud SQL or MySQL User
-  dbpass=  Google Cloud SQL or MySQL Password
+  git=         Github API Token
+  dbuser=      Google Cloud SQL or MySQL User
+  dbpass=      Google Cloud SQL or MySQL Password
 ```
 
 Tik-Tok *optional* CLI parameters
 ```
-  -v  Return version number and exit.  Causes exit regardless of other parameters passed.  Can be used alone
+  -v       Return version number and exit.  Causes exit regardless of other parameters passed.  
+           Can be used alone
   -nocron  Do not load built-in cronjobs on start.  crons.toml
 ```
 
