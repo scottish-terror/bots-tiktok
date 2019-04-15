@@ -2,6 +2,7 @@
 
 Tik-Tok v4 is an always on services type bot.  
 
+### Compiling
 Tik-Tok Modules if you want to compile or contribute.  Binaries are in the release section.
 ```
 go get github.com/robfig/cron
@@ -14,6 +15,7 @@ go get github.com/BurntSushi/toml
 go get github.com/jinzhu/copier
 ```
 
+### Startup Parameters
 Tik-tok requires specific parameters to run/start.  These can be passed in via OS Environment variables or as CLI Parameters.  You must use one or the other you can not mix these specific parameters between the two options.
 
 Tik-Tok *required*  parameters
@@ -49,6 +51,7 @@ Tik-Tok *optional* CLI parameters
   -nocron  Do not load built-in cronjobs on start.  crons.toml
 ```
 
+### TOML Configs
 Tik-Tok has a Tik-Tok.toml file that has some base configuration parameters you need to set for him to run
 
 Each team/board that needs Tik-Tok to operate on it must be configured a specific way and then contain a .TOML file with the settings and configuration for that board.   Below is how to configure your specific board .TOML file.   Tik-Tok does not need to be restarted if a new .TOML file is built and added to his working directory.  He will find it on command.  The name of the TOML file (minus the extension) is how you will refer to that when talking to Tik-Tok.  For example a file called  SAAS.toml will be referred to when talking to Tik-Tok as [SAAS].  
