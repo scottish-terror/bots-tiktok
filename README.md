@@ -93,7 +93,7 @@ Each team/board that needs Tik-Tok to operate on it must be configured a specifi
 
 #### Have Tik-Tok start your config for you
 To find all the unique Trello UID's for the TOML config file, you can ask Tik-Tok to find them for you.  This will help you build your config file.
-`@Tik-Tok build a configuration file for [&lt;trello board id&gt;]`.  He will then DM you the results in slack.
+`@Tik-Tok build a configuration file for [<trello board id>]`.  He will then DM you the results in slack.
 
 ### CRON JOBS
 * All cron jobs for Tik-Tok are contained in the toml file called `crons.toml` stored in Tik-Tok's working directory.  This file can be edited at any time and you can issue a `reload cronjobs` command to Tik-Tok and he will re-read the file and load the new changes.   He will log errors around this in whichever slack channel you've specified logging to go to.
