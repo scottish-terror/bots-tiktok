@@ -20,7 +20,8 @@ Tik-tok requires specific parameters to run/start.  These can be passed in via O
 
 Tik-Tok *required*  parameters
 ```
-  -osenv  - Specifies that required parameters will be passed via OS Environment variables. If omitted Tik-Tok will check the CLI Parameters instead
+  -osenv  - Specifies that required parameters will be passed via OS Environment variables. 
+  If omitted Tik-Tok will check the CLI Parameters instead
 ```
 ```
 Usage of Tik-Tok.go via CLI Parameters:
