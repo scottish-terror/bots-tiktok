@@ -26,7 +26,6 @@ func Startup(tiktokOpts *TikTokConf) (*TikTokConf, bool) {
 	flag.Parse()
 
 	if *osenv {
-		fmt.Println("Checking OS ENV for parameters")
 		tiktokOpts.Config.Tkey = os.Getenv("tkey")
 		tiktokOpts.Config.Ttoken = os.Getenv("ttoken")
 		tiktokOpts.Config.SlackHook = os.Getenv("slackhook")
@@ -37,7 +36,7 @@ func Startup(tiktokOpts *TikTokConf) (*TikTokConf, bool) {
 		tiktokOpts.Config.GitToken = os.Getenv("git")
 
 		if *version {
-			fmt.Println("I'm TikTok Version " + tiktokOpts.Config.Version)
+			fmt.Println("I'm Tik-Tok Version " + tiktokOpts.Config.Version + "\nCopyright 2019 Scottish Terror Engineering")
 			os.Exit(0)
 		}
 
@@ -46,7 +45,6 @@ func Startup(tiktokOpts *TikTokConf) (*TikTokConf, bool) {
 			os.Exit(0)
 		}
 	} else {
-		fmt.Println("Checking CLI for parameters")
 		tiktokOpts.Config.Tkey = *tkey
 		tiktokOpts.Config.Ttoken = *ttoken
 		tiktokOpts.Config.SlackHook = *slackhook
@@ -57,7 +55,7 @@ func Startup(tiktokOpts *TikTokConf) (*TikTokConf, bool) {
 		tiktokOpts.Config.GitToken = *ghtoken
 
 		if *version {
-			fmt.Println("I'm TikTok Version " + tiktokOpts.Config.Version)
+			fmt.Println("I'm Tik-Tok Version " + tiktokOpts.Config.Version + "\nCopyright 2019 Scottish Terror Engineering")
 			os.Exit(0)
 		}
 

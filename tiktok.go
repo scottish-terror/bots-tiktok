@@ -1,3 +1,10 @@
+// ###########################################
+// Copyright (C) 2019 Scott McLaughlin
+// Scottish Terror Engineering
+// All Rights Reserved.
+// See LICENSE file for usage and distribution
+// ###########################################
+
 package main
 
 import (
@@ -27,7 +34,7 @@ func main() {
 
 	// Set version number
 	// Major.Features.Bugs-Tweaks & tomls
-	tiktok.Config.Version = "4.1.0-0"
+	tiktok.Config.Version = "4.1.1-0"
 
 	// Grab CLI or OSENV parameters at launch
 	tiktokOpts, nocron := tiktokmod.Startup(tiktok)
