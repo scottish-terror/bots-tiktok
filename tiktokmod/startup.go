@@ -36,6 +36,11 @@ func Startup(tiktokOpts *TikTokConf) (*TikTokConf, bool) {
 		tiktokOpts.Config.DBPassword = os.Getenv("dbpassword")
 		tiktokOpts.Config.GitToken = os.Getenv("git")
 
+		if *version {
+			fmt.Println("I'm TikTok Version " + tiktokOpts.Config.Version)
+			os.Exit(0)
+		}
+
 		if tiktokOpts.Config.Tkey == "" || tiktokOpts.Config.Ttoken == "" || tiktokOpts.Config.SlackHook == "" || tiktokOpts.Config.SlackToken == "" || tiktokOpts.Config.DBUser == "" || tiktokOpts.Config.DBPassword == "" || tiktokOpts.Config.GitToken == "" {
 			fmt.Println("\nWarning OS Environment parameters: tkey, ttoken, slacktoken, slackhook, git, dbuser and dbpassword are required!")
 			os.Exit(0)
@@ -51,6 +56,11 @@ func Startup(tiktokOpts *TikTokConf) (*TikTokConf, bool) {
 		tiktokOpts.Config.DBPassword = *dbpassword
 		tiktokOpts.Config.GitToken = *ghtoken
 
+		if *version {
+			fmt.Println("I'm TikTok Version " + tiktokOpts.Config.Version)
+			os.Exit(0)
+		}
+
 		if tiktokOpts.Config.Tkey == "" || tiktokOpts.Config.Ttoken == "" || tiktokOpts.Config.SlackHook == "" || tiktokOpts.Config.SlackToken == "" || tiktokOpts.Config.DBUser == "" || tiktokOpts.Config.DBPassword == "" || tiktokOpts.Config.GitToken == "" {
 			fmt.Println("\nWarning CLI parameters: -tkey, -ttoken, -slacktoken, -slackhook, -git, -dbuser and -dbpassword are required!")
 			os.Exit(0)
@@ -58,11 +68,6 @@ func Startup(tiktokOpts *TikTokConf) (*TikTokConf, bool) {
 	}
 
 	nocrontab := *nocron
-
-	if *version {
-		fmt.Println("I'm TikTok Version " + tiktokOpts.Config.Version)
-		os.Exit(0)
-	}
 
 	if tiktokOpts.Config.LogToSlack {
 		LogToSlack("*Hi I'm starting up after being stopped!* - Version `"+tiktokOpts.Config.Version+"`", tiktokOpts, attachments)
