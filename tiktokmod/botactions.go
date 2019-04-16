@@ -1454,13 +1454,17 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 				return c, cronjobs, CronState
 			}
 
+			// Get boardID from team board short ID
+			aTT, err := RetrieveAll(tiktok, opts.General.BoardID, "none")
+
+			// find our label name
 			labelName := Between(ev.Msg.Text, "{", "}")
 
 			if labelName == "" {
 				rtm.SendMessage(rtm.NewOutgoingMessage("Please specify the label name you want me to create inside curly braces {myLabel} ", ev.Msg.Channel))
 			} else {
 				// we have a label and a team
-				labelInfo, err := CreateLabel(tiktok, labelName, "red", opts.General.BoardID)
+				labelInfo, err := CreateLabel(tiktok, labelName, "red", aTT.ID)
 				if err != nil {
 					errTrap(tiktok, "Error returning from CreateLabel in `botactions.go`", err)
 					rtm.SendMessage(rtm.NewOutgoingMessage("Something went wrong creating label, please see logs", ev.Msg.Channel))
@@ -1468,7 +1472,8 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 					return c, cronjobs, CronState
 				}
 				if labelInfo.Error == "ERROR" {
-					rtm.SendMessage(rtm.NewOutgoingMessage("Something went wrong creating label, trello said "+labelInfo.Message, ev.Msg.Channel))
+					errTrap(tiktok, "Error creating trello label. Error from trello `"+labelInfo.Message+"`", nil)
+					rtm.SendMessage(rtm.NewOutgoingMessage("Something went wrong creating label, trello said `"+labelInfo.Message+"`", ev.Msg.Channel))
 					return c, cronjobs, CronState
 				}
 
