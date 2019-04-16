@@ -1108,8 +1108,6 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 				errTrap(tiktok, "Load Conf Error for TeamID "+teamID, err)
 				rtm.SendMessage(rtm.NewOutgoingMessage("I couldn't find the team config file ("+teamID+".toml) you asked for!.", ev.Msg.Channel))
 			} else {
-				rtm.SendMessage(rtm.NewOutgoingMessage("Let me grab the bug labels for team "+teamID+".", ev.Msg.Channel))
-
 				bugs, err := GetBugID(tiktok, opts.General.BoardID)
 				if err != nil {
 					errTrap(tiktok, "SQL Error returned from GetBugID in `botactions.go`", err)
@@ -1118,9 +1116,9 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 					rtm.SendMessage(rtm.NewOutgoingMessage("There are currently no Bug Labels identified for the team "+teamID+".", ev.Msg.Channel))
 				} else {
 					for _, b := range bugs {
-						bugmessage = bugmessage + b.BugLevel + " label has ID " + b.LabelID + "\n"
+						bugmessage = bugmessage + "`" + b.BugLevel + "` label has ID `" + b.LabelID + "`\n"
 					}
-					attachments.Color = "#999999"
+					attachments.Color = "#dd0000"
 					attachments.Text = bugmessage
 					Wrangler(tiktok.Config.SlackHook, "Found the following bug label info: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
 				}
