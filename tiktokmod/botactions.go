@@ -1092,7 +1092,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 	}
 
 	// Return list of bug labels
-	if strings.Contains(lowerString, "show bug labels") {
+	if strings.Contains(lowerString, "show bug labels") || strings.Contains(lowerString, "list bug labels") {
 		var bugmessage string
 
 		attachments.Text = ""
