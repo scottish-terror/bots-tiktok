@@ -1467,6 +1467,10 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 
 					return c, cronjobs, CronState
 				}
+				if labelInfo.Error == "ERROR" {
+					rtm.SendMessage(rtm.NewOutgoingMessage("Something went wrong creating label, trello said "+labelInfo.Message, ev.Msg.Channel))
+					return c, cronjobs, CronState
+				}
 
 				err = AddBugLabel(tiktok, opts.General.BoardID, labelName, labelInfo.ID)
 				if err != nil {

@@ -357,6 +357,8 @@ type Label struct {
 	Name    string      `json:"name"`
 	Color   string      `json:"color"`
 	Limits  interface{} `json:"limits"`
+	Message string      `json:"message"`
+	Error   string      `json:"error"`
 }
 
 // Theme - struct of theme points
