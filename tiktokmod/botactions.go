@@ -1476,7 +1476,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 			}
 
 			labelName = msgBreak[locale]
-
+			fmt.Println(labelName)
 			labelSet, _ := GetBoardLabels(opts.General.BoardID, tiktok)
 			for _, l := range labelSet {
 				if l.Name == labelName {
