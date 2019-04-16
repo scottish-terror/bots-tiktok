@@ -1432,6 +1432,44 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 
 	// Get a labled ID from trello
 	if strings.Contains(lowerString, "label ID for label") {
+		teamID := Between(ev.Msg.Text, "[", "]")
+		if teamID == "" {
+
+			message := ListAllTOML(tiktok)
+			attachments.Color = "#0000CC"
+			attachments.Text = message
+			Wrangler(tiktok.Config.SlackHook, "Please specify team in [ ] - Like `@"+tiktok.Config.BotName+" add new label {myLabel name} [autobots]`\nHere's a list: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
+
+		} else {
+
+			opts, err := LoadConf(tiktok, teamID)
+			if err != nil {
+				errTrap(tiktok, "Can not find team "+teamID+" in `botactions.go` for `find label id` action", err)
+				rtm.SendMessage(rtm.NewOutgoingMessage("I can not find the team called `"+teamID+"` that you requested.", ev.Msg.Channel))
+				return c, cronjobs, CronState
+			}
+
+			// find our label name
+			labelName := Between(ev.Msg.Text, "{", "}")
+
+			if labelName == "" {
+				rtm.SendMessage(rtm.NewOutgoingMessage("Please specify the label name you want me to find inside curly braces {myLabel} ", ev.Msg.Channel))
+			} else {
+				allLabels, err := GetLabel(tiktok, opts.General.BoardID)
+				if err != nil {
+					rtm.SendMessage(rtm.NewOutgoingMessage("Error searching for `"+labelName+"` please see logs.", ev.Msg.Channel))
+					return c, cronjobs, CronState
+				}
+				for _, l := range allLabels {
+					if strings.ToLower(l.Name) == strings.ToLower(labelName) {
+						rtm.SendMessage(rtm.NewOutgoingMessage("The TrelloID for label `"+labelName+"` is ```"+l.ID+"```", ev.Msg.Channel))
+						return c, cronjobs, CronState
+					}
+				}
+				rtm.SendMessage(rtm.NewOutgoingMessage("Could not find a matching label for `"+labelName+"`", ev.Msg.Channel))
+
+			}
+		}
 	}
 
 	// Add a new BUG label to database and trello
