@@ -1435,7 +1435,6 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 	}
 
 	// Add a new BUG label to database and trello
-	//  add new bug label "" [autobots]
 	if strings.Contains(lowerString, "add new bug label") {
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
@@ -1459,6 +1458,11 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 
 			// find our label name
 			labelName := Between(ev.Msg.Text, "{", "}")
+
+			userInfo, _ := api.GetUserInfo(ev.Msg.User)
+			attachments.Color = ""
+			attachments.Text = ""
+			LogToSlack(userInfo.Name+" asked me to create a new bug label called `"+labelName+"` on board `"+opts.General.TeamName+"`.", tiktok, attachments)
 
 			if labelName == "" {
 				rtm.SendMessage(rtm.NewOutgoingMessage("Please specify the label name you want me to create inside curly braces {myLabel} ", ev.Msg.Channel))
