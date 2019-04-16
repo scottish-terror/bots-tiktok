@@ -1091,6 +1091,37 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 		}
 	}
 
+	// Return list of bug labels
+	if strings.Contains(lowerString, "show bug labels") {
+		var bugmessage string
+
+		attachments.Text = ""
+		attachments.Color = ""
+
+		teamID = Between(ev.Msg.Text, "[", "]")
+		if teamID == "" {
+			rtm.SendMessage(rtm.NewOutgoingMessage("I did not understand which team you want, sorry.", ev.Msg.Channel))
+		} else {
+
+			rtm.SendMessage(rtm.NewOutgoingMessage("Let me grab the bug labels for team "+teamID+".", ev.Msg.Channel))
+
+			bugs, err := GetBugID(tiktok, teamID)
+			if err != nil {
+				errTrap(tiktok, "SQL Error returned from GetBugID in `botactions.go`", err)
+			}
+			if len(bugs) == 0 {
+				rtm.SendMessage(rtm.NewOutgoingMessage("There are currently no Bug Labels identified for the team "+teamID+".", ev.Msg.Channel))
+			} else {
+				for _, b := range bugs {
+					bugmessage = bugmessage + b.BugLevel + " label has ID " + b.LabelID + "\n"
+				}
+				attachments.Color = "#999999"
+				attachments.Text = bugmessage
+				Wrangler(tiktok.Config.SlackHook, "Found the following bug label info: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
+			}
+		}
+	}
+
 	// Scan for lagging PR
 	if strings.Contains(lowerString, "scan for pr") {
 
