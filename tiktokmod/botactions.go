@@ -1431,10 +1431,11 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 	}
 
 	// Add BUG label to database
-	if strings.Contains(lowerString, "add bug label ") {
+	if strings.Contains(lowerString, "add bug label") {
 
 		var msgBreak []string
 		var labelName string
+		var locale int
 
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
@@ -1442,7 +1443,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 			message := ListAllTOML(tiktok)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
-			Wrangler(tiktok.Config.SlackHook, "Please specify team in [ ] - Like `@"+tiktok.Config.BotName+" ignore label {myLabel} [mcboard]`\nHere's a list: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
+			Wrangler(tiktok.Config.SlackHook, "Please specify team in [ ] - Like `@"+tiktok.Config.BotName+" add bug label myLabel [autobots]`\nHere's a list: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
 
 		} else {
 
@@ -1453,15 +1454,28 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 				return c, cronjobs, CronState
 			}
 
-			msgBreak = strings.SplitAfterN(lowerString, " ", 5)
-			if len(msgBreak) != 5 {
+			if strings.Contains(strings.ToLower(lowerString), "@"+strings.ToLower(tiktok.Config.BotID)) {
 
-				rtm.SendMessage(rtm.NewOutgoingMessage("I'm not sure what you are asking me to do.", ev.Msg.Channel))
-				return c, cronjobs, CronState
+				msgBreak = strings.SplitAfterN(lowerString, " ", 6)
+				if len(msgBreak) != 6 {
 
+					rtm.SendMessage(rtm.NewOutgoingMessage("I'm not sure what you are asking me to do.", ev.Msg.Channel))
+					return c, cronjobs, CronState
+
+				}
+				locale = 4
+			} else {
+				msgBreak = strings.SplitAfterN(lowerString, " ", 5)
+				if len(msgBreak) != 5 {
+
+					rtm.SendMessage(rtm.NewOutgoingMessage("I'm not sure what you are asking me to do.", ev.Msg.Channel))
+					return c, cronjobs, CronState
+
+				}
+				locale = 3
 			}
 
-			labelName = msgBreak[3]
+			labelName = msgBreak[locale]
 
 			labelSet, _ := GetBoardLabels(opts.General.BoardID, tiktok)
 			for _, l := range labelSet {
@@ -1486,7 +1500,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 			message := ListAllTOML(tiktok)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
-			Wrangler(tiktok.Config.SlackHook, "Please specify team in [ ] - Like `@"+tiktok.Config.BotName+" ignore label {myLabel} [mcboard]`\nHere's a list: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
+			Wrangler(tiktok.Config.SlackHook, "Please specify team in [ ] - Like `@"+tiktok.Config.BotName+" ignore label {myLabel} [autobots]`\nHere's a list: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
 
 		} else {
 
