@@ -1436,7 +1436,9 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 		var msgBreak []string
 		var labelName string
 		var locale int
+		var found bool
 
+		found = false
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
@@ -1476,10 +1478,11 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 			}
 
 			labelName = msgBreak[locale]
-			fmt.Println(labelName)
+
 			labelSet, _ := GetBoardLabels(opts.General.BoardID, tiktok)
 			for _, l := range labelSet {
 				if l.Name == labelName {
+					found = true
 					err := AddBugLabel(tiktok, opts.General.BoardID, labelName, l.ID)
 					if err != nil {
 						errTrap(tiktok, "Error returned from `AddBugLabel` in `botactions.go`", err)
@@ -1487,6 +1490,10 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 						return c, cronjobs, CronState
 					}
 				}
+			}
+
+			if !found {
+				rtm.SendMessage(rtm.NewOutgoingMessage("I could not find a label on the "+teamID+" trello board called "+labelName, ev.Msg.Channel))
 			}
 		}
 	}
