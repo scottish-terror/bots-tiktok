@@ -1430,6 +1430,53 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 		}
 	}
 
+	// Add BUG label to database
+	if strings.Contains(lowerString, "add bug label ") {
+
+		var msgBreak []string
+		var labelName string
+
+		teamID := Between(ev.Msg.Text, "[", "]")
+		if teamID == "" {
+
+			message := ListAllTOML(tiktok)
+			attachments.Color = "#0000CC"
+			attachments.Text = message
+			Wrangler(tiktok.Config.SlackHook, "Please specify team in [ ] - Like `@"+tiktok.Config.BotName+" ignore label {myLabel} [mcboard]`\nHere's a list: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
+
+		} else {
+
+			opts, err := LoadConf(tiktok, teamID)
+			if err != nil {
+				errTrap(tiktok, "Can not find team "+teamID+" in `botactions.go` for `add bug label` action", err)
+				rtm.SendMessage(rtm.NewOutgoingMessage("I can not find the team called `"+teamID+"` that you requested.", ev.Msg.Channel))
+				return c, cronjobs, CronState
+			}
+
+			msgBreak = strings.SplitAfterN(lowerString, " ", 5)
+			if len(msgBreak) != 5 {
+
+				rtm.SendMessage(rtm.NewOutgoingMessage("I'm not sure what you are asking me to do.", ev.Msg.Channel))
+				return c, cronjobs, CronState
+
+			}
+
+			labelName = msgBreak[3]
+
+			labelSet, _ := GetBoardLabels(opts.General.BoardID, tiktok)
+			for _, l := range labelSet {
+				if l.Name == labelName {
+					err := AddBugLabel(tiktok, opts.General.BoardID, labelName, l.ID)
+					if err != nil {
+						errTrap(tiktok, "Error returned from `AddBugLabel` in `botactions.go`", err)
+						rtm.SendMessage(rtm.NewOutgoingMessage("I ran into a DB error, please see the logs in #"+tiktok.Config.LogChannel, ev.Msg.Channel))
+						return c, cronjobs, CronState
+					}
+				}
+			}
+		}
+	}
+
 	// Add Ignore Label
 	if strings.Contains(lowerString, "ignore label ") {
 
