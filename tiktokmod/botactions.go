@@ -1443,10 +1443,9 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 			message := ListAllTOML(tiktok)
 			attachments.Color = "#0000CC"
 			attachments.Text = message
-			Wrangler(tiktok.Config.SlackHook, "Please specify team in [ ] - Like `@"+tiktok.Config.BotName+" add new label \"myLabel name\" [autobots]`\nHere's a list: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
+			Wrangler(tiktok.Config.SlackHook, "Please specify team in [ ] - Like `@"+tiktok.Config.BotName+" add new label {myLabel name} [autobots]`\nHere's a list: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
 
 		} else {
-			labelName := Between(ev.Msg.Text, `"`, `"`)
 
 			opts, err := LoadConf(tiktok, teamID)
 			if err != nil {
@@ -1455,8 +1454,10 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 				return c, cronjobs, CronState
 			}
 
+			labelName := Between(ev.Msg.Text, "{", "}")
+
 			if labelName == "" {
-				rtm.SendMessage(rtm.NewOutgoingMessage("Please specify the label name you want me to create inside quotes \"myLabel\" ", ev.Msg.Channel))
+				rtm.SendMessage(rtm.NewOutgoingMessage("Please specify the label name you want me to create inside curly braces {myLabel} ", ev.Msg.Channel))
 			} else {
 				// we have a label and a team
 				labelInfo, err := CreateLabel(tiktok, labelName, "red", opts.General.BoardID)
