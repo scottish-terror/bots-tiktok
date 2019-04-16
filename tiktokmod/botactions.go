@@ -1446,7 +1446,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 			Wrangler(tiktok.Config.SlackHook, "Please specify team in [ ] - Like `@"+tiktok.Config.BotName+" add new label \"myLabel name\" [autobots]`\nHere's a list: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
 
 		} else {
-			labelName := Between(ev.Msg.Text, "\"", "\"")
+			labelName := Between(ev.Msg.Text, `"`, `"`)
 
 			opts, err := LoadConf(tiktok, teamID)
 			if err != nil {
