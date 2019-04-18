@@ -350,6 +350,17 @@ type CardAction []struct {
 	} `json:"memberCreator"`
 }
 
+// Label - label response struct
+type Label struct {
+	ID      string      `json:"id"`
+	IDBoard string      `json:"idBoard"`
+	Name    string      `json:"name"`
+	Color   string      `json:"color"`
+	Limits  interface{} `json:"limits"`
+	Message string      `json:"message"`
+	Error   string      `json:"error"`
+}
+
 // Theme - struct of theme points
 type Theme struct {
 	ID      string `json:"id"`
@@ -1200,4 +1211,36 @@ func GetCreateDate(tiktok *TikTokConf, cardID string) (createDate time.Time, err
 	}
 
 	return createDate, nil
+}
+
+// CreateLabel - Create trello label
+func CreateLabel(tiktok *TikTokConf, labelName string, labelColor string, boardID string) (labelInfo Label, err error) {
+
+	url := "https://api.trello.com/1/labels"
+	var jsonStr = []byte(`{
+		"name":"Bug: ` + labelName + `",
+		"color":"` + labelColor + `",
+		"idBoard":"` + boardID + `",
+		"key":"` + tiktok.Config.Tkey + `",
+		"token":"` + tiktok.Config.Ttoken + `"
+		}`)
+
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+	if err != nil {
+		errTrap(tiktok, "Error in http.NewRequest in `CreateLabel` in `trello.go`", err)
+		return labelInfo, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		errTrap(tiktok, "Error in client.Do in `CreateLabel` in `trello.go`", err)
+		return labelInfo, err
+	}
+	defer resp.Body.Close()
+	json.NewDecoder(resp.Body).Decode(&labelInfo)
+
+	return labelInfo, nil
 }

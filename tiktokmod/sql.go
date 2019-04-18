@@ -847,6 +847,38 @@ func DupeTable(tiktok *TikTokConf, newTableName string, existTableName string) e
 	return err
 }
 
+// AddBugLabel - Add a new label to the BUGS tracker table
+func AddBugLabel(tiktok *TikTokConf, boardID string, labelName string, labelID string) error {
+
+	db, status, err := ConnectDB(tiktok, tiktok.Config.SQLDBName)
+	if err != nil {
+		errTrap(tiktok, "SQL Error in `AddBugLabel` in `sql.go`", err)
+		return err
+	}
+
+	if status {
+
+		stmt, err := db.Prepare("INSERT tiktok_bug_label SET boardid=?,buglevel=?,labelid=?")
+		if err != nil {
+			errTrap(tiktok, "SQL Error in `db.Prepare` func `AddBugLabel`", err)
+			return err
+		}
+
+		_, err = stmt.Exec(boardID, labelName, labelID)
+		if err != nil {
+			errTrap(tiktok, "SQL Error in `stmt.Exec` func `RecordChapterCount`", err)
+			return err
+		}
+
+		return nil
+	}
+	if tiktok.Config.DEBUG {
+		fmt.Println("Failed connection, bailing out...")
+	}
+
+	return err
+}
+
 // RecordChapterCount - Record points for sprint per squad
 func RecordChapterCount(tiktok *TikTokConf, chapterName string, listName string, cardCount int, teamName string) bool {
 
