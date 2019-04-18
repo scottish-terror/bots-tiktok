@@ -1431,7 +1431,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 	}
 
 	// Get a labled ID from trello
-	if strings.Contains(strings.ToLower(lowerString), "label ID for label") {
+	if strings.Contains(strings.ToLower(lowerString), "label id for label") {
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
 
