@@ -1537,7 +1537,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 	if strings.Contains(lowerString, "add existing bug label") {
 		var locale int
 		var msgBreak []string
-		var chopString []string
+		var chopString string
 
 		teamID := Between(ev.Msg.Text, "[", "]")
 		if teamID == "" {
@@ -1564,10 +1564,11 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 			}
 
 			//break down message
-			chopString = strings.SplitAfterN(lowerString, "{", 2)
+			cleanString := strings.SplitAfterN(lowerString, "{", 2)
+			chopString = strings.TrimSuffix(cleanString[0], " {")
 			if strings.Contains(strings.ToLower(lowerString), "@"+strings.ToLower(tiktok.Config.BotID)) {
 
-				msgBreak = strings.SplitAfterN(chopString[0], " ", 6)
+				msgBreak = strings.SplitAfterN(chopString, " ", 6)
 				if len(msgBreak) != 6 {
 
 					rtm.SendMessage(rtm.NewOutgoingMessage("I'm not sure what you are asking me to do.", ev.Msg.Channel))
@@ -1578,7 +1579,7 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 
 			} else {
 
-				msgBreak = strings.SplitAfterN(chopString[0], " ", 5)
+				msgBreak = strings.SplitAfterN(chopString, " ", 5)
 				if len(msgBreak) != 5 {
 
 					rtm.SendMessage(rtm.NewOutgoingMessage("I'm not sure what you are asking me to do.", ev.Msg.Channel))
