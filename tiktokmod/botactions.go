@@ -1533,7 +1533,80 @@ func BotActions(lowerString string, tiktok *TikTokConf, ev *slack.MessageEvent, 
 	}
 
 	// Add existing BUG label to database
+	// add existing bug label 739475038742038 {critical} [autobots]
 	if strings.Contains(lowerString, "add existing bug label") {
+		var locale int
+		var msgBreak []string
+
+		teamID := Between(ev.Msg.Text, "[", "]")
+		if teamID == "" {
+
+			message := ListAllTOML(tiktok)
+			attachments.Color = "#0000CC"
+			attachments.Text = message
+			Wrangler(tiktok.Config.SlackHook, "Please specify team in [ ] - Like `@"+tiktok.Config.BotName+" add new label {myLabel name} [autobots]`\nHere's a list: ", ev.Msg.Channel, tiktok.Config.SlackEmoji, attachments)
+
+		} else {
+
+			opts, err := LoadConf(tiktok, teamID)
+			if err != nil {
+				errTrap(tiktok, "Can not find team "+teamID+" in `botactions.go` for `create label` action", err)
+				rtm.SendMessage(rtm.NewOutgoingMessage("I can not find the team called `"+teamID+"` that you requested.", ev.Msg.Channel))
+				return c, cronjobs, CronState
+			}
+
+			// find label name
+			labelName := Between(ev.Msg.Text, "{", "}")
+			if labelName == "" {
+				rtm.SendMessage(rtm.NewOutgoingMessage("Please specify the label name you want me to create inside curly braces {myLabel} ", ev.Msg.Channel))
+				return c, cronjobs, CronState
+			}
+
+			//break down message
+			if strings.Contains(strings.ToLower(lowerString), "@"+strings.ToLower(tiktok.Config.BotID)) {
+
+				msgBreak = strings.SplitAfterN(lowerString, " ", 6)
+				if len(msgBreak) != 6 {
+
+					rtm.SendMessage(rtm.NewOutgoingMessage("I'm not sure what you are asking me to do.", ev.Msg.Channel))
+					return c, cronjobs, CronState
+
+				}
+				locale = 5
+
+			} else {
+
+				msgBreak = strings.SplitAfterN(lowerString, " ", 5)
+				if len(msgBreak) != 5 {
+
+					rtm.SendMessage(rtm.NewOutgoingMessage("I'm not sure what you are asking me to do.", ev.Msg.Channel))
+					return c, cronjobs, CronState
+
+				}
+				locale = 4
+
+			}
+
+			labelID = msgBreak[locale]
+
+			// do the thing
+			userInfo, _ := api.GetUserInfo(ev.Msg.User)
+			attachments.Color = ""
+			attachments.Text = ""
+			LogToSlack(userInfo.Name+" asked me to add an existing bug label called `"+labelName+"` with the ID `"+labelID+"` on board `"+opts.General.TeamName+"`.", tiktok, attachments)
+
+			err = AddBugLabel(tiktok, opts.General.BoardID, labelName, labelID)
+			if err != nil {
+				errTrap(tiktok, "Error adding bug label to DB", err)
+				rtm.SendMessage(rtm.NewOutgoingMessage("Something went wrong creating label, please see logs", ev.Msg.Channel))
+
+				return c, cronjobs, CronState
+			}
+
+			rtm.SendMessage(rtm.NewOutgoingMessage("I've added your bug label! Name `"+labelName+"` TrelloID: `"+labelID+"`", ev.Msg.Channel))
+
+		}
+
 	}
 
 	// Add Ignore Label
